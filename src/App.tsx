@@ -8,6 +8,7 @@ import BusinessGrowth from "./pages/BusinessGrowth";
 import LifeHealth from "./pages/LifeHealth";
 import MindGrowth from "./pages/MindGrowth";
 import Sovereignty from "./pages/Sovereignty";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/life-health" element={<LifeHealth />} />
           <Route path="/mind-growth" element={<MindGrowth />} />
           <Route path="/sovereignty" element={<Sovereignty />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
