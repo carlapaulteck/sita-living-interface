@@ -47,6 +47,123 @@ export type Database = {
         }
         Relationships: []
       }
+      cognitive_profiles: {
+        Row: {
+          adaptation_mode: string | null
+          attention_window: number | null
+          created_at: string | null
+          id: string
+          initiation_friction: string | null
+          let_me_struggle: boolean | null
+          predictability_need: string | null
+          reward_sensitivity: string | null
+          sensory_load_tolerance: Json | null
+          structure_preference: string | null
+          switching_cost: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          adaptation_mode?: string | null
+          attention_window?: number | null
+          created_at?: string | null
+          id?: string
+          initiation_friction?: string | null
+          let_me_struggle?: boolean | null
+          predictability_need?: string | null
+          reward_sensitivity?: string | null
+          sensory_load_tolerance?: Json | null
+          structure_preference?: string | null
+          switching_cost?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          adaptation_mode?: string | null
+          attention_window?: number | null
+          created_at?: string | null
+          id?: string
+          initiation_friction?: string | null
+          let_me_struggle?: boolean | null
+          predictability_need?: string | null
+          reward_sensitivity?: string | null
+          sensory_load_tolerance?: Json | null
+          structure_preference?: string | null
+          switching_cost?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cognitive_signals: {
+        Row: {
+          context: Json | null
+          created_at: string | null
+          id: string
+          signal_type: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string | null
+          id?: string
+          signal_type: string
+          user_id: string
+          value: number
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string | null
+          id?: string
+          signal_type?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      cognitive_states: {
+        Row: {
+          cognitive_budget: number | null
+          confidence: number | null
+          created_at: string | null
+          focus_level: number | null
+          id: string
+          metadata: Json | null
+          predicted_next_state: string | null
+          state: string
+          stress_index: number | null
+          time_to_onset_minutes: number | null
+          user_id: string
+        }
+        Insert: {
+          cognitive_budget?: number | null
+          confidence?: number | null
+          created_at?: string | null
+          focus_level?: number | null
+          id?: string
+          metadata?: Json | null
+          predicted_next_state?: string | null
+          state: string
+          stress_index?: number | null
+          time_to_onset_minutes?: number | null
+          user_id: string
+        }
+        Update: {
+          cognitive_budget?: number | null
+          confidence?: number | null
+          created_at?: string | null
+          focus_level?: number | null
+          id?: string
+          metadata?: Json | null
+          predicted_next_state?: string | null
+          state?: string
+          stress_index?: number | null
+          time_to_onset_minutes?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           action_url: string | null
@@ -82,6 +199,69 @@ export type Database = {
           read?: boolean | null
           title?: string
           type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      personalization_profiles: {
+        Row: {
+          causality_graph: Json | null
+          created_at: string | null
+          do_not_touch_zones: string[] | null
+          emotional_grammar: Json | null
+          failure_taxonomy: Json | null
+          id: string
+          identity_modes: Json | null
+          meaning_anchors: Json | null
+          motivation_fingerprint: Json | null
+          preference_drift_log: Json | null
+          recovery_signature: Json | null
+          resistance_log: Json | null
+          silence_model: Json | null
+          threshold_memory: Json | null
+          time_perception: Json | null
+          trust_velocity: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          causality_graph?: Json | null
+          created_at?: string | null
+          do_not_touch_zones?: string[] | null
+          emotional_grammar?: Json | null
+          failure_taxonomy?: Json | null
+          id?: string
+          identity_modes?: Json | null
+          meaning_anchors?: Json | null
+          motivation_fingerprint?: Json | null
+          preference_drift_log?: Json | null
+          recovery_signature?: Json | null
+          resistance_log?: Json | null
+          silence_model?: Json | null
+          threshold_memory?: Json | null
+          time_perception?: Json | null
+          trust_velocity?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          causality_graph?: Json | null
+          created_at?: string | null
+          do_not_touch_zones?: string[] | null
+          emotional_grammar?: Json | null
+          failure_taxonomy?: Json | null
+          id?: string
+          identity_modes?: Json | null
+          meaning_anchors?: Json | null
+          motivation_fingerprint?: Json | null
+          preference_drift_log?: Json | null
+          recovery_signature?: Json | null
+          resistance_log?: Json | null
+          silence_model?: Json | null
+          threshold_memory?: Json | null
+          time_perception?: Json | null
+          trust_velocity?: Json | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
