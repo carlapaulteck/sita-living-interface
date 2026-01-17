@@ -14,7 +14,123 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          name: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          assistant_style: string | null
+          automations: Json | null
+          autonomy_level: string | null
+          avatar_style: string | null
+          calendar_connected: boolean | null
+          completed_at: string | null
+          created_at: string
+          daily_rhythm: Json | null
+          focus_profile: Json | null
+          friction_profile: Json | null
+          guardrails: Json | null
+          health_profile: Json | null
+          id: string
+          integrations: Json | null
+          morning_ritual: boolean | null
+          north_star_metrics: string[] | null
+          onboarding_version: number | null
+          presence_style: string | null
+          primary_intents: string[] | null
+          sensory_prefs: Json | null
+          setup_mode: string | null
+          signature_phrase: string | null
+          sovereignty_profile: Json | null
+          theme: string | null
+          updated_at: string
+          user_id: string | null
+          voice_profile: Json | null
+          wealth_profile: Json | null
+        }
+        Insert: {
+          assistant_style?: string | null
+          automations?: Json | null
+          autonomy_level?: string | null
+          avatar_style?: string | null
+          calendar_connected?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          daily_rhythm?: Json | null
+          focus_profile?: Json | null
+          friction_profile?: Json | null
+          guardrails?: Json | null
+          health_profile?: Json | null
+          id?: string
+          integrations?: Json | null
+          morning_ritual?: boolean | null
+          north_star_metrics?: string[] | null
+          onboarding_version?: number | null
+          presence_style?: string | null
+          primary_intents?: string[] | null
+          sensory_prefs?: Json | null
+          setup_mode?: string | null
+          signature_phrase?: string | null
+          sovereignty_profile?: Json | null
+          theme?: string | null
+          updated_at?: string
+          user_id?: string | null
+          voice_profile?: Json | null
+          wealth_profile?: Json | null
+        }
+        Update: {
+          assistant_style?: string | null
+          automations?: Json | null
+          autonomy_level?: string | null
+          avatar_style?: string | null
+          calendar_connected?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          daily_rhythm?: Json | null
+          focus_profile?: Json | null
+          friction_profile?: Json | null
+          guardrails?: Json | null
+          health_profile?: Json | null
+          id?: string
+          integrations?: Json | null
+          morning_ritual?: boolean | null
+          north_star_metrics?: string[] | null
+          onboarding_version?: number | null
+          presence_style?: string | null
+          primary_intents?: string[] | null
+          sensory_prefs?: Json | null
+          setup_mode?: string | null
+          signature_phrase?: string | null
+          sovereignty_profile?: Json | null
+          theme?: string | null
+          updated_at?: string
+          user_id?: string | null
+          voice_profile?: Json | null
+          wealth_profile?: Json | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

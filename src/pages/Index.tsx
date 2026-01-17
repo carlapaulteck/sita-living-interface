@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Header } from "@/components/Header";
 import { GlassCard } from "@/components/GlassCard";
 import { QuickStatCard } from "@/components/QuickStatCard";
@@ -11,6 +12,8 @@ import { AvatarBubble } from "@/components/AvatarBubble";
 import { AvatarHero } from "@/components/AvatarHero";
 import { OnboardingFlow } from "@/components/OnboardingFlow";
 import { ConversationConsole } from "@/components/ConversationConsole";
+import { WarRoom } from "@/components/WarRoom";
+import { WakeUpReceipt } from "@/components/WakeUpReceipt";
 import bgParticles from "@/assets/bg-particles.jpg";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -21,12 +24,16 @@ import {
   Coins,
   Heart,
   Lightbulb,
-  Shield
+  Shield,
+  Map,
+  Sunrise
 } from "lucide-react";
 
 const Index = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
+  const [showWarRoom, setShowWarRoom] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(false);
   const [userName, setUserName] = useState("Alex");
   const navigate = useNavigate();
 
@@ -47,7 +54,22 @@ const Index = () => {
   };
 
   const handleCommand = (text: string) => {
-    setShowConsole(true);
+    const lower = text.toLowerCase();
+    if (lower.includes("war") || lower.includes("map") || lower.includes("system")) {
+      setShowWarRoom(true);
+    } else if (lower.includes("receipt") || lower.includes("wake") || lower.includes("morning")) {
+      setShowReceipt(true);
+    } else if (lower.includes("business") || lower.includes("revenue") || lower.includes("growth")) {
+      navigate("/business-growth");
+    } else if (lower.includes("health") || lower.includes("sleep") || lower.includes("fitness")) {
+      navigate("/life-health");
+    } else if (lower.includes("mind") || lower.includes("focus") || lower.includes("learn")) {
+      navigate("/mind-growth");
+    } else if (lower.includes("sovereign") || lower.includes("privacy") || lower.includes("data")) {
+      navigate("/sovereignty");
+    } else {
+      setShowConsole(true);
+    }
   };
 
   const handleModuleClick = (module: string) => {
@@ -222,6 +244,30 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Quick Action Buttons */}
+      <div className="fixed bottom-24 right-4 flex flex-col gap-2 z-30">
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1 }}
+          onClick={() => setShowReceipt(true)}
+          className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30 backdrop-blur-sm hover:scale-105 transition-transform"
+          title="Wake-Up Receipt"
+        >
+          <Sunrise className="h-5 w-5 text-primary" />
+        </motion.button>
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1.1 }}
+          onClick={() => setShowWarRoom(true)}
+          className="p-3 rounded-xl bg-card/80 border border-border/50 backdrop-blur-sm hover:scale-105 transition-transform"
+          title="War Room"
+        >
+          <Map className="h-5 w-5 text-muted-foreground" />
+        </motion.button>
+      </div>
+
       {/* Command Bar */}
       <CommandBar onSubmit={handleCommand} />
 
@@ -230,11 +276,17 @@ const Index = () => {
         <AvatarBubble />
       </div>
 
-      {/* Conversation Console */}
-      <ConversationConsole 
-        isOpen={showConsole} 
-        onClose={() => setShowConsole(false)} 
-      />
+      {/* Modals */}
+      <AnimatePresence>
+        {showConsole && (
+          <ConversationConsole 
+            isOpen={showConsole} 
+            onClose={() => setShowConsole(false)} 
+          />
+        )}
+        {showWarRoom && <WarRoom isOpen={showWarRoom} onClose={() => setShowWarRoom(false)} />}
+        {showReceipt && <WakeUpReceipt isOpen={showReceipt} onClose={() => setShowReceipt(false)} />}
+      </AnimatePresence>
     </div>
   );
 };

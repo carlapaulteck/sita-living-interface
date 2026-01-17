@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/Header";
 import { GlassCard } from "@/components/GlassCard";
 import { MetricRing } from "@/components/MetricRing";
@@ -8,9 +8,10 @@ import { WorkflowPacks } from "@/components/WorkflowPacks";
 import { CommandBar } from "@/components/CommandBar";
 import { ConversationConsole } from "@/components/ConversationConsole";
 import { AvatarBubble } from "@/components/AvatarBubble";
+import { WarRoom } from "@/components/WarRoom";
+import { WakeUpReceipt } from "@/components/WakeUpReceipt";
 import bgParticles from "@/assets/bg-particles.jpg";
 import { serviceScenario } from "@/lib/scenarioData";
-import { businessData } from "@/lib/demoData";
 import {
   TrendingUp,
   Clock,
@@ -24,6 +25,11 @@ import {
   Target,
   Inbox,
   Workflow,
+  Map,
+  Sunrise,
+  Shield,
+  Zap,
+  MessageSquare,
 } from "lucide-react";
 
 const BusinessGrowth = () => {
@@ -31,6 +37,8 @@ const BusinessGrowth = () => {
   const [showInbox, setShowInbox] = useState(false);
   const [showPacks, setShowPacks] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
+  const [showWarRoom, setShowWarRoom] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(false);
 
   const { metrics, experiments, campaigns, deals } = serviceScenario;
 
@@ -40,6 +48,10 @@ const BusinessGrowth = () => {
       setShowInbox(true);
     } else if (lower.includes("pack") || lower.includes("autopilot") || lower.includes("workflow")) {
       setShowPacks(true);
+    } else if (lower.includes("war") || lower.includes("map") || lower.includes("system")) {
+      setShowWarRoom(true);
+    } else if (lower.includes("receipt") || lower.includes("wake")) {
+      setShowReceipt(true);
     } else {
       setShowConsole(true);
     }
@@ -52,6 +64,14 @@ const BusinessGrowth = () => {
     { id: "growth", label: "Growth", icon: TrendingUp },
     { id: "money", label: "Money", icon: DollarSign },
   ] as const;
+
+  // System status message
+  const getStatusMessage = () => {
+    const riskLevel = metrics.risk;
+    if (riskLevel === "low") return "Systems stable. No action required.";
+    if (riskLevel === "medium") return "One item needs review.";
+    return "Attention needed on critical items.";
+  };
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -563,15 +583,43 @@ const BusinessGrowth = () => {
         </div>
       </div>
 
+      {/* Quick Action Buttons */}
+      <div className="fixed bottom-24 right-4 flex flex-col gap-2 z-30">
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1 }}
+          onClick={() => setShowReceipt(true)}
+          className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30 backdrop-blur-sm hover:scale-105 transition-transform"
+          title="Wake-Up Receipt"
+        >
+          <Sunrise className="h-5 w-5 text-primary" />
+        </motion.button>
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1.1 }}
+          onClick={() => setShowWarRoom(true)}
+          className="p-3 rounded-xl bg-card/80 border border-border/50 backdrop-blur-sm hover:scale-105 transition-transform"
+          title="War Room"
+        >
+          <Map className="h-5 w-5 text-muted-foreground" />
+        </motion.button>
+      </div>
+
       <CommandBar onSubmit={handleCommand} />
 
       <div onClick={() => setShowConsole(true)}>
         <AvatarBubble />
       </div>
 
-      <UnifiedInbox isOpen={showInbox} onClose={() => setShowInbox(false)} />
-      <WorkflowPacks isOpen={showPacks} onClose={() => setShowPacks(false)} />
-      <ConversationConsole isOpen={showConsole} onClose={() => setShowConsole(false)} />
+      <AnimatePresence>
+        {showInbox && <UnifiedInbox isOpen={showInbox} onClose={() => setShowInbox(false)} />}
+        {showPacks && <WorkflowPacks isOpen={showPacks} onClose={() => setShowPacks(false)} />}
+        {showConsole && <ConversationConsole isOpen={showConsole} onClose={() => setShowConsole(false)} />}
+        {showWarRoom && <WarRoom isOpen={showWarRoom} onClose={() => setShowWarRoom(false)} />}
+        {showReceipt && <WakeUpReceipt isOpen={showReceipt} onClose={() => setShowReceipt(false)} />}
+      </AnimatePresence>
     </div>
   );
 };
