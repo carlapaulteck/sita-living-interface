@@ -51,8 +51,20 @@ const Index = () => {
   };
 
   const handleModuleClick = (module: string) => {
-    if (module === "Wealth" || module === "Business Growth") {
-      navigate("/business-growth");
+    switch (module) {
+      case "Wealth":
+      case "Business Growth":
+        navigate("/business-growth");
+        break;
+      case "Life & Health":
+        navigate("/life-health");
+        break;
+      case "Mind & Growth":
+        navigate("/mind-growth");
+        break;
+      case "Sovereignty":
+        navigate("/sovereignty");
+        break;
     }
   };
 
@@ -164,21 +176,27 @@ const Index = () => {
                     delay={400}
                   />
                 </div>
-                <ModuleTile 
-                  title="Life & Health"
-                  icon={Heart}
-                  delay={500}
-                />
-                <ModuleTile 
-                  title="Mind & Growth"
-                  icon={Lightbulb}
-                  delay={600}
-                />
-                <ModuleTile 
-                  title="Sovereignty"
-                  icon={Shield}
-                  delay={700}
-                />
+                <div onClick={() => handleModuleClick("Life & Health")}>
+                  <ModuleTile 
+                    title="Life & Health"
+                    icon={Heart}
+                    delay={500}
+                  />
+                </div>
+                <div onClick={() => handleModuleClick("Mind & Growth")}>
+                  <ModuleTile 
+                    title="Mind & Growth"
+                    icon={Lightbulb}
+                    delay={600}
+                  />
+                </div>
+                <div onClick={() => handleModuleClick("Sovereignty")}>
+                  <ModuleTile 
+                    title="Sovereignty"
+                    icon={Shield}
+                    delay={700}
+                  />
+                </div>
               </div>
             </div>
 
