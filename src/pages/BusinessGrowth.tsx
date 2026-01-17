@@ -10,8 +10,13 @@ import { ConversationConsole } from "@/components/ConversationConsole";
 import { AvatarBubble } from "@/components/AvatarBubble";
 import { WarRoom } from "@/components/WarRoom";
 import { WakeUpReceipt } from "@/components/WakeUpReceipt";
+import { ScenarioSwitcher } from "@/components/ScenarioSwitcher";
+import { IntegrationsHub } from "@/components/IntegrationsHub";
+import { BoundariesPanel } from "@/components/BoundariesPanel";
+import { AdvisorPanel } from "@/components/AdvisorPanel";
+import { MoneyFlow } from "@/components/MoneyFlow";
 import bgParticles from "@/assets/bg-particles.jpg";
-import { serviceScenario } from "@/lib/scenarioData";
+import { scenarios, ScenarioType } from "@/lib/scenarioData";
 import {
   TrendingUp,
   Clock,
@@ -30,6 +35,9 @@ import {
   Shield,
   Zap,
   MessageSquare,
+  Settings,
+  Link2,
+  Brain,
 } from "lucide-react";
 
 const BusinessGrowth = () => {
@@ -39,8 +47,13 @@ const BusinessGrowth = () => {
   const [showConsole, setShowConsole] = useState(false);
   const [showWarRoom, setShowWarRoom] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
+  const [showIntegrations, setShowIntegrations] = useState(false);
+  const [showBoundaries, setShowBoundaries] = useState(false);
+  const [showAdvisors, setShowAdvisors] = useState(false);
+  const [currentScenario, setCurrentScenario] = useState<ScenarioType>("service");
 
-  const { metrics, experiments, campaigns, deals } = serviceScenario;
+  const scenario = scenarios[currentScenario];
+  const { metrics, experiments, campaigns, deals } = scenario;
 
   const handleCommand = (text: string) => {
     const lower = text.toLowerCase();
@@ -90,14 +103,43 @@ const BusinessGrowth = () => {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-6 mb-6"
+            className="mt-6 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
           >
-            <h1 className="text-2xl sm:text-3xl font-display font-medium text-foreground">
-              Business Pulse
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Live status across revenue, demand, and risk.
-            </p>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-display font-medium text-foreground">
+                Business Pulse
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Live status across revenue, demand, and risk.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <ScenarioSwitcher 
+                currentScenario={currentScenario} 
+                onScenarioChange={setCurrentScenario} 
+              />
+              <button
+                onClick={() => setShowIntegrations(true)}
+                className="p-2 rounded-xl bg-card/50 border border-border/50 hover:bg-card/80 transition-colors"
+                title="Connections"
+              >
+                <Link2 className="h-4 w-4 text-muted-foreground" />
+              </button>
+              <button
+                onClick={() => setShowBoundaries(true)}
+                className="p-2 rounded-xl bg-card/50 border border-border/50 hover:bg-card/80 transition-colors"
+                title="Boundaries"
+              >
+                <Shield className="h-4 w-4 text-muted-foreground" />
+              </button>
+              <button
+                onClick={() => setShowAdvisors(true)}
+                className="p-2 rounded-xl bg-card/50 border border-border/50 hover:bg-card/80 transition-colors"
+                title="Advisory Council"
+              >
+                <Brain className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
           </motion.div>
 
           <motion.div 
@@ -272,7 +314,7 @@ const BusinessGrowth = () => {
                     <div>
                       <p className="text-sm text-muted-foreground">Capacity</p>
                       <p className="text-2xl font-display font-medium text-foreground mt-1">
-                        {Math.round((serviceScenario.businessProfile.capacity?.usedSlots || 0) / (serviceScenario.businessProfile.capacity?.weeklySlots || 1) * 100)}%
+                        {Math.round((scenario.businessProfile.capacity?.usedSlots || 0) / (scenario.businessProfile.capacity?.weeklySlots || 1) * 100)}%
                       </p>
                       <p className="text-xs text-muted-foreground/60 mt-1">Safe to scale</p>
                     </div>
@@ -330,7 +372,7 @@ const BusinessGrowth = () => {
                   <h2 className="text-lg font-medium text-foreground mb-4">Pipeline</h2>
                   <div className="space-y-3">
                     {deals.map((deal) => {
-                      const contact = serviceScenario.contacts.find(c => c.id === deal.contactId);
+                      const contact = scenario.contacts.find(c => c.id === deal.contactId);
                       return (
                         <div
                           key={deal.id}
@@ -509,9 +551,9 @@ const BusinessGrowth = () => {
                 <GlassCard className="p-6">
                   <h3 className="font-medium text-foreground mb-4">Quotes</h3>
                   <div className="space-y-3">
-                    {serviceScenario.quotes.map((quote) => {
+                    {scenario.quotes.map((quote) => {
                       const deal = deals.find(d => d.id === quote.dealId);
-                      const contact = serviceScenario.contacts.find(c => c.id === deal?.contactId);
+                      const contact = scenario.contacts.find(c => c.id === deal?.contactId);
                       return (
                         <div
                           key={quote.id}
@@ -549,9 +591,9 @@ const BusinessGrowth = () => {
                 <GlassCard className="p-6">
                   <h3 className="font-medium text-foreground mb-4">Invoices</h3>
                   <div className="space-y-3">
-                    {serviceScenario.invoices.map((invoice) => {
+                    {scenario.invoices.map((invoice) => {
                       const deal = deals.find(d => d.id === invoice.dealId);
-                      const contact = serviceScenario.contacts.find(c => c.id === deal?.contactId);
+                      const contact = scenario.contacts.find(c => c.id === deal?.contactId);
                       return (
                         <div
                           key={invoice.id}
@@ -619,6 +661,9 @@ const BusinessGrowth = () => {
         {showConsole && <ConversationConsole isOpen={showConsole} onClose={() => setShowConsole(false)} />}
         {showWarRoom && <WarRoom isOpen={showWarRoom} onClose={() => setShowWarRoom(false)} />}
         {showReceipt && <WakeUpReceipt isOpen={showReceipt} onClose={() => setShowReceipt(false)} />}
+        {showIntegrations && <IntegrationsHub isOpen={showIntegrations} onClose={() => setShowIntegrations(false)} />}
+        {showBoundaries && <BoundariesPanel isOpen={showBoundaries} onClose={() => setShowBoundaries(false)} />}
+        {showAdvisors && <AdvisorPanel isOpen={showAdvisors} onClose={() => setShowAdvisors(false)} />}
       </AnimatePresence>
     </div>
   );
