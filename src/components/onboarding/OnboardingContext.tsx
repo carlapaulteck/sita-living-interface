@@ -1,5 +1,7 @@
 import { createContext, useContext, ReactNode, useState, useCallback } from "react";
 import { OnboardingData, defaultOnboardingData } from "@/types/onboarding";
+import { saveUserPreferences, saveUserProfile } from "@/lib/userPreferences";
+import { supabase } from "@/integrations/supabase/client";
 
 interface OnboardingContextType {
   step: number;
@@ -12,7 +14,7 @@ interface OnboardingContextType {
   updateNestedData: <K extends keyof OnboardingData>(
     key: K,
     nestedKey: string,
-    value: any
+    value: unknown
   ) => void;
   complete: () => void;
   isQuickMode: boolean;
@@ -47,7 +49,7 @@ export function OnboardingProvider({ children, onComplete, totalSteps }: Onboard
   const updateNestedData = useCallback(<K extends keyof OnboardingData>(
     key: K,
     nestedKey: string,
-    value: any
+    value: unknown
   ) => {
     setData(prev => ({
       ...prev,
@@ -66,14 +68,33 @@ export function OnboardingProvider({ children, onComplete, totalSteps }: Onboard
     setStep(prev => Math.max(prev - 1, 0));
   }, []);
 
-  const complete = useCallback(() => {
+  const complete = useCallback(async () => {
     const finalData = {
       ...data,
       completedAt: new Date().toISOString(),
     };
+    
+    // Save to localStorage for quick access
     localStorage.setItem("sita_onboarded", "true");
     localStorage.setItem("sita_user_name", data.name);
     localStorage.setItem("sita_onboarding_data", JSON.stringify(finalData));
+    
+    // Try to save to database if user is authenticated
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData.session?.user) {
+        const userId = sessionData.session.user.id;
+        await Promise.all([
+          saveUserPreferences(userId, finalData),
+          saveUserProfile(userId, data.name)
+        ]);
+        console.log("Onboarding data saved to database");
+      }
+    } catch (error) {
+      console.error("Failed to save onboarding data to database:", error);
+      // Continue anyway - localStorage backup exists
+    }
+    
     onComplete(finalData);
   }, [data, onComplete]);
 
