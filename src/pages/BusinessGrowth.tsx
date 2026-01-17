@@ -1,552 +1,579 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Header } from "@/components/Header";
 import { GlassCard } from "@/components/GlassCard";
 import { MetricRing } from "@/components/MetricRing";
-import { SitaOrb3D } from "@/components/SitaOrb3D";
+import { UnifiedInbox } from "@/components/UnifiedInbox";
+import { WorkflowPacks } from "@/components/WorkflowPacks";
+import { CommandBar } from "@/components/CommandBar";
+import { ConversationConsole } from "@/components/ConversationConsole";
+import { AvatarBubble } from "@/components/AvatarBubble";
 import bgParticles from "@/assets/bg-particles.jpg";
-import { 
-  ArrowLeft,
+import { serviceScenario } from "@/lib/scenarioData";
+import { businessData } from "@/lib/demoData";
+import {
   TrendingUp,
-  Zap,
-  DollarSign,
-  Settings,
-  Brain,
-  ChevronRight,
-  Check,
-  AlertCircle,
-  Activity,
+  Clock,
   Users,
-  Target,
-  Shield,
   BarChart3,
-  Wallet
+  DollarSign,
+  ArrowUpRight,
+  AlertTriangle,
+  Check,
+  Sparkles,
+  Target,
+  Inbox,
+  Workflow,
 } from "lucide-react";
 
-type Tab = "overview" | "growth" | "revenue" | "operations" | "intelligence" | "wealth";
+const BusinessGrowth = () => {
+  const [activeTab, setActiveTab] = useState<"overview" | "inbox" | "packs" | "growth" | "money">("overview");
+  const [showInbox, setShowInbox] = useState(false);
+  const [showPacks, setShowPacks] = useState(false);
+  const [showConsole, setShowConsole] = useState(false);
 
-// Signal Card Component
-function SignalCard({ 
-  title, 
-  value, 
-  subtitle, 
-  status = "neutral",
-  icon: Icon 
-}: { 
-  title: string; 
-  value: string; 
-  subtitle?: string;
-  status?: "positive" | "negative" | "neutral";
-  icon?: typeof TrendingUp;
-}) {
-  const statusColors = {
-    positive: "text-secondary",
-    negative: "text-destructive",
-    neutral: "text-muted-foreground"
+  const { metrics, experiments, campaigns, deals } = serviceScenario;
+
+  const handleCommand = (text: string) => {
+    const lower = text.toLowerCase();
+    if (lower.includes("inbox") || lower.includes("message")) {
+      setShowInbox(true);
+    } else if (lower.includes("pack") || lower.includes("autopilot") || lower.includes("workflow")) {
+      setShowPacks(true);
+    } else {
+      setShowConsole(true);
+    }
   };
 
-  return (
-    <GlassCard className="p-5 group">
-      <div className="flex items-start justify-between mb-3">
-        <span className="text-xs uppercase tracking-wider text-muted-foreground">{title}</span>
-        {Icon && (
-          <div className="p-1.5 rounded-lg bg-foreground/5 group-hover:bg-primary/10 transition-colors">
-            <Icon className="h-4 w-4 text-primary" />
-          </div>
-        )}
-      </div>
-      <div className={`text-2xl font-semibold ${statusColors[status]}`}>
-        {value}
-      </div>
-      {subtitle && (
-        <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
-      )}
-    </GlassCard>
-  );
-}
-
-// Insight Item Component
-function InsightItem({ 
-  text, 
-  type = "info",
-  action 
-}: { 
-  text: string; 
-  type?: "success" | "info" | "warning";
-  action?: string;
-}) {
-  const icons = {
-    success: <Check className="h-4 w-4 text-secondary" />,
-    info: <Activity className="h-4 w-4 text-primary" />,
-    warning: <AlertCircle className="h-4 w-4 text-primary" />
-  };
-
-  return (
-    <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-foreground/5 transition-colors cursor-pointer group">
-      <div className="mt-0.5">{icons[type]}</div>
-      <div className="flex-1">
-        <p className="text-sm text-foreground/80">{text}</p>
-        {action && (
-          <button className="text-xs text-primary mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            {action} →
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Advisor Card Component
-function AdvisorCard({ 
-  role, 
-  insight,
-  status = "confident"
-}: { 
-  role: string; 
-  insight: string;
-  status?: "confident" | "cautious" | "alert";
-}) {
-  const statusColors = {
-    confident: "border-secondary/30 bg-secondary/5",
-    cautious: "border-primary/30 bg-primary/5",
-    alert: "border-destructive/30 bg-destructive/5"
-  };
-
-  return (
-    <GlassCard className={`p-4 ${statusColors[status]}`}>
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/40 to-secondary/40 flex items-center justify-center">
-          <Brain className="h-4 w-4 text-foreground" />
-        </div>
-        <span className="text-sm font-medium text-foreground">{role}</span>
-      </div>
-      <p className="text-xs text-muted-foreground leading-relaxed">"{insight}"</p>
-    </GlassCard>
-  );
-}
-
-// Tab Navigation
-function TabNav({ activeTab, onTabChange }: { activeTab: Tab; onTabChange: (tab: Tab) => void }) {
-  const tabs: { id: Tab; label: string }[] = [
-    { id: "overview", label: "Overview" },
-    { id: "growth", label: "Growth" },
-    { id: "revenue", label: "Revenue" },
-    { id: "operations", label: "Operations" },
-    { id: "intelligence", label: "Intelligence" },
-    { id: "wealth", label: "Wealth" },
-  ];
-
-  return (
-    <div className="flex gap-1 p-1 rounded-2xl bg-foreground/5 overflow-x-auto">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => onTabChange(tab.id)}
-          className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-300 ${
-            activeTab === tab.id
-              ? "bg-primary/20 text-primary"
-              : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
-          }`}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// Overview Tab Content
-function OverviewTab() {
-  return (
-    <div className="grid grid-cols-12 gap-4 lg:gap-6">
-      {/* Left: What's Happening */}
-      <div className="col-span-12 lg:col-span-4 space-y-4">
-        <h3 className="text-sm font-medium text-muted-foreground mb-2">What's Happening</h3>
-        
-        <GlassCard className="p-4">
-          <InsightItem 
-            text="Recovered $1,240 from dormant leads this week"
-            type="success"
-            action="View details"
-          />
-          <InsightItem 
-            text="2 offers testing · 1 scaling · 1 paused"
-            type="info"
-            action="Manage experiments"
-          />
-          <InsightItem 
-            text="+312 owned subscribers this week"
-            type="success"
-          />
-        </GlassCard>
-      </div>
-
-      {/* Center: Business Pulse */}
-      <div className="col-span-12 lg:col-span-4">
-        <GlassCard className="p-6 flex flex-col items-center">
-          <div className="w-full h-40 mb-6">
-            <SitaOrb3D state="idle" />
-          </div>
-          
-          <h2 className="text-lg font-display font-medium text-foreground mb-6">Business Pulse</h2>
-          
-          <div className="grid grid-cols-2 gap-4 w-full">
-            <div className="text-center p-3 rounded-xl bg-foreground/5">
-              <div className="text-2xl font-semibold text-secondary">+$5,420</div>
-              <div className="text-xs text-muted-foreground">Revenue Velocity</div>
-            </div>
-            <div className="text-center p-3 rounded-xl bg-foreground/5">
-              <div className="text-2xl font-semibold text-primary">87%</div>
-              <div className="text-xs text-muted-foreground">Growth Ready</div>
-            </div>
-            <div className="text-center p-3 rounded-xl bg-foreground/5">
-              <div className="text-2xl font-semibold text-secondary">72%</div>
-              <div className="text-xs text-muted-foreground">Autonomy</div>
-            </div>
-            <div className="text-center p-3 rounded-xl bg-foreground/5">
-              <div className="text-2xl font-semibold text-secondary">Low</div>
-              <div className="text-xs text-muted-foreground">Risk Level</div>
-            </div>
-          </div>
-        </GlassCard>
-      </div>
-
-      {/* Right: Needs You */}
-      <div className="col-span-12 lg:col-span-4 space-y-4">
-        <h3 className="text-sm font-medium text-muted-foreground mb-2">Needs You (If Anything)</h3>
-        
-        <GlassCard className="p-6 flex flex-col items-center justify-center min-h-[200px]">
-          <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center mb-3">
-            <Check className="h-6 w-6 text-secondary" />
-          </div>
-          <p className="text-sm text-muted-foreground text-center">
-            Everything is handled.<br />
-            No decisions required.
-          </p>
-        </GlassCard>
-      </div>
-    </div>
-  );
-}
-
-// Growth Tab Content
-function GrowthTab() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <GlassCard className="p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-xl bg-primary/10">
-            <Target className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h3 className="font-medium text-foreground">Demand Engine</h3>
-            <p className="text-xs text-secondary">Active · No action required</p>
-          </div>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          3 channels active · ROAS stable at 4.2x · Budget optimization running
-        </p>
-      </GlassCard>
-
-      <GlassCard className="p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-xl bg-primary/10">
-            <Zap className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h3 className="font-medium text-foreground">Creative Engine</h3>
-            <p className="text-xs text-secondary">Healthy · Fatigue low</p>
-          </div>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          New creatives deployed 3h ago · Performance tracking · 2 variants testing
-        </p>
-      </GlassCard>
-
-      <GlassCard className="p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-xl bg-primary/10">
-            <BarChart3 className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h3 className="font-medium text-foreground">SEO & Content</h3>
-            <p className="text-xs text-secondary">Growing</p>
-          </div>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          2 pages published · 1 ranking improved · Authority score: 42
-        </p>
-      </GlassCard>
-
-      <GlassCard className="p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-xl bg-primary/10">
-            <Users className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h3 className="font-medium text-foreground">Audience Engine</h3>
-            <p className="text-xs text-secondary">Expanding</p>
-          </div>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Email/SMS ownership increasing · Dependency risk ↓ · List health: 94%
-        </p>
-      </GlassCard>
-    </div>
-  );
-}
-
-// Revenue Tab Content
-function RevenueTab() {
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <SignalCard 
-          title="Earned"
-          value="$12,840"
-          subtitle="This month"
-          status="positive"
-          icon={DollarSign}
-        />
-        <SignalCard 
-          title="Recovered"
-          value="$1,240"
-          subtitle="From dormant leads"
-          status="positive"
-          icon={TrendingUp}
-        />
-        <SignalCard 
-          title="Pending"
-          value="$3,200"
-          subtitle="Awaiting payment"
-          status="neutral"
-          icon={Activity}
-        />
-        <SignalCard 
-          title="At Risk"
-          value="$420"
-          subtitle="1 invoice overdue"
-          status="negative"
-          icon={AlertCircle}
-        />
-      </div>
-
-      <GlassCard className="p-5">
-        <h3 className="text-sm font-medium text-foreground mb-4">Money Flow Status</h3>
-        <div className="flex items-center justify-center py-8">
-          <div className="text-center">
-            <div className="text-4xl font-display font-medium text-secondary mb-2">Revenue is healthy.</div>
-            <p className="text-muted-foreground">All systems operating normally. No intervention required.</p>
-          </div>
-        </div>
-      </GlassCard>
-    </div>
-  );
-}
-
-// Operations Tab Content
-function OperationsTab() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <GlassCard className="p-5 flex flex-col items-center text-center">
-        <MetricRing label="Capacity" value="78%" percentage={78} color="cyan" size={100} />
-        <p className="text-sm text-muted-foreground mt-4">Operating safely · Room to scale</p>
-      </GlassCard>
-
-      <GlassCard className="p-5 flex flex-col items-center text-center">
-        <MetricRing label="Team Load" value="65%" percentage={65} color="cyan" size={100} />
-        <p className="text-sm text-muted-foreground mt-4">No burnout risk detected</p>
-      </GlassCard>
-
-      <GlassCard className="p-5 flex flex-col items-center text-center">
-        <MetricRing label="Delivery" value="100%" percentage={100} color="gold" size={100} />
-        <p className="text-sm text-muted-foreground mt-4">0 SLA breaches this week</p>
-      </GlassCard>
-    </div>
-  );
-}
-
-// Intelligence Tab Content
-function IntelligenceTab() {
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-      <AdvisorCard 
-        role="CEO"
-        insight="Overall trajectory is positive. Focus on scaling what's working before expanding into new areas."
-        status="confident"
-      />
-      <AdvisorCard 
-        role="CFO"
-        insight="Cashflow supports scaling ads by +15% safely. Reserve runway is at 4.2 months."
-        status="confident"
-      />
-      <AdvisorCard 
-        role="CMO"
-        insight="Creative fatigue is low. Consider increasing ad spend on top performers."
-        status="confident"
-      />
-      <AdvisorCard 
-        role="COO"
-        insight="Capacity supports growth until next week. Consider pre-hiring for Q2."
-        status="cautious"
-      />
-      <AdvisorCard 
-        role="CRO"
-        insight="Pipeline is healthy. Focus on closing existing deals before adding more leads."
-        status="confident"
-      />
-      <AdvisorCard 
-        role="R&D"
-        insight="Current product iteration stable. User feedback suggests minor UX improvements."
-        status="confident"
-      />
-    </div>
-  );
-}
-
-// Wealth Tab Content
-function WealthTab() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <GlassCard className="p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-xl bg-primary/10">
-            <Zap className="h-5 w-5 text-primary" />
-          </div>
-          <h3 className="font-medium text-foreground">Active Microbrands</h3>
-        </div>
-        <p className="text-sm text-muted-foreground mb-3">
-          3 running · 1 scaling · 2 archived
-        </p>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-foreground">Brand Alpha</span>
-            <span className="text-secondary">Scaling +24%</span>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-foreground">Brand Beta</span>
-            <span className="text-muted-foreground">Stable</span>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-foreground">Brand Gamma</span>
-            <span className="text-muted-foreground">Testing</span>
-          </div>
-        </div>
-      </GlassCard>
-
-      <GlassCard className="p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-xl bg-primary/10">
-            <Target className="h-5 w-5 text-primary" />
-          </div>
-          <h3 className="font-medium text-foreground">Arbitrage Signals</h3>
-        </div>
-        <p className="text-sm text-muted-foreground mb-3">
-          1 opportunity detected · 63% margin
-        </p>
-        <div className="p-3 rounded-xl bg-secondary/10 border border-secondary/20">
-          <p className="text-sm text-foreground">New arbitrage opportunity in niche market</p>
-          <button className="text-xs text-secondary mt-2 flex items-center gap-1">
-            Review opportunity <ChevronRight className="h-3 w-3" />
-          </button>
-        </div>
-      </GlassCard>
-
-      <GlassCard className="p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-xl bg-primary/10">
-            <Wallet className="h-5 w-5 text-primary" />
-          </div>
-          <h3 className="font-medium text-foreground">Capital Allocation</h3>
-        </div>
-        <div className="flex items-center gap-3">
-          <Check className="h-5 w-5 text-secondary" />
-          <p className="text-sm text-muted-foreground">Reinvestment optimal · No action required</p>
-        </div>
-      </GlassCard>
-
-      <GlassCard className="p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-xl bg-primary/10">
-            <Shield className="h-5 w-5 text-primary" />
-          </div>
-          <h3 className="font-medium text-foreground">Exit Readiness</h3>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          1 asset approaching sell threshold
-        </p>
-        <div className="mt-3 h-2 rounded-full bg-foreground/10 overflow-hidden">
-          <div className="h-full w-3/4 bg-gradient-to-r from-primary to-secondary rounded-full" />
-        </div>
-        <p className="text-xs text-muted-foreground mt-2">75% to optimal exit window</p>
-      </GlassCard>
-    </div>
-  );
-}
-
-export default function BusinessGrowth() {
-  const [activeTab, setActiveTab] = useState<Tab>("overview");
-  const navigate = useNavigate();
-
-  const tabContent = {
-    overview: <OverviewTab />,
-    growth: <GrowthTab />,
-    revenue: <RevenueTab />,
-    operations: <OperationsTab />,
-    intelligence: <IntelligenceTab />,
-    wealth: <WealthTab />,
-  };
+  const tabs = [
+    { id: "overview", label: "Overview", icon: BarChart3 },
+    { id: "inbox", label: "Inbox", icon: Inbox },
+    { id: "packs", label: "Autopilot", icon: Workflow },
+    { id: "growth", label: "Growth", icon: TrendingUp },
+    { id: "money", label: "Money", icon: DollarSign },
+  ] as const;
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Background */}
       <div 
         className="fixed inset-0 bg-background bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${bgParticles})` }}
       />
-      <div className="fixed inset-0 bg-background/70" />
+      <div className="fixed inset-0 bg-gradient-to-br from-secondary/5 via-background/80 to-primary/5" />
+      <div className="fixed top-1/4 left-1/3 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse" />
+      <div className="fixed bottom-1/3 right-1/4 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
 
-      {/* Content */}
-      <div className="relative z-10 min-h-screen px-4 sm:px-6 lg:px-8 py-6">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={() => navigate("/")}
-                className="p-2 rounded-xl border border-foreground/10 hover:border-primary/50 hover:bg-primary/5 transition-all"
+      <div className="relative z-10 min-h-screen px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-32">
+        <div className="max-w-7xl mx-auto">
+          <Header />
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-6 mb-6"
+          >
+            <h1 className="text-2xl sm:text-3xl font-display font-medium text-foreground">
+              Business Pulse
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Live status across revenue, demand, and risk.
+            </p>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="flex gap-2 mb-6 overflow-x-auto pb-2"
+          >
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  if (tab.id === "inbox") setShowInbox(true);
+                  else if (tab.id === "packs") setShowPacks(true);
+                  else setActiveTab(tab.id);
+                }}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? "bg-primary/20 text-primary border border-primary/30"
+                    : "bg-card/50 text-muted-foreground hover:bg-card/80 border border-border/50"
+                }`}
               >
-                <ArrowLeft className="h-5 w-5 text-muted-foreground" />
+                <tab.icon className="h-4 w-4" />
+                {tab.label}
               </button>
-              <div>
-                <h1 className="text-2xl font-display font-medium text-foreground">Business Growth</h1>
-                <p className="text-sm text-muted-foreground">The control room of your living company</p>
-              </div>
+            ))}
+          </motion.div>
+
+          {activeTab === "overview" && (
+            <div className="grid grid-cols-12 gap-4 lg:gap-6">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="col-span-12 lg:col-span-8"
+              >
+                <GlassCard className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-lg font-medium text-foreground">System Health</h2>
+                    <span className="px-3 py-1 rounded-full bg-secondary/20 text-secondary text-xs font-medium">
+                      All Systems Stable
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <MetricRing
+                      label="Revenue Velocity"
+                      value={`$${metrics.revenueVelocity.toLocaleString()}`}
+                      percentage={75}
+                      color="gold"
+                      size={90}
+                    />
+                    <MetricRing
+                      label="Growth Readiness"
+                      value={`${Math.round(metrics.growthReadiness * 100)}%`}
+                      percentage={metrics.growthReadiness * 100}
+                      color="cyan"
+                      size={90}
+                    />
+                    <MetricRing
+                      label="Autonomy"
+                      value={`${Math.round(metrics.autonomy * 100)}%`}
+                      percentage={metrics.autonomy * 100}
+                      color="purple"
+                      size={90}
+                    />
+                    <MetricRing
+                      label="Risk Level"
+                      value={metrics.risk.toUpperCase()}
+                      percentage={metrics.risk === "low" ? 20 : metrics.risk === "medium" ? 50 : 80}
+                      color={metrics.risk === "low" ? "cyan" : "gold"}
+                      size={90}
+                    />
+                  </div>
+                </GlassCard>
+              </motion.div>
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="col-span-12 lg:col-span-4"
+              >
+                <GlassCard className="p-6 h-full">
+                  <h2 className="text-lg font-medium text-foreground mb-4">Needs You</h2>
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <div className="w-16 h-16 rounded-full bg-secondary/10 flex items-center justify-center mb-4">
+                      <Check className="h-8 w-8 text-secondary" />
+                    </div>
+                    <p className="text-muted-foreground text-sm">Nothing needs your attention.</p>
+                    <p className="text-muted-foreground/60 text-xs mt-1">Everything important is handled.</p>
+                  </div>
+                </GlassCard>
+              </motion.div>
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="col-span-12 md:col-span-6 lg:col-span-3"
+              >
+                <GlassCard className="p-5">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Recovered Revenue</p>
+                      <p className="text-2xl font-display font-medium text-foreground mt-1">
+                        ${metrics.recoveredRevenueWeek.toLocaleString()}
+                      </p>
+                      <p className="text-xs text-muted-foreground/60 mt-1">in the last 24 hours</p>
+                    </div>
+                    <div className="p-2 rounded-xl bg-secondary/20">
+                      <DollarSign className="h-5 w-5 text-secondary" />
+                    </div>
+                  </div>
+                </GlassCard>
+              </motion.div>
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="col-span-12 md:col-span-6 lg:col-span-3"
+              >
+                <GlassCard className="p-5">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Active Experiments</p>
+                      <p className="text-2xl font-display font-medium text-foreground mt-1">
+                        {experiments.length}
+                      </p>
+                      <p className="text-xs text-muted-foreground/60 mt-1">
+                        {experiments.filter(e => e.status === "scaling").length} scaling
+                      </p>
+                    </div>
+                    <div className="p-2 rounded-xl bg-primary/20">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                    </div>
+                  </div>
+                </GlassCard>
+              </motion.div>
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="col-span-12 md:col-span-6 lg:col-span-3"
+              >
+                <GlassCard className="p-5">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Time Returned</p>
+                      <p className="text-2xl font-display font-medium text-foreground mt-1">
+                        {metrics.timeSavedHoursWeek}h
+                      </p>
+                      <p className="text-xs text-muted-foreground/60 mt-1">saved this week</p>
+                    </div>
+                    <div className="p-2 rounded-xl bg-accent/20">
+                      <Clock className="h-5 w-5 text-accent" />
+                    </div>
+                  </div>
+                </GlassCard>
+              </motion.div>
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="col-span-12 md:col-span-6 lg:col-span-3"
+              >
+                <GlassCard className="p-5">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Capacity</p>
+                      <p className="text-2xl font-display font-medium text-foreground mt-1">
+                        {Math.round((serviceScenario.businessProfile.capacity?.usedSlots || 0) / (serviceScenario.businessProfile.capacity?.weeklySlots || 1) * 100)}%
+                      </p>
+                      <p className="text-xs text-muted-foreground/60 mt-1">Safe to scale</p>
+                    </div>
+                    <div className="p-2 rounded-xl bg-secondary/20">
+                      <Target className="h-5 w-5 text-secondary" />
+                    </div>
+                  </div>
+                </GlassCard>
+              </motion.div>
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+                className="col-span-12 lg:col-span-6"
+              >
+                <GlassCard className="p-6">
+                  <h2 className="text-lg font-medium text-foreground mb-4">Active Experiments</h2>
+                  <div className="space-y-3">
+                    {experiments.map((exp) => (
+                      <div
+                        key={exp.id}
+                        className="flex items-center justify-between p-3 rounded-xl bg-foreground/5"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-2 h-2 rounded-full ${
+                            exp.status === "scaling" ? "bg-secondary" :
+                            exp.status === "testing" ? "bg-primary" :
+                            "bg-muted-foreground"
+                          }`} />
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{exp.name}</p>
+                            <p className="text-xs text-muted-foreground">{exp.type}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-secondary">{exp.impact}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {Math.round(exp.confidence * 100)}% confidence
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </GlassCard>
+              </motion.div>
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9 }}
+                className="col-span-12 lg:col-span-6"
+              >
+                <GlassCard className="p-6">
+                  <h2 className="text-lg font-medium text-foreground mb-4">Pipeline</h2>
+                  <div className="space-y-3">
+                    {deals.map((deal) => {
+                      const contact = serviceScenario.contacts.find(c => c.id === deal.contactId);
+                      return (
+                        <div
+                          key={deal.id}
+                          className="flex items-center justify-between p-3 rounded-xl bg-foreground/5"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 flex items-center justify-center">
+                              <Users className="h-4 w-4 text-foreground" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-foreground">{contact?.name}</p>
+                              <p className="text-xs text-muted-foreground">{deal.stage}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium text-primary">${deal.value.toLocaleString()}</p>
+                            <p className="text-xs text-muted-foreground">{deal.nextBestAction}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </GlassCard>
+              </motion.div>
             </div>
-            <button className="p-2 rounded-xl border border-foreground/10 hover:border-primary/50 hover:bg-primary/5 transition-all">
-              <Settings className="h-5 w-5 text-muted-foreground" />
-            </button>
-          </div>
+          )}
 
-          {/* Tab Navigation */}
-          <div className="mb-6">
-            <TabNav activeTab={activeTab} onTabChange={setActiveTab} />
-          </div>
+          {activeTab === "growth" && (
+            <div className="grid grid-cols-12 gap-4 lg:gap-6">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="col-span-12"
+              >
+                <h2 className="text-lg font-medium text-foreground mb-4">Growth Engine</h2>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Demand, conversion, and retention — continuously optimized.
+                </p>
+              </motion.div>
 
-          {/* Tab Content */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              {tabContent[activeTab]}
-            </motion.div>
-          </AnimatePresence>
+              {[
+                { title: "Demand Engine", status: "Stable", desc: "Scaling winners within budget", icon: TrendingUp },
+                { title: "Creative Engine", status: "Active", desc: "Fatigue low. New variants deployed.", icon: Sparkles },
+                { title: "CRO Engine", status: "Optimizing", desc: "Drop-off reduced on landing page.", icon: Target },
+                { title: "Audience Assets", status: "Growing", desc: "Owned reach increasing.", icon: Users },
+              ].map((engine, i) => (
+                <motion.div 
+                  key={engine.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * i }}
+                  className="col-span-12 md:col-span-6 lg:col-span-3"
+                >
+                  <GlassCard className="p-5 h-full">
+                    <div className="flex items-start gap-3 mb-4">
+                      <div className="p-2 rounded-xl bg-primary/20">
+                        <engine.icon className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-foreground">{engine.title}</h3>
+                        <span className="text-xs text-secondary">{engine.status}</span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{engine.desc}</p>
+                  </GlassCard>
+                </motion.div>
+              ))}
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="col-span-12"
+              >
+                <GlassCard className="p-6">
+                  <h3 className="font-medium text-foreground mb-4">Active Campaigns</h3>
+                  <div className="space-y-3">
+                    {campaigns.map((campaign) => (
+                      <div
+                        key={campaign.id}
+                        className="flex items-center justify-between p-4 rounded-xl bg-foreground/5"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`w-3 h-3 rounded-full ${
+                            campaign.status === "active" ? "bg-secondary" :
+                            campaign.status === "testing" ? "bg-primary" :
+                            "bg-muted-foreground"
+                          }`} />
+                          <div>
+                            <p className="font-medium text-foreground capitalize">{campaign.channel} • {campaign.objective}</p>
+                            <p className="text-xs text-muted-foreground">
+                              ${campaign.dailyBudget}/day • Fatigue: {campaign.fatigue}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          {campaign.roas && (
+                            <p className="text-lg font-medium text-secondary">{campaign.roas}x ROAS</p>
+                          )}
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            campaign.status === "active" ? "bg-secondary/20 text-secondary" :
+                            campaign.status === "testing" ? "bg-primary/20 text-primary" :
+                            "bg-muted text-muted-foreground"
+                          }`}>
+                            {campaign.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </GlassCard>
+              </motion.div>
+            </div>
+          )}
+
+          {activeTab === "money" && (
+            <div className="grid grid-cols-12 gap-4 lg:gap-6">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="col-span-12"
+              >
+                <h2 className="text-lg font-medium text-foreground mb-4">Money Flow</h2>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Earned, pending, and protected.
+                </p>
+              </motion.div>
+
+              {[
+                { title: "Earned", value: `$${(metrics.revenueVelocity * 4).toLocaleString()}`, change: "+12%", icon: DollarSign, color: "secondary" },
+                { title: "Recovered", value: `$${metrics.recoveredRevenueWeek.toLocaleString()}`, change: "+8%", icon: TrendingUp, color: "secondary" },
+                { title: "Pending", value: `$${deals.reduce((sum, d) => sum + d.value, 0).toLocaleString()}`, change: null, icon: Clock, color: "primary" },
+                { title: "At Risk", value: "$0", change: null, icon: AlertTriangle, color: "muted" },
+              ].map((item, i) => (
+                <motion.div 
+                  key={item.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * i }}
+                  className="col-span-12 sm:col-span-6 lg:col-span-3"
+                >
+                  <GlassCard className="p-5">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className={`p-2 rounded-xl ${
+                        item.color === "secondary" ? "bg-secondary/20" :
+                        item.color === "primary" ? "bg-primary/20" :
+                        "bg-foreground/10"
+                      }`}>
+                        <item.icon className={`h-5 w-5 ${
+                          item.color === "secondary" ? "text-secondary" :
+                          item.color === "primary" ? "text-primary" :
+                          "text-muted-foreground"
+                        }`} />
+                      </div>
+                      {item.change && (
+                        <span className="flex items-center text-xs text-secondary">
+                          <ArrowUpRight className="h-3 w-3" />
+                          {item.change}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">{item.title}</p>
+                    <p className="text-2xl font-display font-medium text-foreground mt-1">
+                      {item.value}
+                    </p>
+                  </GlassCard>
+                </motion.div>
+              ))}
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="col-span-12 lg:col-span-6"
+              >
+                <GlassCard className="p-6">
+                  <h3 className="font-medium text-foreground mb-4">Quotes</h3>
+                  <div className="space-y-3">
+                    {serviceScenario.quotes.map((quote) => {
+                      const deal = deals.find(d => d.id === quote.dealId);
+                      const contact = serviceScenario.contacts.find(c => c.id === deal?.contactId);
+                      return (
+                        <div
+                          key={quote.id}
+                          className="flex items-center justify-between p-3 rounded-xl bg-foreground/5"
+                        >
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{contact?.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Expires {new Date(quote.expiresAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium text-primary">${quote.total}</p>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                              quote.status === "sent" ? "bg-primary/20 text-primary" :
+                              quote.status === "accepted" ? "bg-secondary/20 text-secondary" :
+                              "bg-muted text-muted-foreground"
+                            }`}>
+                              {quote.status}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </GlassCard>
+              </motion.div>
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="col-span-12 lg:col-span-6"
+              >
+                <GlassCard className="p-6">
+                  <h3 className="font-medium text-foreground mb-4">Invoices</h3>
+                  <div className="space-y-3">
+                    {serviceScenario.invoices.map((invoice) => {
+                      const deal = deals.find(d => d.id === invoice.dealId);
+                      const contact = serviceScenario.contacts.find(c => c.id === deal?.contactId);
+                      return (
+                        <div
+                          key={invoice.id}
+                          className="flex items-center justify-between p-3 rounded-xl bg-foreground/5"
+                        >
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{contact?.name}</p>
+                            <p className="text-xs text-muted-foreground capitalize">{invoice.type}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium text-primary">${invoice.total}</p>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                              invoice.status === "paid" ? "bg-secondary/20 text-secondary" :
+                              invoice.status === "sent" ? "bg-primary/20 text-primary" :
+                              invoice.status === "overdue" ? "bg-destructive/20 text-destructive" :
+                              "bg-muted text-muted-foreground"
+                            }`}>
+                              {invoice.status}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </GlassCard>
+              </motion.div>
+            </div>
+          )}
         </div>
       </div>
+
+      <CommandBar onSubmit={handleCommand} />
+
+      <div onClick={() => setShowConsole(true)}>
+        <AvatarBubble />
+      </div>
+
+      <UnifiedInbox isOpen={showInbox} onClose={() => setShowInbox(false)} />
+      <WorkflowPacks isOpen={showPacks} onClose={() => setShowPacks(false)} />
+      <ConversationConsole isOpen={showConsole} onClose={() => setShowConsole(false)} />
     </div>
   );
-}
+};
+
+export default BusinessGrowth;

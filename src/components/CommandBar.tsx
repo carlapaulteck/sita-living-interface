@@ -1,39 +1,46 @@
-import { useState, useEffect } from "react";
-import { GlassCard } from "./GlassCard";
-import { VoiceWaveform } from "./VoiceWaveform";
-import { useVoiceRecognition } from "@/hooks/useVoiceRecognition";
-import { Mic, Send, MicOff } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Mic, Send, Sparkles, Command } from "lucide-react";
+import { useVoiceRecognition } from "@/hooks/useVoiceRecognition";
+import { VoiceWaveform } from "./VoiceWaveform";
 
 interface CommandBarProps {
-  onSubmit?: (text: string) => void;
+  onSubmit: (text: string) => void;
 }
 
 export function CommandBar({ onSubmit }: CommandBarProps) {
-  const [text, setText] = useState("");
+  const [input, setInput] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const { 
-    state: voiceState, 
-    transcript, 
-    isSupported, 
-    toggle: toggleVoice,
-    isListening 
+  const {
+    isListening,
+    interimTranscript,
+    toggleListening,
+    isSupported,
   } = useVoiceRecognition({
-    onFinalTranscript: (finalText) => {
-      setText(finalText);
-      handleSubmit(finalText);
+    onResult: (transcript) => {
+      setInput(transcript);
+      if (transcript.trim()) {
+        setTimeout(() => {
+          onSubmit(transcript);
+          setInput("");
+        }, 500);
+      }
     },
-    onTranscript: (currentTranscript) => {
-      setText(currentTranscript);
+    onInterimResult: (interim) => {
+      if (interim) {
+        setInput(interim);
+      }
     },
   });
 
-  const handleSubmit = (submitText?: string) => {
-    const textToSubmit = submitText || text;
-    if (!textToSubmit.trim()) return;
-    onSubmit?.(textToSubmit.trim());
-    setText("");
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (input.trim()) {
+      onSubmit(input.trim());
+      setInput("");
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -43,86 +50,164 @@ export function CommandBar({ onSubmit }: CommandBarProps) {
     }
   };
 
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, []);
+
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[min(800px,92vw)] z-50 animate-fade-in-up" style={{ animationDelay: "800ms" }}>
-      <GlassCard 
-        className={`px-4 py-3 flex items-center gap-3 transition-all duration-300 ${
-          isFocused || isListening ? "ring-1 ring-secondary/50 shadow-glow-cyan" : ""
-        } ${isListening ? "ring-2 ring-secondary" : ""}`}
-        hover={false}
-      >
-        <motion.button
-          onClick={toggleVoice}
-          disabled={!isSupported}
-          whileTap={{ scale: 0.95 }}
-          className={`p-2 rounded-xl border transition-all duration-200 ${
-            isListening 
-              ? "border-secondary bg-secondary/20 text-secondary" 
-              : "border-foreground/10 hover:border-primary/50 hover:bg-primary/5"
-          } ${!isSupported ? "opacity-50 cursor-not-allowed" : ""}`}
-          aria-label={isListening ? "Stop listening" : "Start voice input"}
-        >
-          <AnimatePresence mode="wait">
-            {isListening ? (
-              <motion.div
-                key="listening"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.8, duration: 0.5 }}
+      className="fixed bottom-0 left-0 right-0 z-40"
+    >
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background via-background/80 to-transparent pointer-events-none" />
+
+      <div className="relative max-w-2xl mx-auto px-4 pb-6">
+        <form onSubmit={handleSubmit}>
+          <motion.div
+            className={`relative flex items-center gap-3 p-2 rounded-2xl transition-all duration-300 ${
+              isFocused || isListening
+                ? "bg-card/90 border border-primary/50 shadow-lg shadow-primary/10"
+                : "bg-card/70 border border-border/50"
+            } backdrop-blur-xl`}
+            animate={{
+              boxShadow: isListening
+                ? "0 0 30px rgba(var(--primary), 0.3)"
+                : isFocused
+                ? "0 10px 40px rgba(0,0,0,0.3)"
+                : "0 4px 20px rgba(0,0,0,0.2)",
+            }}
+          >
+            {isSupported && (
+              <motion.button
+                type="button"
+                onClick={toggleListening}
+                className={`relative p-3 rounded-xl transition-colors ${
+                  isListening
+                    ? "bg-primary/30 text-primary"
+                    : "bg-foreground/5 hover:bg-foreground/10 text-muted-foreground"
+                }`}
+                whileTap={{ scale: 0.95 }}
               >
-                <VoiceWaveform isActive={true} barCount={5} />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="idle"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
-              >
-                {isSupported ? (
-                  <Mic className="h-5 w-5 text-muted-foreground" />
+                {isListening ? (
+                  <motion.div
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                  >
+                    <Mic className="h-5 w-5" />
+                  </motion.div>
                 ) : (
-                  <MicOff className="h-5 w-5 text-muted-foreground" />
+                  <Mic className="h-5 w-5" />
                 )}
-              </motion.div>
+                
+                <AnimatePresence>
+                  {isListening && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: [0.5, 0], scale: [1, 1.8] }}
+                      exit={{ opacity: 0 }}
+                      transition={{ repeat: Infinity, duration: 1.5 }}
+                      className="absolute inset-0 rounded-xl bg-primary/30"
+                    />
+                  )}
+                </AnimatePresence>
+              </motion.button>
             )}
-          </AnimatePresence>
-        </motion.button>
 
-        <div className="flex-1 relative">
-          <input
-            type="text"
-            className="w-full bg-transparent outline-none text-sm placeholder:text-muted-foreground/50"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            onKeyDown={handleKeyDown}
-            placeholder={isListening ? "Listening..." : "Speak or type a command..."}
-          />
-          <AnimatePresence>
-            {isListening && (
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute right-0 top-1/2 -translate-y-1/2 text-xs text-secondary"
-              >
-                Listening...
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </div>
+            <div className="flex-1 relative">
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                onKeyDown={handleKeyDown}
+                placeholder={isListening ? "Listening..." : "Speak or type a command..."}
+                className="w-full bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground/50 py-2 px-1"
+              />
+              
+              <AnimatePresence>
+                {isListening && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  >
+                    <VoiceWaveform isActive={isListening} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          className="p-2 rounded-xl border border-foreground/10 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
-          onClick={() => handleSubmit()}
-          aria-label="Send"
-        >
-          <Send className="h-5 w-5 text-muted-foreground" />
-        </motion.button>
-      </GlassCard>
-    </div>
+            <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg bg-foreground/5 text-muted-foreground/50 text-xs">
+              <Command className="h-3 w-3" />
+              <span>K</span>
+            </div>
+
+            <motion.button
+              type="submit"
+              disabled={!input.trim()}
+              className={`p-3 rounded-xl transition-colors ${
+                input.trim()
+                  ? "bg-primary/20 hover:bg-primary/30 text-primary"
+                  : "bg-foreground/5 text-muted-foreground/50"
+              }`}
+              whileTap={{ scale: 0.95 }}
+            >
+              {input.trim() ? (
+                <Send className="h-5 w-5" />
+              ) : (
+                <Sparkles className="h-5 w-5" />
+              )}
+            </motion.button>
+          </motion.div>
+        </form>
+
+        <AnimatePresence>
+          {isFocused && !input && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className="absolute bottom-full left-4 right-4 mb-2 p-3 rounded-xl bg-card/90 border border-border/50 backdrop-blur-xl"
+            >
+              <p className="text-xs text-muted-foreground mb-2">Quick commands</p>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  "Show business pulse",
+                  "Open inbox",
+                  "Check revenue",
+                  "Start focus mode",
+                ].map((cmd) => (
+                  <button
+                    key={cmd}
+                    onClick={() => {
+                      setInput(cmd);
+                      onSubmit(cmd);
+                      setInput("");
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-foreground/5 hover:bg-foreground/10 text-xs text-muted-foreground transition-colors"
+                  >
+                    {cmd}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
   );
 }
