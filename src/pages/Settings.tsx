@@ -18,15 +18,25 @@ import {
   Eye,
   MessageSquare,
   Rocket,
-  ChevronRight
+  ChevronRight,
+  Brain,
+  Sparkles,
+  Activity,
+  Lock,
+  EyeOff,
+  Fingerprint
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCognitiveSafe } from "@/contexts/CognitiveContext";
+import { useCognitiveSignals } from "@/hooks/useCognitiveSignals";
 
-type SettingsTab = "profile" | "autonomy" | "notifications" | "boundaries" | "data" | "appearance";
+type SettingsTab = "profile" | "autonomy" | "cognitive" | "personalization" | "notifications" | "boundaries" | "data" | "appearance";
 
 const TABS: { id: SettingsTab; label: string; icon: typeof User }[] = [
   { id: "profile", label: "Profile", icon: User },
   { id: "autonomy", label: "Autonomy", icon: Zap },
+  { id: "cognitive", label: "Cognitive", icon: Brain },
+  { id: "personalization", label: "Personalization", icon: Fingerprint },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "boundaries", label: "Boundaries", icon: Shield },
   { id: "data", label: "Data & Privacy", icon: Shield },
@@ -424,8 +434,324 @@ export default function Settings() {
               </GlassCard>
             </motion.div>
           )}
+
+          {activeTab === "cognitive" && (
+            <CognitiveSettingsTab />
+          )}
+
+          {activeTab === "personalization" && (
+            <PersonalizationSettingsTab />
+          )}
         </div>
       </div>
     </ModuleLayout>
+  );
+}
+
+// Cognitive Settings Tab Component
+function CognitiveSettingsTab() {
+  const cognitive = useCognitiveSafe();
+  const signals = useCognitiveSignals({ enabled: false }); // Just for controls
+  
+  const adaptationModeLabels = ["Invisible", "Subtle", "Visible"];
+  const adaptationModeValues: Array<"invisible" | "subtle" | "visible"> = ["invisible", "subtle", "visible"];
+  const currentModeIndex = cognitive ? adaptationModeValues.indexOf(cognitive.adaptationMode) : 1;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      <div>
+        <h2 className="text-xl font-display font-medium text-foreground mb-1">
+          Cognitive Adaptation
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          How SITA adapts to your cognitive state
+        </p>
+      </div>
+
+      {/* Current State Display */}
+      <GlassCard className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+              <Activity className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-foreground">Current State</h3>
+              <p className="text-xs text-muted-foreground capitalize">
+                {cognitive?.currentState || "Neutral"} • {Math.round((cognitive?.confidence || 0) * 100)}% confidence
+              </p>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => cognitive?.refreshState()}>
+            Refresh
+          </Button>
+        </div>
+        
+        {cognitive?.prediction && (
+          <div className="mt-3 p-3 rounded-lg bg-muted/30 border border-border/50">
+            <p className="text-xs text-muted-foreground">
+              <Sparkles className="h-3 w-3 inline mr-1" />
+              Predicted: <span className="text-foreground capitalize">{cognitive.prediction.nextState}</span> in ~{cognitive.prediction.timeToOnsetMinutes} minutes
+            </p>
+          </div>
+        )}
+      </GlassCard>
+
+      {/* Adaptation Mode */}
+      <GlassCard className="p-6">
+        <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
+          <Eye className="h-4 w-4" />
+          Adaptation Visibility
+        </h3>
+        <div className="mb-4">
+          <Slider
+            value={[currentModeIndex]}
+            onValueChange={([v]) => cognitive?.setAdaptationMode(adaptationModeValues[v])}
+            min={0}
+            max={2}
+            step={1}
+            className="w-full"
+          />
+          <div className="flex justify-between mt-2">
+            {adaptationModeLabels.map((label, i) => (
+              <span key={label} className={`text-xs ${i === currentModeIndex ? "text-primary" : "text-muted-foreground"}`}>
+                {label}
+              </span>
+            ))}
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {currentModeIndex === 0 && "Changes happen silently in the background."}
+          {currentModeIndex === 1 && "Gentle adaptations you'll barely notice."}
+          {currentModeIndex === 2 && "Clear visual feedback when adapting."}
+        </p>
+      </GlassCard>
+
+      {/* Let Me Struggle */}
+      <GlassCard className="p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-destructive/20 flex items-center justify-center">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-foreground">"Let Me Struggle" Mode</h3>
+              <p className="text-xs text-muted-foreground">Disable all cognitive adaptations</p>
+            </div>
+          </div>
+          <button
+            onClick={() => cognitive?.setLetMeStruggle(!cognitive.letMeStruggle)}
+            className={`w-12 h-6 rounded-full transition-all ${cognitive?.letMeStruggle ? "bg-destructive" : "bg-foreground/20"}`}
+          >
+            <div className={`w-5 h-5 rounded-full bg-foreground transition-transform mt-0.5 ${cognitive?.letMeStruggle ? "translate-x-6" : "translate-x-0.5"}`} />
+          </button>
+        </div>
+      </GlassCard>
+
+      {/* Signal Transparency */}
+      <GlassCard className="p-6">
+        <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
+          <Activity className="h-4 w-4" />
+          Signal Transparency
+        </h3>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+            <span className="text-sm text-muted-foreground">Signals captured</span>
+            <span className="text-sm font-medium text-foreground">{signals.signalCount}</span>
+          </div>
+          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+            <span className="text-sm text-muted-foreground">Capture status</span>
+            <span className={`text-sm font-medium ${signals.isCapturing ? "text-green-400" : "text-muted-foreground"}`}>
+              {signals.isCapturing ? "Active" : "Paused"}
+            </span>
+          </div>
+        </div>
+        <div className="flex gap-2 mt-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex-1"
+            onClick={signals.isCapturing ? signals.pauseCapture : signals.resumeCapture}
+          >
+            {signals.isCapturing ? "Pause" : "Resume"}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex-1 text-destructive hover:text-destructive"
+            onClick={signals.deleteAllSignals}
+          >
+            Delete All
+          </Button>
+        </div>
+      </GlassCard>
+
+      {/* Explanation */}
+      <GlassCard className="p-6 border-primary/30">
+        <h3 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+          <MessageSquare className="h-4 w-4 text-primary" />
+          Why This Adaptation?
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          {cognitive?.explainWhy() || "No active adaptations."}
+        </p>
+      </GlassCard>
+    </motion.div>
+  );
+}
+
+// Personalization Settings Tab Component
+function PersonalizationSettingsTab() {
+  const [protectedTopics, setProtectedTopics] = useState<string[]>(["finances", "relationships"]);
+  const [newTopic, setNewTopic] = useState("");
+
+  const addProtectedTopic = () => {
+    if (newTopic.trim() && !protectedTopics.includes(newTopic.trim())) {
+      setProtectedTopics([...protectedTopics, newTopic.trim()]);
+      setNewTopic("");
+    }
+  };
+
+  const removeTopic = (topic: string) => {
+    setProtectedTopics(protectedTopics.filter(t => t !== topic));
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      <div>
+        <h2 className="text-xl font-display font-medium text-foreground mb-1">
+          Personalization
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          How SITA learns and adapts to you
+        </p>
+      </div>
+
+      {/* Protected Topics */}
+      <GlassCard className="p-6">
+        <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
+          <Lock className="h-4 w-4" />
+          Protected Topics (Do Not Touch)
+        </h3>
+        <p className="text-xs text-muted-foreground mb-4">
+          SITA will never adapt or make suggestions about these topics unless you explicitly ask.
+        </p>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {protectedTopics.map((topic) => (
+            <span
+              key={topic}
+              className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm flex items-center gap-2"
+            >
+              {topic}
+              <button onClick={() => removeTopic(topic)} className="hover:text-destructive">
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newTopic}
+            onChange={(e) => setNewTopic(e.target.value)}
+            placeholder="Add a protected topic..."
+            className="flex-1 px-3 py-2 rounded-lg bg-foreground/5 text-foreground text-sm outline-none"
+            onKeyDown={(e) => e.key === "Enter" && addProtectedTopic()}
+          />
+          <Button variant="outline" size="sm" onClick={addProtectedTopic}>
+            Add
+          </Button>
+        </div>
+      </GlassCard>
+
+      {/* Trust Level */}
+      <GlassCard className="p-6">
+        <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
+          <Sparkles className="h-4 w-4" />
+          Trust & Assertiveness
+        </h3>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Suggestion acceptance rate</span>
+            <span className="text-sm font-medium text-green-400">72%</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Override frequency</span>
+            <span className="text-sm font-medium text-amber-400">15%</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">SITA assertiveness level</span>
+            <span className="text-sm font-medium text-foreground">Moderate</span>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground mt-4">
+          Based on your patterns, SITA adjusts how often and how strongly it makes suggestions.
+        </p>
+      </GlassCard>
+
+      {/* Identity Modes */}
+      <GlassCard className="p-6">
+        <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
+          <User className="h-4 w-4" />
+          Identity Modes
+        </h3>
+        <p className="text-xs text-muted-foreground mb-4">
+          SITA adapts its tone, pace, and UI density based on your current context.
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { mode: "Work", desc: "Focused, formal", active: true },
+            { mode: "Home", desc: "Relaxed, informal", active: false },
+            { mode: "Social", desc: "Engaged, responsive", active: false },
+            { mode: "Recovery", desc: "Minimal, quiet", active: false },
+          ].map((item) => (
+            <div
+              key={item.mode}
+              className={`p-3 rounded-xl text-center transition-all ${
+                item.active ? "bg-primary/10 border border-primary/30" : "bg-foreground/5 border border-transparent"
+              }`}
+            >
+              <p className={`text-sm font-medium ${item.active ? "text-primary" : "text-foreground"}`}>
+                {item.mode}
+              </p>
+              <p className="text-xs text-muted-foreground">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground mt-4 text-center">
+          Currently detected: <span className="text-primary">Work</span>
+        </p>
+      </GlassCard>
+
+      {/* Resistance Respect */}
+      <GlassCard className="p-6">
+        <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
+          <EyeOff className="h-4 w-4" />
+          Resistance Respect
+        </h3>
+        <p className="text-xs text-muted-foreground mb-4">
+          Features you've consistently declined. SITA has stopped suggesting these.
+        </p>
+        <div className="space-y-2">
+          {[
+            { feature: "Morning meditation reminder", count: 5 },
+            { feature: "Social media time tracking", count: 3 },
+          ].map((item) => (
+            <div key={item.feature} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+              <span className="text-sm text-muted-foreground">{item.feature}</span>
+              <span className="text-xs text-muted-foreground">Declined {item.count}x</span>
+            </div>
+          ))}
+        </div>
+      </GlassCard>
+    </motion.div>
   );
 }

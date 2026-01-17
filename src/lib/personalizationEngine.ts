@@ -119,24 +119,27 @@ export async function loadPersonalizationProfile(userId: string): Promise<Person
 
 // Save personalization profile
 export async function savePersonalizationProfile(profile: PersonalizationProfile): Promise<boolean> {
+  // Convert typed objects to JSON-compatible format
+  const jsonData = {
+    user_id: profile.userId,
+    causality_graph: JSON.parse(JSON.stringify(profile.causalityGraph)),
+    recovery_signature: JSON.parse(JSON.stringify(profile.recoverySignature)),
+    motivation_fingerprint: JSON.parse(JSON.stringify(profile.motivationFingerprint)),
+    time_perception: JSON.parse(JSON.stringify(profile.timePerception)),
+    emotional_grammar: JSON.parse(JSON.stringify(profile.emotionalGrammar)),
+    threshold_memory: JSON.parse(JSON.stringify(profile.thresholdMemory)),
+    failure_taxonomy: JSON.parse(JSON.stringify(profile.failureTaxonomy)),
+    identity_modes: JSON.parse(JSON.stringify(profile.identityModes)),
+    meaning_anchors: JSON.parse(JSON.stringify(profile.meaningAnchors)),
+    do_not_touch_zones: profile.doNotTouchZones,
+    trust_velocity: JSON.parse(JSON.stringify(profile.trustVelocity)),
+    resistance_log: JSON.parse(JSON.stringify(profile.resistanceLog)),
+    silence_model: JSON.parse(JSON.stringify(profile.silenceModel)),
+  };
+
   const { error } = await supabase
     .from("personalization_profiles")
-    .upsert([{
-      user_id: profile.userId,
-      causality_graph: profile.causalityGraph,
-      recovery_signature: profile.recoverySignature,
-      motivation_fingerprint: profile.motivationFingerprint,
-      time_perception: profile.timePerception,
-      emotional_grammar: profile.emotionalGrammar,
-      threshold_memory: profile.thresholdMemory,
-      failure_taxonomy: profile.failureTaxonomy,
-      identity_modes: profile.identityModes,
-      meaning_anchors: profile.meaningAnchors,
-      do_not_touch_zones: profile.doNotTouchZones,
-      trust_velocity: profile.trustVelocity,
-      resistance_log: profile.resistanceLog,
-      silence_model: profile.silenceModel,
-    }], { onConflict: "user_id" });
+    .upsert([jsonData], { onConflict: "user_id" });
 
   return !error;
 }
