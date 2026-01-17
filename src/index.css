@@ -6,89 +6,96 @@
 
 @layer base {
   :root {
-    /* SITA Luxury Design System */
-    --background: 0 0% 6%;
-    --foreground: 240 5% 96%;
+    /* Alpha Vision Method Design System - Purple to Gold Gradient Theme */
+    --background: 240 10% 4%;
+    --foreground: 45 30% 96%;
 
-    --card: 0 0% 8%;
-    --card-foreground: 240 5% 96%;
+    --card: 240 10% 6%;
+    --card-foreground: 45 30% 96%;
 
-    --popover: 0 0% 8%;
-    --popover-foreground: 240 5% 96%;
+    --popover: 240 10% 6%;
+    --popover-foreground: 45 30% 96%;
 
-    --primary: 40 65% 69%;
-    --primary-foreground: 0 0% 6%;
+    /* Primary: Gold (from logo) */
+    --primary: 40 85% 55%;
+    --primary-foreground: 240 10% 4%;
 
-    --secondary: 186 70% 60%;
-    --secondary-foreground: 0 0% 6%;
+    /* Secondary: Purple (from logo) */
+    --secondary: 265 60% 60%;
+    --secondary-foreground: 45 30% 96%;
 
-    --muted: 0 0% 12%;
-    --muted-foreground: 240 5% 65%;
+    --muted: 240 10% 12%;
+    --muted-foreground: 240 10% 60%;
 
-    --accent: 186 70% 60%;
-    --accent-foreground: 0 0% 6%;
+    /* Accent: Cyan glow for active states */
+    --accent: 186 70% 55%;
+    --accent-foreground: 240 10% 4%;
 
     --destructive: 0 62% 50%;
-    --destructive-foreground: 240 5% 96%;
+    --destructive-foreground: 45 30% 96%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 15%;
-    --ring: 40 65% 69%;
+    --border: 265 20% 20%;
+    --input: 240 10% 12%;
+    --ring: 40 85% 55%;
 
     --radius: 1rem;
 
-    /* Custom SITA tokens */
-    --onyx: 0 0% 6%;
-    --onyx-deep: 0 0% 4%;
-    --gold: 40 65% 69%;
-    --gold-bright: 40 80% 75%;
-    --platinum: 240 5% 96%;
-    --cyan: 186 70% 60%;
+    /* Custom Alpha Vision tokens */
+    --onyx: 240 10% 4%;
+    --onyx-deep: 240 10% 2%;
+    --gold: 40 85% 55%;
+    --gold-bright: 45 90% 65%;
+    --purple: 265 60% 60%;
+    --purple-deep: 270 50% 45%;
+    --platinum: 45 30% 96%;
+    --cyan: 186 70% 55%;
     --cyan-glow: 186 100% 70%;
 
     /* Glass morphism */
-    --glass-bg: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --glass-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
 
-    /* Gradients */
-    --gradient-gold: linear-gradient(135deg, hsl(40 65% 69%) 0%, hsl(35 75% 55%) 100%);
-    --gradient-cyan: linear-gradient(135deg, hsl(186 70% 60%) 0%, hsl(190 80% 50%) 100%);
-    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%);
+    /* Gradients - Purple to Gold (matching logo) */
+    --gradient-brand: linear-gradient(180deg, hsl(270 50% 55%) 0%, hsl(45 85% 55%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(40 85% 55%) 0%, hsl(35 90% 45%) 100%);
+    --gradient-purple: linear-gradient(135deg, hsl(265 60% 60%) 0%, hsl(280 50% 45%) 100%);
+    --gradient-cyan: linear-gradient(135deg, hsl(186 70% 55%) 0%, hsl(190 80% 45%) 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 100%);
 
     /* Motion */
     --ease-luxury: cubic-bezier(0.16, 1, 0.3, 1);
 
-    --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 240 5% 96%;
-    --sidebar-primary: 40 65% 69%;
-    --sidebar-primary-foreground: 0 0% 6%;
-    --sidebar-accent: 0 0% 12%;
-    --sidebar-accent-foreground: 240 5% 96%;
-    --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 186 70% 60%;
+    --sidebar-background: 240 10% 6%;
+    --sidebar-foreground: 45 30% 96%;
+    --sidebar-primary: 40 85% 55%;
+    --sidebar-primary-foreground: 240 10% 4%;
+    --sidebar-accent: 265 20% 15%;
+    --sidebar-accent-foreground: 45 30% 96%;
+    --sidebar-border: 265 20% 15%;
+    --sidebar-ring: 186 70% 55%;
   }
 
   .dark {
-    --background: 0 0% 6%;
-    --foreground: 240 5% 96%;
-    --card: 0 0% 8%;
-    --card-foreground: 240 5% 96%;
-    --popover: 0 0% 8%;
-    --popover-foreground: 240 5% 96%;
-    --primary: 40 65% 69%;
-    --primary-foreground: 0 0% 6%;
-    --secondary: 186 70% 60%;
-    --secondary-foreground: 0 0% 6%;
-    --muted: 0 0% 12%;
-    --muted-foreground: 240 5% 65%;
-    --accent: 186 70% 60%;
-    --accent-foreground: 0 0% 6%;
+    --background: 240 10% 4%;
+    --foreground: 45 30% 96%;
+    --card: 240 10% 6%;
+    --card-foreground: 45 30% 96%;
+    --popover: 240 10% 6%;
+    --popover-foreground: 45 30% 96%;
+    --primary: 40 85% 55%;
+    --primary-foreground: 240 10% 4%;
+    --secondary: 265 60% 60%;
+    --secondary-foreground: 45 30% 96%;
+    --muted: 240 10% 12%;
+    --muted-foreground: 240 10% 60%;
+    --accent: 186 70% 55%;
+    --accent-foreground: 240 10% 4%;
     --destructive: 0 62% 50%;
-    --destructive-foreground: 240 5% 96%;
-    --border: 0 0% 20%;
-    --input: 0 0% 15%;
-    --ring: 40 65% 69%;
+    --destructive-foreground: 45 30% 96%;
+    --border: 265 20% 20%;
+    --input: 240 10% 12%;
+    --ring: 40 85% 55%;
   }
 }
 
@@ -142,12 +149,22 @@
 
   /* Gold glow effect */
   .glow-gold {
-    box-shadow: 0 0 30px rgba(232, 194, 123, 0.3), 0 0 60px rgba(232, 194, 123, 0.1);
+    box-shadow: 0 0 30px rgba(218, 165, 32, 0.35), 0 0 60px rgba(218, 165, 32, 0.15);
   }
 
   /* Cyan glow effect */
   .glow-cyan {
     box-shadow: 0 0 30px rgba(76, 224, 224, 0.4), 0 0 60px rgba(76, 224, 224, 0.15);
+  }
+
+  /* Purple glow effect */
+  .glow-purple {
+    box-shadow: 0 0 30px rgba(147, 112, 219, 0.4), 0 0 60px rgba(147, 112, 219, 0.15);
+  }
+
+  /* Brand gradient glow */
+  .glow-brand {
+    box-shadow: 0 0 40px rgba(147, 112, 219, 0.3), 0 0 80px rgba(218, 165, 32, 0.2);
   }
 
   /* Animated halo */

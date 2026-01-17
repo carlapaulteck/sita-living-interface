@@ -4,7 +4,7 @@ interface MetricRingProps {
   label: string;
   value: string | number;
   percentage: number;
-  color?: "cyan" | "gold";
+  color?: "cyan" | "gold" | "purple";
   size?: number;
 }
 
@@ -20,13 +20,21 @@ export function MetricRing({
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
-  const colorClasses = color === "gold" 
-    ? "stroke-primary" 
-    : "stroke-secondary";
+  const getColorClasses = () => {
+    switch (color) {
+      case "gold": return "stroke-primary";
+      case "purple": return "stroke-secondary";
+      default: return "stroke-accent";
+    }
+  };
 
-  const glowFilter = color === "gold"
-    ? "drop-shadow(0 0 10px hsl(40 65% 69% / 0.6))"
-    : "drop-shadow(0 0 10px hsl(186 70% 60% / 0.6))";
+  const getGlowFilter = () => {
+    switch (color) {
+      case "gold": return "drop-shadow(0 0 12px hsl(40 85% 55% / 0.6))";
+      case "purple": return "drop-shadow(0 0 12px hsl(265 60% 60% / 0.6))";
+      default: return "drop-shadow(0 0 12px hsl(186 70% 55% / 0.6))";
+    }
+  };
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -53,17 +61,17 @@ export function MetricRing({
             fill="none"
             strokeWidth={strokeWidth}
             strokeLinecap="round"
-            className={cn(colorClasses, "transition-all duration-1000 ease-luxury")}
+            className={cn(getColorClasses(), "transition-all duration-1000 ease-luxury")}
             style={{
               strokeDasharray: circumference,
               strokeDashoffset,
-              filter: glowFilter,
+              filter: getGlowFilter(),
             }}
           />
         </svg>
         {/* Center content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-semibold text-foreground">{value}</span>
+          <span className="text-xl sm:text-2xl font-semibold text-foreground">{value}</span>
         </div>
       </div>
       <span className="text-xs uppercase tracking-widest text-muted-foreground">

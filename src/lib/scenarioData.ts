@@ -329,7 +329,7 @@ export const hybridScenario: Scenario = {
     brand: { tone: "high-energy-premium", style: "premium-dark", accent: "gold" },
     avgTicket: 129,
     salesCycleDays: 3,
-    capacity: { weeklyClasses: 42, filled: 34 }
+    capacity: { weeklySlots: 42, usedSlots: 34 }
   },
   integrations: {
     instagram: "connected",

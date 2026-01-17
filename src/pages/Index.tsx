@@ -8,7 +8,7 @@ import { DeviceIntegration } from "@/components/DeviceIntegration";
 import { InsightsFeed } from "@/components/InsightsFeed";
 import { CommandBar } from "@/components/CommandBar";
 import { AvatarBubble } from "@/components/AvatarBubble";
-import { SitaOrb3D } from "@/components/SitaOrb3D";
+import { AvatarHero } from "@/components/AvatarHero";
 import { OnboardingFlow } from "@/components/OnboardingFlow";
 import { ConversationConsole } from "@/components/ConversationConsole";
 import bgParticles from "@/assets/bg-particles.jpg";
@@ -74,30 +74,36 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Background */}
+      {/* Background with particle effect */}
       <div 
         className="fixed inset-0 bg-background bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${bgParticles})` }}
       />
-      <div className="fixed inset-0 bg-background/60" />
+      {/* Gradient overlay matching brand colors */}
+      <div className="fixed inset-0 bg-gradient-to-br from-secondary/5 via-background/80 to-primary/5" />
+      
+      {/* Animated glow orbs */}
+      <div className="fixed top-1/4 left-1/3 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse" />
+      <div className="fixed bottom-1/3 right-1/4 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
       
       {/* Content */}
-      <div className="relative z-10 min-h-screen px-4 sm:px-6 lg:px-8 py-6 pb-32">
+      <div className="relative z-10 min-h-screen px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-32">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <Header />
 
           {/* Greeting */}
-          <div className="text-center mt-8 mb-6 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
-            <h1 className="text-3xl font-display font-medium text-foreground">
+          <div className="text-center mt-6 sm:mt-8 mb-4 sm:mb-6 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
+            <h1 className="text-2xl sm:text-3xl font-display font-medium text-foreground">
               Good morning, {userName}.
             </h1>
+            <p className="text-sm text-muted-foreground mt-1">Systems stable. No action required.</p>
           </div>
 
           {/* Main Grid */}
-          <div className="grid grid-cols-12 gap-4 lg:gap-6">
+          <div className="grid grid-cols-12 gap-3 lg:gap-6">
             {/* Left Column - Quick Stats */}
-            <div className="col-span-12 lg:col-span-3 space-y-4">
+            <div className="col-span-12 lg:col-span-3 space-y-3 order-2 lg:order-1">
               <QuickStatCard 
                 title="Wealth Portfolio"
                 value="+8.2%"
@@ -129,51 +135,55 @@ const Index = () => {
             </div>
 
             {/* Center Column - Avatar & Metrics */}
-            <div className="col-span-12 lg:col-span-6 space-y-6">
-              {/* 3D Orb Area */}
+            <div className="col-span-12 lg:col-span-6 space-y-4 sm:space-y-6 order-1 lg:order-2">
+              {/* Avatar Area with glowing halo */}
               <GlassCard 
-                className="p-8 flex flex-col items-center justify-center min-h-[380px] animate-fade-in-up cursor-pointer"
+                className="p-6 sm:p-8 flex flex-col items-center justify-center min-h-[340px] sm:min-h-[380px] animate-fade-in-up cursor-pointer relative overflow-visible"
                 hover={false}
                 style={{ animationDelay: "200ms" }}
                 onClick={() => setShowConsole(true)}
               >
-                <div className="w-full h-48 mb-4">
-                  <SitaOrb3D state="idle" />
+                {/* Glow effect behind avatar */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-b from-secondary/30 via-accent/20 to-primary/30 rounded-full blur-3xl" />
+                
+                <div className="relative z-10">
+                  <AvatarHero />
                 </div>
                 
                 {/* Metric Rings */}
-                <div className="flex items-center justify-center gap-6 sm:gap-10 mt-4">
+                <div className="flex items-center justify-center gap-4 sm:gap-8 mt-6 relative z-10">
                   <MetricRing 
                     label="Readiness"
                     value="82%"
                     percentage={82}
                     color="cyan"
-                    size={90}
+                    size={80}
                   />
                   <MetricRing 
                     label="Earnings"
                     value="$5,420"
                     percentage={75}
                     color="gold"
-                    size={110}
+                    size={100}
                   />
                   <MetricRing 
                     label="Focus Index"
                     value="74%"
                     percentage={74}
                     color="cyan"
-                    size={90}
+                    size={80}
                   />
                 </div>
               </GlassCard>
 
               {/* Module Tiles */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                 <div onClick={() => handleModuleClick("Wealth")}>
                   <ModuleTile 
                     title="Wealth"
                     icon={Coins}
                     delay={400}
+                    variant="gold"
                   />
                 </div>
                 <div onClick={() => handleModuleClick("Life & Health")}>
@@ -181,6 +191,7 @@ const Index = () => {
                     title="Life & Health"
                     icon={Heart}
                     delay={500}
+                    variant="gold"
                   />
                 </div>
                 <div onClick={() => handleModuleClick("Mind & Growth")}>
@@ -188,6 +199,7 @@ const Index = () => {
                     title="Mind & Growth"
                     icon={Lightbulb}
                     delay={600}
+                    variant="purple"
                   />
                 </div>
                 <div onClick={() => handleModuleClick("Sovereignty")}>
@@ -195,13 +207,14 @@ const Index = () => {
                     title="Sovereignty"
                     icon={Shield}
                     delay={700}
+                    variant="gold"
                   />
                 </div>
               </div>
             </div>
 
             {/* Right Column - Integrations & Insights */}
-            <div className="col-span-12 lg:col-span-3 space-y-4">
+            <div className="col-span-12 lg:col-span-3 space-y-3 order-3">
               <DeviceIntegration />
               <InsightsFeed />
             </div>

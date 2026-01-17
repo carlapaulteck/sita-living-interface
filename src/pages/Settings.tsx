@@ -40,11 +40,19 @@ export default function Settings() {
   
   const autonomyLabels = ["Observe", "Suggest", "Act", "Autopilot"];
 
+  const tabs = TABS.map(t => ({ id: t.id, label: t.label }));
+
   return (
-    <ModuleLayout title="Settings" subtitle="Boundaries" backTo="/">
-      <div className="grid grid-cols-4 gap-6">
-        {/* Sidebar */}
-        <div className="col-span-1">
+    <ModuleLayout 
+      title="Settings" 
+      subtitle="How you want the system to operate"
+      tabs={tabs}
+      activeTab={activeTab}
+      onTabChange={(id) => setActiveTab(id as SettingsTab)}
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Sidebar - Hidden on mobile, shown in tabs */}
+        <div className="hidden lg:block lg:col-span-1">
           <GlassCard className="p-2">
             {TABS.map((tab) => {
               const Icon = tab.icon;
@@ -68,7 +76,7 @@ export default function Settings() {
         </div>
 
         {/* Content */}
-        <div className="col-span-3 space-y-6">
+        <div className="col-span-1 lg:col-span-3 space-y-6">
           {activeTab === "autonomy" && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
