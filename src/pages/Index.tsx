@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { GlassCard } from "@/components/GlassCard";
 import { QuickStatCard } from "@/components/QuickStatCard";
@@ -7,8 +8,11 @@ import { DeviceIntegration } from "@/components/DeviceIntegration";
 import { InsightsFeed } from "@/components/InsightsFeed";
 import { CommandBar } from "@/components/CommandBar";
 import { AvatarBubble } from "@/components/AvatarBubble";
-import { AvatarHero } from "@/components/AvatarHero";
+import { SitaOrb3D } from "@/components/SitaOrb3D";
+import { OnboardingFlow } from "@/components/OnboardingFlow";
+import { ConversationConsole } from "@/components/ConversationConsole";
 import bgParticles from "@/assets/bg-particles.jpg";
+import { useNavigate } from "react-router-dom";
 import { 
   TrendingUp, 
   Moon, 
@@ -21,9 +25,40 @@ import {
 } from "lucide-react";
 
 const Index = () => {
-  const handleCommand = (text: string) => {
-    console.log("Command:", text);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showConsole, setShowConsole] = useState(false);
+  const [userName, setUserName] = useState("Alex");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const onboarded = localStorage.getItem("sita_onboarded");
+    const savedName = localStorage.getItem("sita_user_name");
+    if (!onboarded) {
+      setShowOnboarding(true);
+    }
+    if (savedName) {
+      setUserName(savedName);
+    }
+  }, []);
+
+  const handleOnboardingComplete = (data: any) => {
+    setUserName(data.name);
+    setShowOnboarding(false);
   };
+
+  const handleCommand = (text: string) => {
+    setShowConsole(true);
+  };
+
+  const handleModuleClick = (module: string) => {
+    if (module === "Wealth" || module === "Business Growth") {
+      navigate("/business-growth");
+    }
+  };
+
+  if (showOnboarding) {
+    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
+  }
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -43,7 +78,7 @@ const Index = () => {
           {/* Greeting */}
           <div className="text-center mt-8 mb-6 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
             <h1 className="text-3xl font-display font-medium text-foreground">
-              Good morning, Alex.
+              Good morning, {userName}.
             </h1>
           </div>
 
@@ -83,16 +118,19 @@ const Index = () => {
 
             {/* Center Column - Avatar & Metrics */}
             <div className="col-span-12 lg:col-span-6 space-y-6">
-              {/* Avatar Area */}
+              {/* 3D Orb Area */}
               <GlassCard 
-                className="p-8 flex flex-col items-center justify-center min-h-[380px] animate-fade-in-up"
+                className="p-8 flex flex-col items-center justify-center min-h-[380px] animate-fade-in-up cursor-pointer"
                 hover={false}
                 style={{ animationDelay: "200ms" }}
+                onClick={() => setShowConsole(true)}
               >
-                <AvatarHero />
+                <div className="w-full h-48 mb-4">
+                  <SitaOrb3D state="idle" />
+                </div>
                 
                 {/* Metric Rings */}
-                <div className="flex items-center justify-center gap-6 sm:gap-10 mt-8">
+                <div className="flex items-center justify-center gap-6 sm:gap-10 mt-4">
                   <MetricRing 
                     label="Readiness"
                     value="82%"
@@ -119,11 +157,13 @@ const Index = () => {
 
               {/* Module Tiles */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <ModuleTile 
-                  title="Wealth"
-                  icon={Coins}
-                  delay={400}
-                />
+                <div onClick={() => handleModuleClick("Wealth")}>
+                  <ModuleTile 
+                    title="Wealth"
+                    icon={Coins}
+                    delay={400}
+                  />
+                </div>
                 <ModuleTile 
                   title="Life & Health"
                   icon={Heart}
@@ -155,7 +195,15 @@ const Index = () => {
       <CommandBar onSubmit={handleCommand} />
 
       {/* AI Assistant Bubble */}
-      <AvatarBubble />
+      <div onClick={() => setShowConsole(true)}>
+        <AvatarBubble />
+      </div>
+
+      {/* Conversation Console */}
+      <ConversationConsole 
+        isOpen={showConsole} 
+        onClose={() => setShowConsole(false)} 
+      />
     </div>
   );
 };
