@@ -1,4 +1,5 @@
 // Demo data for all modules - simulated live data
+// Following the "calm control room" design principle - signals over dashboards
 
 export const businessData = {
   overview: {
@@ -7,10 +8,21 @@ export const businessData = {
     systemAutonomy: { value: "73%", goal: "90%" },
     riskLevel: { value: "Low", status: "green" },
   },
+  pulse: {
+    revenueVelocity: 84,
+    growthReadiness: 87,
+    autonomy: 73,
+    risk: 12,
+  },
+  signals: [
+    { type: "success", message: "$1,240 recovered in the last 24 hours.", time: "2h ago" },
+    { type: "info", message: "2 experiments running · 1 scaling · 1 archived.", time: "4h ago" },
+    { type: "success", message: "11.4 hours saved this week.", time: "1d ago" },
+  ],
   activeExperiments: [
-    { name: "Homepage CTA Test", status: "running", lift: "+8%" },
-    { name: "Email Subject Lines", status: "winner", lift: "+23%" },
-    { name: "Pricing Page Layout", status: "paused", lift: "-2%" },
+    { name: "Homepage CTA Test", status: "running", lift: "+8%", confidence: 0.72 },
+    { name: "Email Subject Lines", status: "winner", lift: "+23%", confidence: 0.94 },
+    { name: "Pricing Page Layout", status: "paused", lift: "-2%", confidence: 0.45 },
   ],
   recoveredRevenue: {
     value: "$1,240",
@@ -22,6 +34,38 @@ export const businessData = {
     trend: "+18%",
     channels: { email: 180, sms: 82, whatsapp: 50 },
   },
+  engines: {
+    demand: { status: "healthy", message: "Stable. Scaling winners within budget." },
+    sales: { status: "healthy", message: "Following up automatically. 1 deal at risk." },
+    operations: { status: "healthy", message: "Capacity at 78%. Safe to scale." },
+  },
+  needsYou: [] as { id: string; type: string; message: string; action: string; priority: "high" | "medium" | "low" }[],
+};
+
+export const wealthData = {
+  overview: {
+    sleepEarnings: 142.50,
+    activeAssets: 3,
+    arbitrageSignals: 2,
+    capitalAllocated: "$24.8K",
+    exitReadiness: "Not yet",
+  },
+  microbrands: [
+    { name: "Alpha Templates", status: "scaling", revenue: "$3,200/mo", growth: "+24%" },
+    { name: "Beta Presets", status: "active", revenue: "$1,100/mo", growth: "+8%" },
+    { name: "Gamma Guides", status: "archived", revenue: "$0/mo", growth: "0%" },
+  ],
+  arbitrage: [
+    { signal: "Domain resale opportunity", confidence: 0.78, potentialValue: "$2,400" },
+    { signal: "Affiliate rate increase", confidence: 0.65, potentialValue: "$180/mo" },
+  ],
+  wakeUpReceipt: {
+    earnings: 142.50,
+    leadsRecovered: 3,
+    invoicesCollected: 1,
+    risksAvoided: 1,
+    timeSaved: "2.4 hrs",
+  },
 };
 
 export const lifeHealthData = {
@@ -31,6 +75,10 @@ export const lifeHealthData = {
     energyLevel: 78,
     stressLevel: "Low",
   },
+  signals: [
+    { type: "success", message: "Sleep quality excellent. Ready for high intensity.", time: "now" },
+    { type: "info", message: "Recovery at 87%. Optimal for training.", time: "6h ago" },
+  ],
   sleep: {
     duration: "7.5 hrs",
     quality: 92,
@@ -80,6 +128,10 @@ export const mindGrowthData = {
     habitsTotal: 6,
     creativityIndex: 68,
   },
+  signals: [
+    { type: "success", message: "Deep work: 3.5 hrs today. Above average.", time: "now" },
+    { type: "info", message: "Learning streak: 12 days. Keep it going.", time: "1d ago" },
+  ],
   focus: {
     deepWorkToday: "3.5 hrs",
     focusWindows: [
@@ -136,6 +188,12 @@ export const sovereigntyData = {
     automationRules: 12,
     platformIndependence: 76,
   },
+  boundaries: {
+    autopilotLevel: "Balanced",
+    budgetCaps: "$500/mo",
+    quietHours: "10pm - 7am",
+    approvalRequired: ["Spend over $50", "External messages"],
+  },
   data: {
     totalData: "24.6 GB",
     ownedData: "23.1 GB",
@@ -191,6 +249,103 @@ export const sovereigntyData = {
   },
 };
 
+// Advisor council data
+export const advisorData = {
+  advisors: [
+    { 
+      role: "CEO", 
+      name: "Strategic Vision",
+      insight: "Focus on one offer for 7 days.",
+      confidence: 0.88
+    },
+    { 
+      role: "CFO", 
+      name: "Financial Intelligence",
+      insight: "Scale spend +10% safely.",
+      confidence: 0.82
+    },
+    { 
+      role: "CMO", 
+      name: "Growth Engine",
+      insight: "Refresh creative angle. Fatigue rising.",
+      confidence: 0.75
+    },
+    { 
+      role: "COO", 
+      name: "Operations",
+      insight: "Capacity supports growth until Friday.",
+      confidence: 0.91
+    },
+    { 
+      role: "CRO", 
+      name: "Revenue",
+      insight: "Pipeline healthy. Focus on closing.",
+      confidence: 0.79
+    },
+  ],
+  recommendation: "Scale conservatively. Capacity and cashflow aligned.",
+};
+
+// Workflow packs
+export const workflowPacks = [
+  {
+    id: "lead-response",
+    name: "Lead Response Engine",
+    description: "Instant responses to new leads across all channels",
+    status: "ready",
+    channels: ["SMS", "WhatsApp", "Email"],
+    actions: [
+      "Instant acknowledgment within 60 seconds",
+      "Qualification questions",
+      "Calendar booking suggestion",
+    ],
+    costPerAction: "$0.02",
+    autopilotLevel: "balanced",
+  },
+  {
+    id: "revenue-recovery",
+    name: "Revenue Recovery",
+    description: "Automated follow-ups on abandoned carts and cold leads",
+    status: "ready",
+    channels: ["Email", "SMS"],
+    actions: [
+      "Cart abandonment sequence",
+      "Cold lead reactivation",
+      "Quote follow-up reminders",
+    ],
+    costPerAction: "$0.01",
+    autopilotLevel: "conservative",
+  },
+  {
+    id: "reputation-guardian",
+    name: "Reputation Guardian",
+    description: "Monitor and respond to reviews automatically",
+    status: "needs_connection",
+    channels: ["Google Business", "Yelp"],
+    actions: [
+      "Review response within 2 hours",
+      "Negative review escalation",
+      "Review request after positive interactions",
+    ],
+    costPerAction: "$0.00",
+    autopilotLevel: "balanced",
+  },
+  {
+    id: "collections-autopilot",
+    name: "Collections Autopilot",
+    description: "Gentle but persistent payment follow-ups",
+    status: "ready",
+    channels: ["Email", "SMS"],
+    actions: [
+      "Payment reminder sequence",
+      "Escalation tiers",
+      "Payment plan offers",
+    ],
+    costPerAction: "$0.01",
+    autopilotLevel: "conservative",
+  },
+];
+
 // Time-based greeting
 export function getGreeting(): string {
   const hour = new Date().getHours();
@@ -202,4 +357,15 @@ export function getGreeting(): string {
 // Generate realistic fluctuations
 export function getFluctuatingValue(base: number, variance: number): number {
   return Math.round(base + (Math.random() - 0.5) * variance * 2);
+}
+
+// Get system status message (calm control room style)
+export function getSystemStatus(): { message: string; type: "calm" | "attention" | "action" } {
+  const needsAttention = businessData.needsYou.length;
+  if (needsAttention === 0) {
+    return { message: "Everything important is handled.", type: "calm" };
+  } else if (needsAttention === 1) {
+    return { message: "One item needs approval.", type: "attention" };
+  }
+  return { message: `${needsAttention} items need your attention.`, type: "action" };
 }
