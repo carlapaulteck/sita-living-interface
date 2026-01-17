@@ -1,7 +1,12 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import { motion } from "framer-motion";
+import { ArrowLeft, Map, Sunrise } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { CommandBar } from "./CommandBar";
+import { AvatarBubble } from "./AvatarBubble";
+import { ConversationConsole } from "./ConversationConsole";
+import { WarRoom } from "./WarRoom";
+import { WakeUpReceipt } from "./WakeUpReceipt";
 import bgParticles from "@/assets/bg-particles.jpg";
 
 interface Tab {
@@ -27,6 +32,32 @@ export function ModuleLayout({
   children,
 }: ModuleLayoutProps) {
   const navigate = useNavigate();
+  const [showConsole, setShowConsole] = useState(false);
+  const [showWarRoom, setShowWarRoom] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(false);
+
+  const handleCommand = (text: string) => {
+    const lower = text.toLowerCase();
+    if (lower.includes("war") || lower.includes("map") || lower.includes("system")) {
+      setShowWarRoom(true);
+    } else if (lower.includes("receipt") || lower.includes("wake") || lower.includes("morning")) {
+      setShowReceipt(true);
+    } else if (lower.includes("home")) {
+      navigate("/");
+    } else if (lower.includes("business") || lower.includes("revenue")) {
+      navigate("/business-growth");
+    } else if (lower.includes("health") || lower.includes("sleep")) {
+      navigate("/life-health");
+    } else if (lower.includes("mind") || lower.includes("focus")) {
+      navigate("/mind-growth");
+    } else if (lower.includes("sovereign") || lower.includes("privacy")) {
+      navigate("/sovereignty");
+    } else if (lower.includes("settings")) {
+      navigate("/settings");
+    } else {
+      setShowConsole(true);
+    }
+  };
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -35,10 +66,12 @@ export function ModuleLayout({
         className="fixed inset-0 bg-background bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${bgParticles})` }}
       />
-      <div className="fixed inset-0 bg-background/70" />
+      <div className="fixed inset-0 bg-gradient-to-br from-secondary/5 via-background/80 to-primary/5" />
+      <div className="fixed top-1/4 left-1/3 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse" />
+      <div className="fixed bottom-1/3 right-1/4 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
 
       {/* Content */}
-      <div className="relative z-10 min-h-screen">
+      <div className="relative z-10 min-h-screen pb-32">
         {/* Header */}
         <header className="px-4 sm:px-6 lg:px-8 py-6">
           <div className="max-w-7xl mx-auto">
@@ -108,6 +141,45 @@ export function ModuleLayout({
           </div>
         </main>
       </div>
+
+      {/* Quick Action Buttons */}
+      <div className="fixed bottom-24 right-4 flex flex-col gap-2 z-30">
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.8 }}
+          onClick={() => setShowReceipt(true)}
+          className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30 backdrop-blur-sm hover:scale-105 transition-transform"
+          title="Wake-Up Receipt"
+        >
+          <Sunrise className="h-5 w-5 text-primary" />
+        </motion.button>
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.9 }}
+          onClick={() => setShowWarRoom(true)}
+          className="p-3 rounded-xl bg-card/80 border border-border/50 backdrop-blur-sm hover:scale-105 transition-transform"
+          title="War Room"
+        >
+          <Map className="h-5 w-5 text-muted-foreground" />
+        </motion.button>
+      </div>
+
+      {/* Command Bar */}
+      <CommandBar onSubmit={handleCommand} />
+
+      {/* Avatar Bubble */}
+      <div onClick={() => setShowConsole(true)}>
+        <AvatarBubble />
+      </div>
+
+      {/* Modals */}
+      <AnimatePresence>
+        {showConsole && <ConversationConsole isOpen={showConsole} onClose={() => setShowConsole(false)} />}
+        {showWarRoom && <WarRoom isOpen={showWarRoom} onClose={() => setShowWarRoom(false)} />}
+        {showReceipt && <WakeUpReceipt isOpen={showReceipt} onClose={() => setShowReceipt(false)} />}
+      </AnimatePresence>
     </div>
   );
 }

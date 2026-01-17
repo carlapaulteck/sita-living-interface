@@ -2,8 +2,10 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "./GlassCard";
 import { Button } from "./ui/button";
-import { X, Send, Mic, Loader2 } from "lucide-react";
+import { X, Send, Mic, Loader2, MicOff } from "lucide-react";
 import { SitaOrb3D } from "./SitaOrb3D";
+import { VoiceWaveform } from "./VoiceWaveform";
+import { useVoiceRecognition } from "@/hooks/useVoiceRecognition";
 import avatarImage from "@/assets/avatar.jpg";
 
 interface Message {
@@ -28,6 +30,36 @@ export function ConversationConsole({ isOpen, onClose }: ConversationConsoleProp
   const [orbState, setOrbState] = useState<"idle" | "listening" | "speaking">("idle");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const {
+    isListening,
+    toggleListening,
+    isSupported,
+  } = useVoiceRecognition({
+    onResult: (transcript) => {
+      setInput(transcript);
+      // Auto-submit after voice
+      if (transcript.trim()) {
+        setTimeout(() => {
+          setOrbState("listening");
+          const userMessage: Message = { role: "user", content: transcript.trim() };
+          setMessages(prev => [...prev, userMessage]);
+          setInput("");
+        }, 300);
+      }
+    },
+    onInterimResult: (interim) => {
+      if (interim) setInput(interim);
+    },
+  });
+
+  useEffect(() => {
+    if (isListening) {
+      setOrbState("listening");
+    } else if (!isLoading) {
+      setOrbState("idle");
+    }
+  }, [isListening, isLoading]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -216,19 +248,54 @@ export function ConversationConsole({ isOpen, onClose }: ConversationConsoleProp
             {/* Input */}
             <div className="p-4 border-t border-foreground/10">
               <div className="flex items-center gap-3">
-                <button className="p-2 rounded-xl border border-foreground/10 hover:border-primary/50 transition-colors">
-                  <Mic className="h-5 w-5 text-muted-foreground" />
-                </button>
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Ask SITA anything..."
-                  className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground/50"
-                  disabled={isLoading}
-                />
+                {isSupported && (
+                  <motion.button 
+                    onClick={toggleListening}
+                    className={`p-2 rounded-xl border transition-colors relative ${
+                      isListening 
+                        ? "border-primary/50 bg-primary/20" 
+                        : "border-foreground/10 hover:border-primary/50"
+                    }`}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {isListening ? (
+                      <motion.div
+                        animate={{ scale: [1, 1.2, 1] }}
+                        transition={{ repeat: Infinity, duration: 1 }}
+                      >
+                        <Mic className="h-5 w-5 text-primary" />
+                      </motion.div>
+                    ) : (
+                      <Mic className="h-5 w-5 text-muted-foreground" />
+                    )}
+                    {isListening && (
+                      <motion.div
+                        className="absolute inset-0 rounded-xl bg-primary/20"
+                        animate={{ opacity: [0.5, 0], scale: [1, 1.5] }}
+                        transition={{ repeat: Infinity, duration: 1.5 }}
+                      />
+                    )}
+                  </motion.button>
+                )}
+                
+                <div className="flex-1 relative">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={isListening ? "Listening..." : "Ask SITA anything..."}
+                    className="w-full bg-transparent outline-none text-sm placeholder:text-muted-foreground/50"
+                    disabled={isLoading}
+                  />
+                  {isListening && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <VoiceWaveform isActive={isListening} />
+                    </div>
+                  )}
+                </div>
+                
                 <button
                   onClick={sendMessage}
                   disabled={!input.trim() || isLoading}
