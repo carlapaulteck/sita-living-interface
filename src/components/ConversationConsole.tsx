@@ -2,10 +2,11 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "./GlassCard";
 import { Button } from "./ui/button";
-import { X, Send, Mic, Loader2, MicOff } from "lucide-react";
+import { X, Send, Mic, Loader2, Volume2, VolumeX } from "lucide-react";
 import { SitaOrb3D } from "./SitaOrb3D";
 import { VoiceWaveform } from "./VoiceWaveform";
 import { useVoiceRecognition } from "@/hooks/useVoiceRecognition";
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import avatarImage from "@/assets/avatar.jpg";
 
 interface Message {
@@ -28,8 +29,11 @@ export function ConversationConsole({ isOpen, onClose }: ConversationConsoleProp
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [orbState, setOrbState] = useState<"idle" | "listening" | "speaking">("idle");
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const { speak, stop: stopSpeaking, isSpeaking } = useTextToSpeech({ voice: "nova", speed: 1.0 });
 
   const {
     isListening,
@@ -53,13 +57,17 @@ export function ConversationConsole({ isOpen, onClose }: ConversationConsoleProp
     },
   });
 
+  // Update orb state based on speaking
   useEffect(() => {
-    if (isListening) {
+    if (isSpeaking) {
+      setOrbState("speaking");
+    } else if (isListening) {
       setOrbState("listening");
     } else if (!isLoading) {
       setOrbState("idle");
     }
-  }, [isListening, isLoading]);
+  }, [isSpeaking, isListening, isLoading]);
+
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -162,6 +170,11 @@ export function ConversationConsole({ isOpen, onClose }: ConversationConsoleProp
           }
         }
       }
+
+      // Speak the response if voice is enabled
+      if (voiceEnabled && assistantContent) {
+        speak(assistantContent);
+      }
     } catch (error) {
       console.error("Chat error:", error);
       setMessages(prev => [
@@ -173,7 +186,7 @@ export function ConversationConsole({ isOpen, onClose }: ConversationConsoleProp
       ]);
     } finally {
       setIsLoading(false);
-      setOrbState("idle");
+      if (!isSpeaking) setOrbState("idle");
     }
   };
 
@@ -206,9 +219,22 @@ export function ConversationConsole({ isOpen, onClose }: ConversationConsoleProp
                 <p className="text-xs text-muted-foreground">The Living Interface</p>
               </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => {
+                  if (isSpeaking) stopSpeaking();
+                  setVoiceEnabled(!voiceEnabled);
+                }}
+                title={voiceEnabled ? "Mute voice" : "Enable voice"}
+              >
+                {voiceEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
+              </Button>
+              <Button variant="ghost" size="icon" onClick={onClose}>
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
 
           {/* Orb visualization */}
