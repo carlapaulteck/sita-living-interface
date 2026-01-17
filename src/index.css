@@ -554,4 +554,83 @@
   .text-balance {
     text-wrap: balance;
   }
+  
+  /* Cognitive State Adaptive Classes */
+  .cognitive-flow {
+    --adaptive-ui-opacity: 1;
+    --adaptive-glow-intensity: 0.8;
+    transition: all 0.3s var(--ease-luxury);
+  }
+  
+  .cognitive-distracted {
+    --adaptive-ui-opacity: 0.95;
+    --adaptive-glow-intensity: 0.6;
+  }
+  
+  .cognitive-overload {
+    --adaptive-ui-opacity: 0.7;
+    --adaptive-glow-intensity: 0.3;
+    animation: gentle-pulse 4s ease-in-out infinite;
+  }
+  
+  .cognitive-fatigued {
+    --adaptive-ui-opacity: 0.9;
+    --adaptive-glow-intensity: 0.5;
+  }
+  
+  .cognitive-hyperfocus {
+    --adaptive-ui-opacity: 1;
+    --adaptive-glow-intensity: 0.6;
+  }
+  
+  .cognitive-recovery {
+    --adaptive-ui-opacity: 0.85;
+    --adaptive-glow-intensity: 0.4;
+  }
+  
+  @keyframes gentle-pulse {
+    0%, 100% { opacity: var(--adaptive-ui-opacity, 1); }
+    50% { opacity: calc(var(--adaptive-ui-opacity, 1) - 0.1); }
+  }
+  
+  /* Adaptive font scaling */
+  .adaptive-text {
+    font-size: calc(1rem * var(--adaptive-font-scale, 1));
+    line-height: calc(1.5 * var(--adaptive-line-height-scale, 1));
+  }
+  
+  /* Adaptive touch targets */
+  .adaptive-touch {
+    min-height: calc(44px * var(--adaptive-touch-target-scale, 1));
+    min-width: calc(44px * var(--adaptive-touch-target-scale, 1));
+  }
+  
+  /* Adaptive density */
+  .adaptive-spacing {
+    gap: calc(1rem * var(--adaptive-density-scale, 1));
+    padding: calc(1rem * var(--adaptive-density-scale, 1));
+  }
+  
+  /* Bottom dock button styles */
+  .dock-button-active {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--brand-gold) / 0.15) 0%,
+      hsl(var(--brand-gold) / 0.05) 100%
+    );
+    border: 1px solid hsl(var(--brand-gold) / 0.3);
+    box-shadow: 
+      inset 0 1px 0 hsl(var(--brand-gold) / 0.2),
+      0 0 20px hsl(var(--brand-gold) / 0.15);
+  }
+  
+  .dock-button-inactive {
+    background: hsl(var(--foreground) / 0.03);
+    border: 1px solid hsl(var(--foreground) / 0.08);
+  }
+  
+  .dock-button-hover {
+    background: hsl(var(--foreground) / 0.06);
+    border-color: hsl(var(--foreground) / 0.12);
+  }
 }
