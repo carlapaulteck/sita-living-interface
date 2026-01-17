@@ -14,8 +14,9 @@ import { OnboardingFlow } from "@/components/OnboardingFlow";
 import { ConversationConsole } from "@/components/ConversationConsole";
 import { WarRoom } from "@/components/WarRoom";
 import { WakeUpReceipt } from "@/components/WakeUpReceipt";
-import bgParticles from "@/assets/bg-particles.jpg";
 import { useNavigate } from "react-router-dom";
+import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
+import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
 import { 
   TrendingUp, 
   Moon, 
@@ -26,8 +27,42 @@ import {
   Lightbulb,
   Shield,
   Map,
-  Sunrise
+  Sunrise,
+  Wallet,
+  Cpu
 } from "lucide-react";
+
+// Decorative graphics for stat cards
+const GoldStarburst = () => (
+  <svg viewBox="0 0 64 64" className="w-full h-full">
+    <defs>
+      <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#FFD700" />
+        <stop offset="100%" stopColor="#B8860B" />
+      </linearGradient>
+    </defs>
+    <g fill="url(#goldGrad)" opacity="0.8">
+      <circle cx="32" cy="32" r="8" />
+      <path d="M32 8 L34 28 L32 32 L30 28 Z" />
+      <path d="M32 56 L34 36 L32 32 L30 36 Z" />
+      <path d="M8 32 L28 34 L32 32 L28 30 Z" />
+      <path d="M56 32 L36 34 L32 32 L36 30 Z" />
+    </g>
+  </svg>
+);
+
+const CyanOrb = () => (
+  <svg viewBox="0 0 64 64" className="w-full h-full">
+    <defs>
+      <radialGradient id="cyanGrad" cx="30%" cy="30%">
+        <stop offset="0%" stopColor="#00FFFF" />
+        <stop offset="100%" stopColor="#008B8B" />
+      </radialGradient>
+    </defs>
+    <circle cx="32" cy="32" r="20" fill="url(#cyanGrad)" opacity="0.7" />
+    <circle cx="32" cy="32" r="24" stroke="#00FFFF" strokeWidth="1" fill="none" opacity="0.3" />
+  </svg>
+);
 
 const Index = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -35,7 +70,22 @@ const Index = () => {
   const [showWarRoom, setShowWarRoom] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
   const [userName, setUserName] = useState("Alex");
+  const [greeting, setGreeting] = useState("Good morning");
   const navigate = useNavigate();
+  const { handleTouchStart, handleTouchEnd } = useSwipeNavigation();
+
+  // Real-time metrics subscription
+  const { isConnected } = useRealtimeSubscription({
+    table: 'realtime_metrics',
+    enabled: true,
+  });
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting("Good morning");
+    else if (hour < 18) setGreeting("Good afternoon");
+    else setGreeting("Good evening");
+  }, []);
 
   useEffect(() => {
     const onboarded = localStorage.getItem("sita_onboarded");
@@ -48,7 +98,7 @@ const Index = () => {
     }
   }, []);
 
-  const handleOnboardingComplete = (data: any) => {
+  const handleOnboardingComplete = (data: { name: string }) => {
     setUserName(data.name);
     setShowOnboarding(false);
   };
@@ -95,32 +145,35 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Background with particle effect */}
-      <div 
-        className="fixed inset-0 bg-background bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${bgParticles})` }}
-      />
-      {/* Gradient overlay matching brand colors */}
-      <div className="fixed inset-0 bg-gradient-to-br from-secondary/5 via-background/80 to-primary/5" />
-      
-      {/* Animated glow orbs */}
-      <div className="fixed top-1/4 left-1/3 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse" />
-      <div className="fixed bottom-1/3 right-1/4 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
+    <div 
+      className="min-h-screen relative overflow-hidden pb-28 md:pb-8"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      style={{ background: 'linear-gradient(180deg, #050505 0%, #0a0a1a 50%, #050505 100%)' }}
+    >
+      {/* Animated glow orbs - Luxury version */}
+      <div className="fixed top-1/4 left-1/3 w-[500px] h-[500px] bg-[#9370DB]/8 rounded-full blur-[120px] animate-pulse pointer-events-none" />
+      <div className="fixed bottom-1/3 right-1/4 w-[400px] h-[400px] bg-[#FFD700]/6 rounded-full blur-[100px] animate-pulse pointer-events-none" style={{ animationDelay: "1s" }} />
+      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#00FFFF]/3 rounded-full blur-[150px] pointer-events-none" />
       
       {/* Content */}
-      <div className="relative z-10 min-h-screen px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-32">
+      <div className="relative z-10 min-h-screen px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <Header />
 
           {/* Greeting */}
-          <div className="text-center mt-6 sm:mt-8 mb-4 sm:mb-6 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
-            <h1 className="text-2xl sm:text-3xl font-display font-medium text-foreground">
-              Good morning, {userName}.
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mt-6 sm:mt-8 mb-4 sm:mb-6"
+          >
+            <h1 className="text-2xl sm:text-3xl font-['Playfair_Display'] font-medium text-foreground">
+              {greeting}, <span className="text-[#FFD700]">{userName}</span>.
             </h1>
             <p className="text-sm text-muted-foreground mt-1">Systems stable. No action required.</p>
-          </div>
+          </motion.div>
 
           {/* Main Grid */}
           <div className="grid grid-cols-12 gap-3 lg:gap-6">
@@ -131,27 +184,36 @@ const Index = () => {
                 value="+8.2%"
                 subtitle="This Week"
                 icon={TrendingUp}
+                graphic={<GoldStarburst />}
+                accentColor="gold"
+                isLive
+                isConnected={isConnected}
                 delay={100}
               />
               <QuickStatCard 
                 title="Life Balance"
                 value="7.5"
-                subtitle="Hrs"
+                suffix=" Hrs"
                 icon={Moon}
+                graphic={<GoldStarburst />}
+                accentColor="gold"
                 delay={200}
               />
               <QuickStatCard 
                 title="Mind State"
                 value="12"
-                subtitle="Min"
+                suffix=" Min"
                 icon={Brain}
+                graphic={<CyanOrb />}
+                accentColor="cyan"
                 delay={300}
               />
               <QuickStatCard 
                 title="Connected Devices"
                 value="5"
-                subtitle="Active"
-                icon={Smartphone}
+                suffix=" Active"
+                icon={Cpu}
+                accentColor="cyan"
                 delay={400}
               />
             </div>
@@ -160,19 +222,23 @@ const Index = () => {
             <div className="col-span-12 lg:col-span-6 space-y-4 sm:space-y-6 order-1 lg:order-2">
               {/* Avatar Area with glowing halo */}
               <GlassCard 
-                className="p-6 sm:p-8 flex flex-col items-center justify-center min-h-[340px] sm:min-h-[380px] animate-fade-in-up cursor-pointer relative overflow-visible"
+                className="p-6 sm:p-8 flex flex-col items-center justify-center min-h-[340px] sm:min-h-[380px] relative overflow-visible"
                 hover={false}
-                style={{ animationDelay: "200ms" }}
+                glow="brand"
                 onClick={() => setShowConsole(true)}
               >
-                {/* Glow effect behind avatar */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-b from-secondary/30 via-accent/20 to-primary/30 rounded-full blur-3xl" />
+                {/* Glow effect behind avatar - Cyan/Teal neon ring */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64">
+                  <div className="absolute inset-0 rounded-full border-2 border-[#00FFFF]/40 animate-pulse" />
+                  <div className="absolute inset-2 rounded-full border border-[#00FFFF]/20" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-[#9370DB]/20 via-[#00FFFF]/15 to-[#FFD700]/20 rounded-full blur-3xl" />
+                </div>
                 
                 <div className="relative z-10">
                   <AvatarHero />
                 </div>
                 
-                {/* Metric Rings */}
+                {/* Metric Rings - Neon tube style */}
                 <div className="flex items-center justify-center gap-4 sm:gap-8 mt-6 relative z-10">
                   <MetricRing 
                     label="Readiness"
@@ -198,40 +264,36 @@ const Index = () => {
                 </div>
               </GlassCard>
 
-              {/* Module Tiles */}
+              {/* Module Tiles - Bottom Dock Style */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-                <div onClick={() => handleModuleClick("Wealth")}>
-                  <ModuleTile 
-                    title="Wealth"
-                    icon={Coins}
-                    delay={400}
-                    variant="gold"
-                  />
-                </div>
-                <div onClick={() => handleModuleClick("Life & Health")}>
-                  <ModuleTile 
-                    title="Life & Health"
-                    icon={Heart}
-                    delay={500}
-                    variant="gold"
-                  />
-                </div>
-                <div onClick={() => handleModuleClick("Mind & Growth")}>
-                  <ModuleTile 
-                    title="Mind & Growth"
-                    icon={Lightbulb}
-                    delay={600}
-                    variant="purple"
-                  />
-                </div>
-                <div onClick={() => handleModuleClick("Sovereignty")}>
-                  <ModuleTile 
-                    title="Sovereignty"
-                    icon={Shield}
-                    delay={700}
-                    variant="gold"
-                  />
-                </div>
+                <ModuleTile 
+                  title="Wealth"
+                  icon={Coins}
+                  delay={400}
+                  variant="gold"
+                  onClick={() => handleModuleClick("Wealth")}
+                />
+                <ModuleTile 
+                  title="Life & Health"
+                  icon={Heart}
+                  delay={500}
+                  variant="gold"
+                  onClick={() => handleModuleClick("Life & Health")}
+                />
+                <ModuleTile 
+                  title="Mind & Growth"
+                  icon={Lightbulb}
+                  delay={600}
+                  variant="purple"
+                  onClick={() => handleModuleClick("Mind & Growth")}
+                />
+                <ModuleTile 
+                  title="Sovereignty"
+                  icon={Shield}
+                  delay={700}
+                  accentColor="cyan"
+                  onClick={() => handleModuleClick("Sovereignty")}
+                />
               </div>
             </div>
 
@@ -245,23 +307,23 @@ const Index = () => {
       </div>
 
       {/* Quick Action Buttons */}
-      <div className="fixed bottom-24 right-4 flex flex-col gap-2 z-30">
+      <div className="fixed bottom-28 md:bottom-24 right-4 flex flex-col gap-2 z-30">
         <motion.button
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 1 }}
           onClick={() => setShowReceipt(true)}
-          className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30 backdrop-blur-sm hover:scale-105 transition-transform"
+          className="p-3 rounded-xl bg-gradient-to-br from-[#FFD700]/20 to-[#9370DB]/20 border border-[#FFD700]/30 backdrop-blur-xl hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,215,0,0.15)]"
           title="Wake-Up Receipt"
         >
-          <Sunrise className="h-5 w-5 text-primary" />
+          <Sunrise className="h-5 w-5 text-[#FFD700]" />
         </motion.button>
         <motion.button
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 1.1 }}
           onClick={() => setShowWarRoom(true)}
-          className="p-3 rounded-xl bg-card/80 border border-border/50 backdrop-blur-sm hover:scale-105 transition-transform"
+          className="p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-xl hover:scale-105 transition-transform"
           title="War Room"
         >
           <Map className="h-5 w-5 text-muted-foreground" />

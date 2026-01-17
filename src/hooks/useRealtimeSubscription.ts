@@ -1,51 +1,56 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+import { RealtimeChannel } from "@supabase/supabase-js";
 
 type TableName = 'realtime_metrics' | 'activity_feed' | 'notifications' | 'profiles' | 'user_preferences';
 
-interface UseRealtimeSubscriptionOptions<T> {
+interface UseRealtimeSubscriptionOptions {
   table: TableName;
-  filter?: Record<string, unknown>;
-  onInsert?: (payload: T) => void;
-  onUpdate?: (payload: T) => void;
-  onDelete?: (payload: { old: T }) => void;
+  filter?: Record<string, string>;
+  onInsert?: (payload: Record<string, unknown>) => void;
+  onUpdate?: (payload: Record<string, unknown>) => void;
+  onDelete?: (payload: { old: Record<string, unknown> }) => void;
   enabled?: boolean;
 }
 
-interface UseRealtimeSubscriptionResult<T> {
-  data: T[];
+interface UseRealtimeSubscriptionResult {
+  data: Record<string, unknown>[];
   isConnected: boolean;
   error: Error | null;
   refetch: () => Promise<void>;
 }
 
-export function useRealtimeSubscription<T extends Record<string, unknown>>({
+export function useRealtimeSubscription({
   table,
   filter,
   onInsert,
   onUpdate,
   onDelete,
   enabled = true,
-}: UseRealtimeSubscriptionOptions<T>): UseRealtimeSubscriptionResult<T> {
-  const [data, setData] = useState<T[]>([]);
+}: UseRealtimeSubscriptionOptions): UseRealtimeSubscriptionResult {
+  const [data, setData] = useState<Record<string, unknown>[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
-      let query = supabase.from(table).select("*");
+      // Build the query without chaining eq calls dynamically
+      const { data: fetchedData, error: fetchError } = await supabase
+        .from(table)
+        .select("*")
+        .order('created_at', { ascending: false });
       
-      if (filter) {
-        Object.entries(filter).forEach(([key, value]) => {
-          query = query.eq(key, value);
+      if (fetchError) throw fetchError;
+      
+      // Apply filter client-side if provided
+      let filteredData = fetchedData || [];
+      if (filter && filteredData.length > 0) {
+        filteredData = filteredData.filter((item: Record<string, unknown>) => {
+          return Object.entries(filter).every(([key, value]) => item[key] === value);
         });
       }
       
-      const { data: fetchedData, error: fetchError } = await query.order('created_at', { ascending: false });
-      
-      if (fetchError) throw fetchError;
-      setData((fetchedData as T[]) || []);
+      setData(filteredData as Record<string, unknown>[]);
       setError(null);
     } catch (err) {
       setError(err as Error);
@@ -61,7 +66,7 @@ export function useRealtimeSubscription<T extends Record<string, unknown>>({
       await fetchData();
 
       channel = supabase
-        .channel(`${table}-changes`)
+        .channel(`${table}-changes-${Date.now()}`)
         .on(
           "postgres_changes",
           {
@@ -69,25 +74,23 @@ export function useRealtimeSubscription<T extends Record<string, unknown>>({
             schema: "public",
             table: table,
           },
-          (payload: RealtimePostgresChangesPayload<T>) => {
+          (payload) => {
             if (payload.eventType === "INSERT") {
-              const newRecord = payload.new as T;
+              const newRecord = payload.new as Record<string, unknown>;
               setData((prev) => [newRecord, ...prev]);
               onInsert?.(newRecord);
             } else if (payload.eventType === "UPDATE") {
-              const updatedRecord = payload.new as T;
+              const updatedRecord = payload.new as Record<string, unknown>;
               setData((prev) =>
                 prev.map((item) =>
-                  (item as Record<string, unknown>).id === (updatedRecord as Record<string, unknown>).id 
-                    ? updatedRecord 
-                    : item
+                  item.id === updatedRecord.id ? updatedRecord : item
                 )
               );
               onUpdate?.(updatedRecord);
             } else if (payload.eventType === "DELETE") {
-              const deletedRecord = payload.old as T;
+              const deletedRecord = payload.old as Record<string, unknown>;
               setData((prev) =>
-                prev.filter((item) => (item as Record<string, unknown>).id !== (deletedRecord as Record<string, unknown>).id)
+                prev.filter((item) => item.id !== deletedRecord.id)
               );
               onDelete?.({ old: deletedRecord });
             }
