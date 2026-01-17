@@ -12,7 +12,7 @@ import MindGrowth from "./pages/MindGrowth";
 import Settings from "./pages/Settings";
 import Sovereignty from "./pages/Sovereignty";
 import NotFound from "./pages/NotFound";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 
 const queryClient = new QueryClient();
