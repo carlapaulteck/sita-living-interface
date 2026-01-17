@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_feed: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          event_type: string
+          icon: string | null
+          id: string
+          metadata: Json | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          event_type: string
+          icon?: string | null
+          id?: string
+          metadata?: Json | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          event_type?: string
+          icon?: string | null
+          id?: string
+          metadata?: Json | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string | null
+          dismissed: boolean | null
+          id: string
+          message: string
+          metadata: Json | null
+          read: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string | null
+          dismissed?: boolean | null
+          id?: string
+          message: string
+          metadata?: Json | null
+          read?: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string | null
+          dismissed?: boolean | null
+          id?: string
+          message?: string
+          metadata?: Json | null
+          read?: boolean | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -35,6 +107,42 @@ export type Database = {
           name?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      realtime_metrics: {
+        Row: {
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          metric_type: string
+          previous_value: number | null
+          trend: string | null
+          updated_at: string | null
+          user_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          metric_type: string
+          previous_value?: number | null
+          trend?: string | null
+          updated_at?: string | null
+          user_id: string
+          value: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          metric_type?: string
+          previous_value?: number | null
+          trend?: string | null
+          updated_at?: string | null
+          user_id?: string
+          value?: number
         }
         Relationships: []
       }
