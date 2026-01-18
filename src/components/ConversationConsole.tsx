@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "./GlassCard";
 import { Button } from "./ui/button";
-import { X, Send, Mic, Loader2, Volume2, VolumeX, History, Plus } from "lucide-react";
+import { X, Send, Mic, Loader2, Volume2, VolumeX, History } from "lucide-react";
 import { SitaOrb3D } from "./SitaOrb3D";
 import { VoiceWaveform } from "./VoiceWaveform";
 import { SpeechWaveformVisualizer } from "./SpeechWaveformVisualizer";
@@ -43,6 +43,7 @@ export function ConversationConsole({ isOpen, onClose, onMessageReceived }: Conv
   const [simulatedAudioLevel, setSimulatedAudioLevel] = useState(0);
   const [showHistory, setShowHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   
   // Avatar state context for global avatar animations
   const avatarState = useAvatarStateSafe();

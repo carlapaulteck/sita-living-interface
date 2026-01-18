@@ -141,7 +141,20 @@ export const ConversationHistoryPanel: React.FC<ConversationHistoryPanelProps> =
                 onChange={(e) => handleSearch(e.target.value)}
                 className="pl-9 bg-background/50"
               />
+              {searchQuery && (
+                <button 
+                  onClick={() => { setSearchQuery(''); setSearchResults([]); }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
+            {searchQuery && (
+              <p className="text-xs text-muted-foreground mt-2">
+                {isSearching ? 'Searching...' : `${searchResults.length} result${searchResults.length !== 1 ? 's' : ''} found`}
+              </p>
+            )}
           </div>
 
           {/* New Conversation Button */}

@@ -10,7 +10,6 @@ import { InsightsFeed } from "@/components/InsightsFeed";
 import { CommandBar } from "@/components/CommandBar";
 import { AvatarBubble } from "@/components/AvatarBubble";
 import { TalkingAvatarMockup } from "@/components/TalkingAvatarMockup";
-import { ProactiveAISuggestions } from "@/components/ProactiveAISuggestions";
 import { WakeWordIndicator } from "@/components/WakeWordIndicator";
 import { useAvatarState } from "@/contexts/AvatarStateContext";
 import { useWakeWord } from "@/hooks/useWakeWord";
@@ -37,6 +36,7 @@ import { HelpGuide } from "@/components/HelpGuide";
 import { DashboardTour } from "@/components/DashboardTour";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { SupportTicketForm } from "@/components/SupportTicketForm";
+import { ProactiveAIContainer } from "@/components/ProactiveAIContainer";
 import { useNavigate } from "react-router-dom";
 import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
@@ -633,6 +633,9 @@ const Index = () => {
 
       {/* Command Bar */}
       <CommandBar onSubmit={handleCommand} />
+
+      {/* Proactive AI Prompts */}
+      <ProactiveAIContainer onOpenConsole={() => setShowConsole(true)} />
 
       {/* AI Assistant Bubble */}
       <div onClick={() => setShowConsole(true)}>

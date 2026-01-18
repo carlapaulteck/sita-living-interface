@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.notification-dispatcher]
 verify_jwt = false
+
+[functions.create-test-users]
+verify_jwt = false
+
+[functions.text-to-speech]
+verify_jwt = false
