@@ -21,7 +21,10 @@ import {
   BatteryLow,
   BatteryMedium,
   BatteryFull,
-  Activity
+  Activity,
+  Plus,
+  Clock,
+  Calendar
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { 
@@ -30,6 +33,9 @@ import {
   CognitiveDomain, 
   DomainBudget 
 } from "@/lib/cognitiveBudgetLedger";
+import { ActivityLogger } from "./ActivityLogger";
+import { EnergyForecast } from "./EnergyForecast";
+import { RecoverySuggestions } from "./RecoverySuggestions";
 
 interface CognitiveBudgetVisualizationProps {
   isOpen?: boolean;
@@ -88,6 +94,7 @@ export function CognitiveBudgetVisualization({
   const [budgetState, setBudgetState] = useState<CognitiveBudgetState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showActivityLogger, setShowActivityLogger] = useState(false);
 
   const fetchBudgetState = async () => {
     if (!user?.id) return;
