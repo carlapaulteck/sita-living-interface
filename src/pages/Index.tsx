@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Header } from "@/components/Header";
 import { GlassCard } from "@/components/GlassCard";
@@ -17,9 +17,13 @@ import { WakeUpReceipt } from "@/components/WakeUpReceipt";
 import { MorningBriefing } from "@/components/MorningBriefing";
 import { TrustControlsDashboard } from "@/components/TrustControlsDashboard";
 import { AdaptationIndicator } from "@/components/TrustSafeguards";
+import { RecoveryMode } from "@/components/RecoveryMode";
+import { DoNotDisturbPanel } from "@/components/DoNotDisturbPanel";
 import { useNavigate } from "react-router-dom";
 import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
+import { useAdaptationSafe } from "@/contexts/AdaptationContext";
+import { useDoNotDisturb } from "@/hooks/useDoNotDisturb";
 import { 
   TrendingUp, 
   Moon, 
@@ -33,7 +37,8 @@ import {
   Sunrise,
   Wallet,
   Cpu,
-  ShieldCheck
+  ShieldCheck,
+  BellOff
 } from "lucide-react";
 
 // Decorative graphics for stat cards
@@ -75,10 +80,20 @@ const Index = () => {
   const [showReceipt, setShowReceipt] = useState(false);
   const [showBriefing, setShowBriefing] = useState(false);
   const [showTrustControls, setShowTrustControls] = useState(false);
+  const [showRecoveryMode, setShowRecoveryMode] = useState(false);
+  const [showDNDPanel, setShowDNDPanel] = useState(false);
+  const [recoveryAutoActivated, setRecoveryAutoActivated] = useState(false);
   const [userName, setUserName] = useState("Alex");
   const [greeting, setGreeting] = useState("Good morning");
   const navigate = useNavigate();
   const { handleTouchStart, handleTouchEnd } = useSwipeNavigation();
+  
+  // Adaptation and DND hooks
+  const adaptation = useAdaptationSafe();
+  const { dndState } = useDoNotDisturb();
+  
+  // Track if we've already shown recovery mode this session
+  const recoveryShownRef = useRef(false);
 
   // Real-time metrics subscription
   const { isConnected } = useRealtimeSubscription({
@@ -103,6 +118,19 @@ const Index = () => {
       setUserName(savedName);
     }
   }, []);
+  
+  // Auto-activate recovery mode when overload is detected
+  useEffect(() => {
+    if (adaptation?.momentState === "overload" && !recoveryShownRef.current && !showRecoveryMode) {
+      // Wait a few seconds before suggesting recovery
+      const timer = setTimeout(() => {
+        setRecoveryAutoActivated(true);
+        setShowRecoveryMode(true);
+        recoveryShownRef.current = true;
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [adaptation?.momentState, showRecoveryMode]);
 
   const handleOnboardingComplete = (data: { name: string }) => {
     setUserName(data.name);
@@ -119,6 +147,11 @@ const Index = () => {
       setShowTrustControls(true);
     } else if (lower.includes("receipt") || lower.includes("wake")) {
       setShowReceipt(true);
+    } else if (lower.includes("recovery") || lower.includes("break") || lower.includes("rest")) {
+      setRecoveryAutoActivated(false);
+      setShowRecoveryMode(true);
+    } else if (lower.includes("dnd") || lower.includes("disturb") || lower.includes("quiet")) {
+      setShowDNDPanel(true);
     } else if (lower.includes("business") || lower.includes("revenue") || lower.includes("growth")) {
       navigate("/business-growth");
     } else if (lower.includes("health") || lower.includes("sleep") || lower.includes("fitness")) {
@@ -321,6 +354,31 @@ const Index = () => {
 
       {/* Quick Action Buttons */}
       <div className="fixed bottom-28 md:bottom-24 right-4 flex flex-col gap-2 z-30">
+        {/* DND Indicator */}
+        {dndState.isActive && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            onClick={() => setShowDNDPanel(true)}
+            className="p-3 rounded-xl bg-primary/20 border border-primary/30 backdrop-blur-xl hover:scale-105 transition-transform"
+            title="Do Not Disturb Active"
+          >
+            <BellOff className="h-5 w-5 text-primary" />
+          </motion.button>
+        )}
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.8 }}
+          onClick={() => {
+            setRecoveryAutoActivated(false);
+            setShowRecoveryMode(true);
+          }}
+          className="p-3 rounded-xl bg-gradient-to-br from-[#00FFFF]/20 to-[#9370DB]/20 border border-[#00FFFF]/30 backdrop-blur-xl hover:scale-105 transition-transform"
+          title="Recovery Mode"
+        >
+          <Moon className="h-5 w-5 text-[#00FFFF]" />
+        </motion.button>
         <motion.button
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -373,6 +431,17 @@ const Index = () => {
         {showReceipt && <WakeUpReceipt isOpen={showReceipt} onClose={() => setShowReceipt(false)} />}
         {showBriefing && <MorningBriefing isOpen={showBriefing} onClose={() => setShowBriefing(false)} />}
         {showTrustControls && <TrustControlsDashboard isOpen={showTrustControls} onClose={() => setShowTrustControls(false)} />}
+        {showRecoveryMode && (
+          <RecoveryMode 
+            isOpen={showRecoveryMode} 
+            onClose={() => {
+              setShowRecoveryMode(false);
+              setRecoveryAutoActivated(false);
+            }}
+            autoActivated={recoveryAutoActivated}
+          />
+        )}
+        {showDNDPanel && <DoNotDisturbPanel isOpen={showDNDPanel} onClose={() => setShowDNDPanel(false)} />}
       </AnimatePresence>
     </div>
   );
