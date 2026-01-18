@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { OnboardingProvider, useOnboarding } from "./onboarding/OnboardingContext";
 import { OnboardingProgress } from "./onboarding/OnboardingProgress";
+import { OnboardingRecoveryModal } from "./onboarding/OnboardingRecoveryModal";
 import { OnboardingData } from "@/types/onboarding";
 import logoImage from "@/assets/logo.jpg";
 
@@ -103,6 +104,12 @@ const DEEP_STEPS = [
   ImprintStep,                // 25
 ];
 
+interface SavedProgress {
+  step: number;
+  mode: 'quick' | 'guided' | 'deep';
+  timestamp: number;
+}
+
 interface OnboardingFlowProps {
   onComplete: (data: OnboardingData) => void;
 }
@@ -110,6 +117,8 @@ interface OnboardingFlowProps {
 export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [setupMode, setSetupMode] = useState<'quick' | 'guided' | 'deep'>('guided');
+  const [showRecoveryModal, setShowRecoveryModal] = useState(false);
+  const [savedProgress, setSavedProgress] = useState<SavedProgress | null>(null);
 
   const getSteps = () => {
     switch (setupMode) {
@@ -122,6 +131,27 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const STEPS = getSteps();
   const CurrentStepComponent = STEPS[currentStep];
 
+  // Check for saved progress on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("sita_onboarding_progress");
+    if (saved) {
+      try {
+        const progress: SavedProgress = JSON.parse(saved);
+        // Only show recovery if progress is less than 24 hours old and step > 2
+        const isRecent = Date.now() - progress.timestamp < 24 * 60 * 60 * 1000;
+        if (isRecent && progress.step > 2) {
+          setSavedProgress(progress);
+          setShowRecoveryModal(true);
+        } else {
+          // Clear old progress
+          localStorage.removeItem("sita_onboarding_progress");
+        }
+      } catch {
+        localStorage.removeItem("sita_onboarding_progress");
+      }
+    }
+  }, []);
+
   // Save progress to localStorage for recovery
   useEffect(() => {
     if (currentStep > 0) {
@@ -133,11 +163,34 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     }
   }, [currentStep, setupMode]);
 
+  const handleContinueFromSaved = () => {
+    if (savedProgress) {
+      setSetupMode(savedProgress.mode);
+      setCurrentStep(savedProgress.step);
+    }
+    setShowRecoveryModal(false);
+  };
+
+  const handleStartFresh = () => {
+    localStorage.removeItem("sita_onboarding_progress");
+    setShowRecoveryModal(false);
+    setCurrentStep(0);
+  };
+
   return (
     <OnboardingProvider 
       onComplete={onComplete} 
       totalSteps={STEPS.length}
     >
+      {/* Recovery Modal */}
+      {showRecoveryModal && (
+        <OnboardingRecoveryModal
+          savedProgress={savedProgress}
+          onContinue={handleContinueFromSaved}
+          onStartFresh={handleStartFresh}
+        />
+      )}
+
       <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-background relative overflow-hidden">
         {/* Background gradient effects */}
         <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 via-background to-primary/5" />

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Shuffle, ListOrdered, GitMerge } from "lucide-react";
+import { Shuffle, ListOrdered, GitMerge, Brain } from "lucide-react";
 import { useOnboarding } from "../OnboardingContext";
 import { GlassCard } from "@/components/GlassCard";
 import { Button } from "@/components/ui/button";
+import { HelpHint } from "@/components/HelpHint";
 
 type TaskOrganization = "freeform" | "structured" | "hybrid";
 
@@ -12,6 +13,7 @@ interface TaskOption {
   icon: typeof Shuffle;
   label: string;
   description: string;
+  benefit: string;
 }
 
 const taskOptions: TaskOption[] = [
@@ -20,18 +22,21 @@ const taskOptions: TaskOption[] = [
     icon: Shuffle,
     label: "Freeform & flexible",
     description: "I jump between tasks naturally",
+    benefit: "We'll minimize rigid structures and let you flow",
   },
   {
     id: "structured",
     icon: ListOrdered,
     label: "Step by step",
     description: "I prefer clear sequences",
+    benefit: "We'll provide clear order and progress tracking",
   },
   {
     id: "hybrid",
     icon: GitMerge,
     label: "Depends on the task",
     description: "Different approaches for different work",
+    benefit: "We'll adapt structure based on task type",
   },
 ];
 
@@ -57,6 +62,8 @@ export function TaskStyleStep() {
     updateNestedData("cognitiveDiscovery" as any, "taskOrganization", "hybrid");
     nextStep();
   };
+
+  const selectedOption = taskOptions.find(o => o.id === selected);
   
   return (
     <div className="space-y-8">
@@ -65,13 +72,38 @@ export function TaskStyleStep() {
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
       >
-        <h2 className="text-2xl sm:text-3xl font-display font-medium text-foreground mb-2">
-          How do you like to organize tasks?
-        </h2>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Brain className="h-4 w-4 text-primary" />
+          <span className="text-xs text-primary font-medium uppercase tracking-wider">
+            Cognitive Discovery
+          </span>
+        </div>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <h2 className="text-2xl sm:text-3xl font-display font-medium text-foreground">
+            How do you like to organize tasks?
+          </h2>
+          <HelpHint 
+            hint="This shapes how we present tasks and to-dos. Some minds thrive on lists, others on flexibility. There's no wrong answer."
+            variant="tip"
+          />
+        </div>
         <p className="text-muted-foreground">
           There's no right answer - just what feels natural
         </p>
       </motion.div>
+
+      {/* What this affects hint */}
+      {selected && selectedOption && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
+        >
+          <p className="text-xs text-primary/80 bg-primary/10 inline-flex items-center gap-2 px-3 py-1.5 rounded-full">
+            <span>✨</span> {selectedOption.benefit}
+          </p>
+        </motion.div>
+      )}
       
       <div className="grid gap-4 max-w-lg mx-auto">
         {taskOptions.map((option, index) => {
