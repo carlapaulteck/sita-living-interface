@@ -20,6 +20,9 @@ import { AdaptationIndicator } from "@/components/TrustSafeguards";
 import { RecoveryMode } from "@/components/RecoveryMode";
 import { DoNotDisturbPanel } from "@/components/DoNotDisturbPanel";
 import { WeeklyInsights } from "@/components/WeeklyInsights";
+import { CalendarSync } from "@/components/CalendarSync";
+import { HabitTracker } from "@/components/HabitTracker";
+import { NotificationBatchingPanel } from "@/components/NotificationBatchingPanel";
 import { useNavigate } from "react-router-dom";
 import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
@@ -40,7 +43,10 @@ import {
   Cpu,
   ShieldCheck,
   BellOff,
-  BarChart3
+  BarChart3,
+  CalendarDays,
+  CheckSquare,
+  Layers
 } from "lucide-react";
 
 // Decorative graphics for stat cards
@@ -85,6 +91,9 @@ const Index = () => {
   const [showRecoveryMode, setShowRecoveryMode] = useState(false);
   const [showDNDPanel, setShowDNDPanel] = useState(false);
   const [showWeeklyInsights, setShowWeeklyInsights] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [showHabitTracker, setShowHabitTracker] = useState(false);
+  const [showNotificationBatching, setShowNotificationBatching] = useState(false);
   const [recoveryAutoActivated, setRecoveryAutoActivated] = useState(false);
   const [userName, setUserName] = useState("Alex");
   const [greeting, setGreeting] = useState("Good morning");
@@ -157,6 +166,12 @@ const Index = () => {
       setShowDNDPanel(true);
     } else if (lower.includes("weekly") || lower.includes("insight") || lower.includes("pattern") || lower.includes("trend")) {
       setShowWeeklyInsights(true);
+    } else if (lower.includes("calendar") || lower.includes("schedule") || lower.includes("event")) {
+      setShowCalendar(true);
+    } else if (lower.includes("habit") || lower.includes("streak") || lower.includes("track")) {
+      setShowHabitTracker(true);
+    } else if (lower.includes("batch") || lower.includes("digest") || lower.includes("notification")) {
+      setShowNotificationBatching(true);
     } else if (lower.includes("business") || lower.includes("revenue") || lower.includes("growth")) {
       navigate("/business-growth");
     } else if (lower.includes("health") || lower.includes("sleep") || lower.includes("fitness")) {
@@ -458,6 +473,9 @@ const Index = () => {
         )}
         {showDNDPanel && <DoNotDisturbPanel isOpen={showDNDPanel} onClose={() => setShowDNDPanel(false)} />}
         {showWeeklyInsights && <WeeklyInsights isOpen={showWeeklyInsights} onClose={() => setShowWeeklyInsights(false)} />}
+        {showCalendar && <CalendarSync isOpen={showCalendar} onClose={() => setShowCalendar(false)} />}
+        {showHabitTracker && <HabitTracker isOpen={showHabitTracker} onClose={() => setShowHabitTracker(false)} />}
+        {showNotificationBatching && <NotificationBatchingPanel isOpen={showNotificationBatching} onClose={() => setShowNotificationBatching(false)} />}
       </AnimatePresence>
     </div>
   );
