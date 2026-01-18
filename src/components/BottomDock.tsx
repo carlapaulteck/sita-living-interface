@@ -23,6 +23,7 @@ const PRIMARY_DOCK_ITEMS: DockItem[] = [
 ];
 
 const EXPANDED_ITEMS: DockItem[] = [
+  { id: "bioos", path: "/bio-os", icon: Heart, label: "BIO-OS", sublabel: "Health & Fitness" },
   { id: "family", path: "/family", icon: Users, label: "Family", sublabel: "Household" },
   { id: "home", path: "/home", icon: Home, label: "Home", sublabel: "Property" },
   { id: "finance", path: "/finance", icon: Wallet, label: "Finance", sublabel: "Budget" },
