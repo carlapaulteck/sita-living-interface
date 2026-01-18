@@ -30,6 +30,8 @@ import { DemoModeIndicator } from "@/components/DemoModeIndicator";
 import { DemoTutorial } from "@/components/DemoTutorial";
 import { HelpGuide } from "@/components/HelpGuide";
 import { DashboardTour } from "@/components/DashboardTour";
+import { AnnouncementBanner } from "@/components/AnnouncementBanner";
+import { SupportTicketForm } from "@/components/SupportTicketForm";
 import { useNavigate } from "react-router-dom";
 import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
@@ -108,6 +110,7 @@ const Index = () => {
   const [showDemoTutorial, setShowDemoTutorial] = useState(false);
   const [showHelpGuide, setShowHelpGuide] = useState(false);
   const [showDashboardTour, setShowDashboardTour] = useState(false);
+  const [showSupportTicket, setShowSupportTicket] = useState(false);
   const [recoveryAutoActivated, setRecoveryAutoActivated] = useState(false);
   const [userName, setUserName] = useState("Alex");
   const [greeting, setGreeting] = useState("Good morning");
@@ -280,6 +283,9 @@ const Index = () => {
           {/* Header */}
           <Header />
 
+          {/* Announcement Banners */}
+          {!isAdmin && <AnnouncementBanner />}
+
           {/* Role-Based Dashboard Content */}
           {isAdmin && !roleLoading ? (
             <div className="mt-6">
@@ -301,6 +307,7 @@ const Index = () => {
                   onOpenWakeUpReceipt={() => setShowReceipt(true)}
                   onOpenCognitiveBudget={() => setShowCognitiveBudget(true)}
                   onOpenHelp={() => setShowHelpGuide(true)}
+                  onOpenSupport={() => setShowSupportTicket(true)}
                 />
               </div>
 
@@ -656,6 +663,9 @@ const Index = () => {
         {showNotificationBatching && <NotificationBatchingPanel isOpen={showNotificationBatching} onClose={() => setShowNotificationBatching(false)} />}
         {showCognitiveBudget && <CognitiveBudgetVisualization isOpen={showCognitiveBudget} onClose={() => setShowCognitiveBudget(false)} />}
       </AnimatePresence>
+
+      {/* Support Ticket Form */}
+      <SupportTicketForm isOpen={showSupportTicket} onClose={() => setShowSupportTicket(false)} />
     </div>
   );
 };
