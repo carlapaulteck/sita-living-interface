@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { FastForward } from "lucide-react";
 import { OnboardingProvider, useOnboarding } from "./onboarding/OnboardingContext";
 import { OnboardingProgress } from "./onboarding/OnboardingProgress";
 import { OnboardingRecoveryModal } from "./onboarding/OnboardingRecoveryModal";
+import { SkipToEndModal } from "./onboarding/SkipToEndModal";
 import { OnboardingData } from "@/types/onboarding";
 import logoImage from "@/assets/logo.jpg";
 
@@ -118,6 +120,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [setupMode, setSetupMode] = useState<'quick' | 'guided' | 'deep'>('guided');
   const [showRecoveryModal, setShowRecoveryModal] = useState(false);
+  const [showSkipModal, setShowSkipModal] = useState(false);
   const [savedProgress, setSavedProgress] = useState<SavedProgress | null>(null);
 
   const getSteps = () => {
@@ -191,6 +194,12 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         />
       )}
 
+      {/* Skip to End Modal */}
+      <SkipToEndModalWrapper 
+        isOpen={showSkipModal}
+        onClose={() => setShowSkipModal(false)}
+      />
+
       <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-background relative overflow-hidden">
         {/* Background gradient effects */}
         <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 via-background to-primary/5" />
@@ -204,6 +213,20 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           </div>
           <span className="text-sm font-display text-muted-foreground hidden sm:block">Alpha Vision Method</span>
         </div>
+
+        {/* Skip to end button - show after setup mode selection */}
+        {currentStep > 2 && currentStep < STEPS.length - 1 && (
+          <motion.button
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5 }}
+            onClick={() => setShowSkipModal(true)}
+            className="fixed top-6 right-6 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-foreground/5 hover:bg-foreground/10 text-muted-foreground hover:text-foreground text-xs transition-colors border border-border/50"
+          >
+            <FastForward className="h-3 w-3" />
+            <span className="hidden sm:inline">Skip to end</span>
+          </motion.button>
+        )}
 
         {/* Progress dots */}
         {currentStep > 0 && currentStep < STEPS.length - 1 && (
@@ -237,6 +260,29 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         />
       </div>
     </OnboardingProvider>
+  );
+}
+
+// Wrapper to access onboarding context for skip functionality
+function SkipToEndModalWrapper({ 
+  isOpen, 
+  onClose 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void;
+}) {
+  const { skipToEnd } = useOnboarding();
+
+  const handleConfirm = () => {
+    skipToEnd();
+  };
+
+  return (
+    <SkipToEndModal
+      isOpen={isOpen}
+      onConfirm={handleConfirm}
+      onCancel={onClose}
+    />
   );
 }
 

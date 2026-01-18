@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Timer, BarChart3, Layers, EyeOff } from "lucide-react";
+import { Timer, BarChart3, Layers, EyeOff, Brain } from "lucide-react";
 import { useOnboarding } from "../OnboardingContext";
 import { GlassCard } from "@/components/GlassCard";
 import { Button } from "@/components/ui/button";
+import { HelpHint } from "@/components/HelpHint";
 
 type ProgressVisualization = "timer" | "progress" | "both" | "none";
 
@@ -12,6 +13,7 @@ interface ProgressOption {
   icon: typeof Timer;
   label: string;
   description: string;
+  benefit: string;
 }
 
 const progressOptions: ProgressOption[] = [
@@ -20,24 +22,28 @@ const progressOptions: ProgressOption[] = [
     icon: Timer,
     label: "Time-based",
     description: "Countdown timers and deadlines",
+    benefit: "We'll show time remaining and deadlines prominently",
   },
   {
     id: "progress",
     icon: BarChart3,
     label: "Progress-based",
     description: "Completion bars and percentages",
+    benefit: "We'll focus on what you've accomplished",
   },
   {
     id: "both",
     icon: Layers,
     label: "Show both",
     description: "Time and progress together",
+    benefit: "Full visibility into time and completion",
   },
   {
     id: "none",
     icon: EyeOff,
     label: "Minimal tracking",
     description: "Just let me work without pressure",
+    benefit: "Clean interface without progress pressure",
   },
 ];
 
@@ -63,6 +69,8 @@ export function ProgressStyleStep() {
     updateNestedData("cognitiveDiscovery" as any, "progressVisualization", "progress");
     nextStep();
   };
+
+  const selectedOption = progressOptions.find(o => o.id === selected);
   
   return (
     <div className="space-y-8">
@@ -71,13 +79,38 @@ export function ProgressStyleStep() {
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
       >
-        <h2 className="text-2xl sm:text-3xl font-display font-medium text-foreground mb-2">
-          How do you like to track progress?
-        </h2>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Brain className="h-4 w-4 text-primary" />
+          <span className="text-xs text-primary font-medium uppercase tracking-wider">
+            Cognitive Discovery
+          </span>
+        </div>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <h2 className="text-2xl sm:text-3xl font-display font-medium text-foreground">
+            How do you like to track progress?
+          </h2>
+          <HelpHint 
+            hint="For some, timers motivate. For others, they cause anxiety. We'll adapt progress displays to what helps you, not what stresses you."
+            variant="tip"
+          />
+        </div>
         <p className="text-muted-foreground">
           This affects how we show your accomplishments
         </p>
       </motion.div>
+
+      {/* What this affects hint */}
+      {selected && selectedOption && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
+        >
+          <p className="text-xs text-primary/80 bg-primary/10 inline-flex items-center gap-2 px-3 py-1.5 rounded-full">
+            <span>✨</span> {selectedOption.benefit}
+          </p>
+        </motion.div>
+      )}
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto">
         {progressOptions.map((option, index) => {

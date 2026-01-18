@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Zap, Pause, Shield } from "lucide-react";
+import { Zap, Pause, Shield, Brain } from "lucide-react";
 import { useOnboarding } from "../OnboardingContext";
 import { GlassCard } from "@/components/GlassCard";
 import { Button } from "@/components/ui/button";
+import { HelpHint } from "@/components/HelpHint";
 
 type ChangeTolerance = "low" | "medium" | "high";
 
@@ -12,6 +13,7 @@ interface ToleranceOption {
   icon: typeof Zap;
   label: string;
   description: string;
+  benefit: string;
 }
 
 const toleranceOptions: ToleranceOption[] = [
@@ -20,18 +22,21 @@ const toleranceOptions: ToleranceOption[] = [
     icon: Zap,
     label: "Embrace change",
     description: "I adapt quickly to new things",
+    benefit: "We'll introduce new features and updates proactively",
   },
   {
     id: "medium",
     icon: Pause,
     label: "Gradual changes",
     description: "Give me time to adjust",
+    benefit: "We'll preview changes and give you time to adapt",
   },
   {
     id: "low",
     icon: Shield,
     label: "Prefer stability",
     description: "Keep things predictable",
+    benefit: "We'll minimize surprises and keep the interface stable",
   },
 ];
 
@@ -57,6 +62,8 @@ export function ChangeToleranceStep() {
     updateNestedData("cognitiveDiscovery" as any, "changeTolerance", "medium");
     nextStep();
   };
+
+  const selectedOption = toleranceOptions.find(o => o.id === selected);
   
   return (
     <div className="space-y-8">
@@ -65,13 +72,38 @@ export function ChangeToleranceStep() {
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
       >
-        <h2 className="text-2xl sm:text-3xl font-display font-medium text-foreground mb-2">
-          How do you respond to change?
-        </h2>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Brain className="h-4 w-4 text-primary" />
+          <span className="text-xs text-primary font-medium uppercase tracking-wider">
+            Cognitive Discovery
+          </span>
+        </div>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <h2 className="text-2xl sm:text-3xl font-display font-medium text-foreground">
+            How do you respond to change?
+          </h2>
+          <HelpHint 
+            hint="This controls how we introduce new features and updates. Some minds need stability, others thrive on novelty. Both are valid."
+            variant="tip"
+          />
+        </div>
         <p className="text-muted-foreground">
           This helps us pace UI updates and transitions
         </p>
       </motion.div>
+
+      {/* What this affects hint */}
+      {selected && selectedOption && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
+        >
+          <p className="text-xs text-primary/80 bg-primary/10 inline-flex items-center gap-2 px-3 py-1.5 rounded-full">
+            <span>✨</span> {selectedOption.benefit}
+          </p>
+        </motion.div>
+      )}
       
       <div className="grid gap-4 max-w-lg mx-auto">
         {toleranceOptions.map((option, index) => {
