@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Mic, Send, Sparkles, Command } from "lucide-react";
 import { useVoiceRecognition } from "@/hooks/useVoiceRecognition";
 import { VoiceWaveform } from "./VoiceWaveform";
+import { useAvatarStateSafe } from "@/contexts/AvatarStateContext";
 
 interface CommandBarProps {
   onSubmit: (text: string) => void;
@@ -12,6 +13,9 @@ export function CommandBar({ onSubmit }: CommandBarProps) {
   const [input, setInput] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Avatar state context for global avatar animations
+  const avatarState = useAvatarStateSafe();
 
   const {
     isListening,
@@ -34,6 +38,13 @@ export function CommandBar({ onSubmit }: CommandBarProps) {
       }
     },
   });
+  
+  // Sync listening state with global avatar state
+  useEffect(() => {
+    if (isListening) {
+      avatarState?.setState("listening");
+    }
+  }, [isListening, avatarState]);
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();

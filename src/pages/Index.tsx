@@ -9,7 +9,8 @@ import { DeviceIntegration } from "@/components/DeviceIntegration";
 import { InsightsFeed } from "@/components/InsightsFeed";
 import { CommandBar } from "@/components/CommandBar";
 import { AvatarBubble } from "@/components/AvatarBubble";
-import { AvatarHero } from "@/components/AvatarHero";
+import { TalkingAvatarMockup } from "@/components/TalkingAvatarMockup";
+import { useAvatarState } from "@/contexts/AvatarStateContext";
 import { OnboardingFlow } from "@/components/OnboardingFlow";
 import { ConversationConsole } from "@/components/ConversationConsole";
 import { WarRoom } from "@/components/WarRoom";
@@ -374,24 +375,18 @@ const Index = () => {
               <div className="col-span-12 lg:col-span-6 space-y-4 sm:space-y-6 order-1 lg:order-2">
                 {/* Avatar Area with glowing halo */}
                 <GlassCard 
-                  className="p-6 sm:p-8 flex flex-col items-center justify-center min-h-[340px] sm:min-h-[380px] relative overflow-visible"
+                  className="p-6 sm:p-8 flex flex-col items-center justify-center min-h-[380px] sm:min-h-[420px] relative overflow-visible"
                   hover={false}
                   glow="brand"
                   onClick={() => setShowConsole(true)}
                 >
-                  {/* Glow effect behind avatar - Cyan/Teal neon ring */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64">
-                    <div className="absolute inset-0 rounded-full border-2 border-[#00FFFF]/40 animate-pulse" />
-                    <div className="absolute inset-2 rounded-full border border-[#00FFFF]/20" />
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#9370DB]/20 via-[#00FFFF]/15 to-[#FFD700]/20 rounded-full blur-3xl" />
-                  </div>
-                  
-                  <div className="relative z-10">
-                    <AvatarHero />
+                  {/* TalkingAvatarMockup with integrated halo rings */}
+                  <div className="relative z-10 mb-4">
+                    <TalkingAvatarMockup onAvatarClick={() => setShowConsole(true)} />
                   </div>
                   
                   {/* Metric Rings - Neon tube style */}
-                  <div className="flex items-center justify-center gap-4 sm:gap-8 mt-6 relative z-10">
+                  <div className="flex items-center justify-center gap-4 sm:gap-8 mt-8 relative z-10">
                     <MetricRing 
                       label="Readiness"
                       value="82%"
