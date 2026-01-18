@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Shield, Camera, Lock, Bell, CheckCircle2, AlertTriangle } from "lucide-react";
 import { GlassCard } from "@/components/GlassCard";
-import { SignalCard } from "@/components/SignalCard";
+import { MetricSignalCard } from "@/components/MetricSignalCard";
 import { Switch } from "@/components/ui/switch";
 
 interface SecurityDevice {
