@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { CognitiveBudgetVisualization } from "@/components/CognitiveBudgetVisualization";
 import { EnergyForecast } from "@/components/EnergyForecast";
+import { ProfileCompletionPrompt } from "@/components/ProfileCompletionPrompt";
 import { useAuth } from "@/hooks/useAuth";
 import { useHabits } from "@/hooks/useHabits";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
@@ -148,7 +149,11 @@ export function ClientDashboard({
   };
 
   return (
-    <div className="space-y-6">
+    <>
+      {/* Profile Completion Prompt for users who skipped onboarding */}
+      <ProfileCompletionPrompt />
+
+      <div className="space-y-6">
       {/* Welcome Section */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -383,6 +388,7 @@ export function ClientDashboard({
         {/* Energy Forecast */}
         <EnergyForecast compact />
       </div>
-    </div>
+      </div>
+    </>
   );
 }

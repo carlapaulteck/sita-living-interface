@@ -297,6 +297,9 @@ function OnboardingStepRenderer({
   onModeChange: (mode: 'quick' | 'guided' | 'deep') => void;
   mode: 'quick' | 'guided' | 'deep';
 }) {
+  const [direction, setDirection] = useState(0);
+  const [prevStep, setPrevStep] = useState(step);
+
   const getSteps = () => {
     switch (mode) {
       case 'quick': return QUICK_STEPS;
@@ -308,15 +311,54 @@ function OnboardingStepRenderer({
   const STEPS = getSteps();
   const CurrentStep = STEPS[step];
 
+  // Track direction for animations
+  useEffect(() => {
+    setDirection(step > prevStep ? 1 : -1);
+    setPrevStep(step);
+  }, [step, prevStep]);
+
+  // Enhanced slide variants with 3D perspective
+  const slideVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 300 : -300,
+      opacity: 0,
+      scale: 0.95,
+      rotateY: direction > 0 ? 15 : -15,
+      filter: "blur(4px)",
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      scale: 1,
+      rotateY: 0,
+      filter: "blur(0px)",
+    },
+    exit: (direction: number) => ({
+      x: direction > 0 ? -300 : 300,
+      opacity: 0,
+      scale: 0.95,
+      rotateY: direction > 0 ? -15 : 15,
+      filter: "blur(4px)",
+    }),
+  };
+
   return (
-    <div className="w-full max-w-2xl relative z-10">
-      <AnimatePresence mode="wait">
+    <div className="w-full max-w-2xl relative z-10" style={{ perspective: "1200px" }}>
+      <AnimatePresence mode="wait" custom={direction}>
         <motion.div
           key={step}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          custom={direction}
+          variants={slideVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{ 
+            duration: 0.5, 
+            ease: [0.32, 0.72, 0, 1],
+            opacity: { duration: 0.3 },
+            filter: { duration: 0.3 },
+          }}
+          style={{ transformStyle: "preserve-3d" }}
         >
           <StepWrapper step={step} onStepChange={onStepChange} mode={mode}>
             <CurrentStep />
