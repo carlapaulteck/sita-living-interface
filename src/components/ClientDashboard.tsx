@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { GlassCard } from "@/components/GlassCard";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { CognitiveBudgetVisualization } from "@/components/CognitiveBudgetVisualization";
 import { useAuth } from "@/hooks/useAuth";
 import { useHabits } from "@/hooks/useHabits";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
@@ -19,6 +20,7 @@ import {
   Brain,
   Zap,
   TrendingUp,
+  Sunrise,
 } from "lucide-react";
 
 interface QuickActionProps {
@@ -27,6 +29,8 @@ interface QuickActionProps {
   onOpenNotifications: () => void;
   onOpenRecovery: () => void;
   onOpenWeeklyInsights: () => void;
+  onOpenWakeUpReceipt?: () => void;
+  onOpenCognitiveBudget?: () => void;
 }
 
 export function ClientDashboard({
@@ -35,6 +39,8 @@ export function ClientDashboard({
   onOpenNotifications,
   onOpenRecovery,
   onOpenWeeklyInsights,
+  onOpenWakeUpReceipt,
+  onOpenCognitiveBudget,
 }: QuickActionProps) {
   const { user } = useAuth();
   const { habits, getTodayProgress, getStreak, isCompletedToday } = useHabits();
@@ -88,6 +94,22 @@ export function ClientDashboard({
       color: "text-pink-400",
       bgColor: "bg-pink-400/10",
     },
+    ...(onOpenWakeUpReceipt ? [{
+      icon: Sunrise,
+      label: "Wake-Up",
+      description: "Morning receipt",
+      onClick: onOpenWakeUpReceipt,
+      color: "text-amber-400",
+      bgColor: "bg-amber-400/10",
+    }] : []),
+    ...(onOpenCognitiveBudget ? [{
+      icon: Brain,
+      label: "Energy",
+      description: "Cognitive budget",
+      onClick: onOpenCognitiveBudget,
+      color: "text-secondary",
+      bgColor: "bg-secondary/10",
+    }] : []),
   ];
 
   const getStateColor = () => {
@@ -327,39 +349,8 @@ export function ClientDashboard({
         </GlassCard>
       </div>
 
-      {/* Cognitive Budget */}
-      {cognitiveState && (
-        <GlassCard className="p-5">
-          <h3 className="text-sm font-medium text-foreground flex items-center gap-2 mb-4">
-            <Brain className="h-4 w-4 text-[#9370DB]" />
-            Cognitive Budget
-          </h3>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-semibold text-foreground">
-                {Math.round(cognitiveState.cognitiveBudget * 100)}%
-              </div>
-              <p className="text-xs text-muted-foreground">Budget Remaining</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-semibold text-[#00FFFF]">
-                {Math.round(cognitiveState.focusLevel * 100)}%
-              </div>
-              <p className="text-xs text-muted-foreground">Focus Level</p>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-semibold text-[#FFD700]">
-                {Math.round((1 - cognitiveState.stressIndex) * 100)}%
-              </div>
-              <p className="text-xs text-muted-foreground">Energy</p>
-            </div>
-          </div>
-          <Progress
-            value={Math.round(cognitiveState.cognitiveBudget * 100)}
-            className="h-2 mt-4"
-          />
-        </GlassCard>
-      )}
+      {/* Cognitive Budget Visualization */}
+      <CognitiveBudgetVisualization compact />
     </div>
   );
 }

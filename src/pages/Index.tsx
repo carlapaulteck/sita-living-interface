@@ -25,6 +25,7 @@ import { HabitTracker } from "@/components/HabitTracker";
 import { NotificationBatchingPanel } from "@/components/NotificationBatchingPanel";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { ClientDashboard } from "@/components/ClientDashboard";
+import { CognitiveBudgetVisualization } from "@/components/CognitiveBudgetVisualization";
 import { useNavigate } from "react-router-dom";
 import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
@@ -98,6 +99,7 @@ const Index = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [showHabitTracker, setShowHabitTracker] = useState(false);
   const [showNotificationBatching, setShowNotificationBatching] = useState(false);
+  const [showCognitiveBudget, setShowCognitiveBudget] = useState(false);
   const [recoveryAutoActivated, setRecoveryAutoActivated] = useState(false);
   const [userName, setUserName] = useState("Alex");
   const [greeting, setGreeting] = useState("Good morning");
@@ -251,6 +253,8 @@ const Index = () => {
                     setShowRecoveryMode(true);
                   }}
                   onOpenWeeklyInsights={() => setShowWeeklyInsights(true)}
+                  onOpenWakeUpReceipt={() => setShowReceipt(true)}
+                  onOpenCognitiveBudget={() => setShowCognitiveBudget(true)}
                 />
               </div>
 
@@ -488,6 +492,28 @@ const Index = () => {
         >
           <Sunrise className="h-5 w-5 text-[#FFD700]" />
         </motion.button>
+        {/* Wake-Up Receipt */}
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1.15 }}
+          onClick={() => setShowReceipt(true)}
+          className="p-3 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 backdrop-blur-xl hover:scale-105 transition-transform shadow-[0_0_20px_rgba(251,191,36,0.2)]"
+          title="Wake-Up Receipt"
+        >
+          <Wallet className="h-5 w-5 text-amber-400" />
+        </motion.button>
+        {/* Cognitive Budget */}
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1.18 }}
+          onClick={() => setShowCognitiveBudget(true)}
+          className="p-3 rounded-xl bg-gradient-to-br from-secondary/20 to-primary/20 border border-secondary/30 backdrop-blur-xl hover:scale-105 transition-transform shadow-[0_0_20px_rgba(147,112,219,0.2)]"
+          title="Cognitive Budget"
+        >
+          <Brain className="h-5 w-5 text-secondary" />
+        </motion.button>
         {/* Trust Controls */}
         <motion.button
           initial={{ opacity: 0, scale: 0.8 }}
@@ -547,6 +573,7 @@ const Index = () => {
         {showCalendar && <CalendarSync isOpen={showCalendar} onClose={() => setShowCalendar(false)} />}
         {showHabitTracker && <HabitTracker isOpen={showHabitTracker} onClose={() => setShowHabitTracker(false)} />}
         {showNotificationBatching && <NotificationBatchingPanel isOpen={showNotificationBatching} onClose={() => setShowNotificationBatching(false)} />}
+        {showCognitiveBudget && <CognitiveBudgetVisualization isOpen={showCognitiveBudget} onClose={() => setShowCognitiveBudget(false)} />}
       </AnimatePresence>
     </div>
   );
