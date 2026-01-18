@@ -24,11 +24,18 @@ import {
   Activity,
   Lock,
   EyeOff,
-  Fingerprint
+  Fingerprint,
+  Smartphone,
+  BellRing,
+  BellOff,
+  CheckCircle2,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCognitiveSafe } from "@/contexts/CognitiveContext";
 import { useCognitiveSignals } from "@/hooks/useCognitiveSignals";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { toast } from "sonner";
 
 type SettingsTab = "profile" | "autonomy" | "cognitive" | "personalization" | "notifications" | "boundaries" | "data" | "appearance";
 
@@ -42,6 +49,208 @@ const TABS: { id: SettingsTab; label: string; icon: typeof User }[] = [
   { id: "data", label: "Data & Privacy", icon: Shield },
   { id: "appearance", label: "Appearance", icon: Palette },
 ];
+
+// Notifications Settings Component
+function NotificationsSettings() {
+  const { 
+    isSupported, 
+    permission, 
+    isSubscribed, 
+    isLoading, 
+    subscribe, 
+    unsubscribe 
+  } = usePushNotifications();
+  
+  const [testingSend, setTestingSend] = useState(false);
+
+  const handlePushToggle = async () => {
+    if (isSubscribed) {
+      await unsubscribe();
+      toast.success("Push notifications disabled");
+    } else {
+      const success = await subscribe();
+      if (success) {
+        toast.success("Push notifications enabled!");
+      } else {
+        toast.error("Failed to enable push notifications");
+      }
+    }
+  };
+
+  const sendTestNotification = async () => {
+    setTestingSend(true);
+    try {
+      // Show a local notification as a test
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('SITA Test Notification', {
+          body: 'Push notifications are working correctly!',
+          icon: '/favicon.ico',
+          badge: '/favicon.ico'
+        });
+        toast.success("Test notification sent!");
+      }
+    } catch (error) {
+      toast.error("Failed to send test notification");
+    } finally {
+      setTestingSend(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      <div>
+        <h2 className="text-xl font-display font-medium text-foreground mb-1">
+          Notifications
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Control what reaches you
+        </p>
+      </div>
+
+      {/* Push Notifications Section */}
+      <GlassCard className="p-6">
+        <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
+          <Smartphone className="h-4 w-4 text-primary" />
+          Push Notifications
+        </h3>
+        
+        {!isSupported ? (
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-destructive/10 text-destructive">
+            <BellOff className="h-5 w-5" />
+            <div>
+              <p className="text-sm font-medium">Not Supported</p>
+              <p className="text-xs opacity-80">Your browser doesn't support push notifications</p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Push Status */}
+            <div className="flex items-center justify-between p-4 rounded-xl bg-foreground/5">
+              <div className="flex items-center gap-3">
+                {isSubscribed ? (
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <BellRing className="h-5 w-5 text-primary" />
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                    <BellOff className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {isSubscribed ? "Push notifications enabled" : "Push notifications disabled"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {isSubscribed 
+                      ? "You'll receive alerts even when the app is closed" 
+                      : "Enable to get notified of important updates"}
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant={isSubscribed ? "outline" : "default"}
+                size="sm"
+                onClick={handlePushToggle}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : isSubscribed ? (
+                  "Disable"
+                ) : (
+                  "Enable"
+                )}
+              </Button>
+            </div>
+
+            {/* Test Notification */}
+            {isSubscribed && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={sendTestNotification}
+                disabled={testingSend}
+                className="w-full"
+              >
+                {testingSend ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                )}
+                Send Test Notification
+              </Button>
+            )}
+
+            {/* Permission Status */}
+            {permission === 'denied' && (
+              <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-xs">
+                Notifications are blocked. Please enable them in your browser settings.
+              </div>
+            )}
+          </div>
+        )}
+      </GlassCard>
+
+      {/* Notification Categories */}
+      <GlassCard className="p-6">
+        <h3 className="text-sm font-medium text-foreground mb-4">Notification Types</h3>
+        <div className="space-y-4">
+          {[
+            { label: "Daily Summary", desc: "Morning briefing with key metrics", enabled: true },
+            { label: "Critical Alerts", desc: "Urgent issues requiring attention", enabled: true },
+            { label: "Revenue Updates", desc: "Payments and invoice activity", enabled: true },
+            { label: "Experiment Results", desc: "A/B test completions", enabled: false },
+            { label: "Integration Alerts", desc: "Connection status changes", enabled: true },
+            { label: "Cognitive State Changes", desc: "When your focus patterns shift", enabled: false },
+          ].map((notif, i) => (
+            <div key={i} className="flex items-center justify-between">
+              <div>
+                <span className="text-sm font-medium text-foreground">{notif.label}</span>
+                <p className="text-xs text-muted-foreground">{notif.desc}</p>
+              </div>
+              <div className={`w-10 h-5 rounded-full transition-all cursor-pointer ${notif.enabled ? "bg-primary" : "bg-foreground/20"}`}>
+                <div className={`w-4 h-4 rounded-full bg-foreground mt-0.5 transition-transform ${notif.enabled ? "translate-x-5" : "translate-x-0.5"}`} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </GlassCard>
+
+      {/* Quiet Hours */}
+      <GlassCard className="p-6">
+        <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
+          <Clock className="h-4 w-4" />
+          Quiet Hours
+        </h3>
+        <p className="text-xs text-muted-foreground mb-4">
+          No push notifications during these hours (in-app notifications still work)
+        </p>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Start</label>
+            <input
+              type="time"
+              defaultValue="22:00"
+              className="w-full px-3 py-2 rounded-lg bg-foreground/5 text-foreground text-sm outline-none"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">End</label>
+            <input
+              type="time"
+              defaultValue="07:00"
+              className="w-full px-3 py-2 rounded-lg bg-foreground/5 text-foreground text-sm outline-none"
+            />
+          </div>
+        </div>
+      </GlassCard>
+    </motion.div>
+  );
+}
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("autonomy");
@@ -350,42 +559,7 @@ export default function Settings() {
           )}
 
           {activeTab === "notifications" && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-6"
-            >
-              <div>
-                <h2 className="text-xl font-display font-medium text-foreground mb-1">
-                  Notifications
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  Control what reaches you
-                </p>
-              </div>
-
-              <GlassCard className="p-6">
-                <div className="space-y-4">
-                  {[
-                    { label: "Daily Summary", desc: "Morning briefing with key metrics", enabled: true },
-                    { label: "Critical Alerts", desc: "Urgent issues requiring attention", enabled: true },
-                    { label: "Revenue Updates", desc: "Payments and invoice activity", enabled: true },
-                    { label: "Experiment Results", desc: "A/B test completions", enabled: false },
-                    { label: "Integration Alerts", desc: "Connection status changes", enabled: true },
-                  ].map((notif, i) => (
-                    <div key={i} className="flex items-center justify-between">
-                      <div>
-                        <span className="text-sm font-medium text-foreground">{notif.label}</span>
-                        <p className="text-xs text-muted-foreground">{notif.desc}</p>
-                      </div>
-                      <div className={`w-10 h-5 rounded-full transition-all ${notif.enabled ? "bg-primary" : "bg-foreground/20"}`}>
-                        <div className={`w-4 h-4 rounded-full bg-foreground mt-0.5 transition-transform ${notif.enabled ? "translate-x-5" : "translate-x-0.5"}`} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </GlassCard>
-            </motion.div>
+            <NotificationsSettings />
           )}
 
           {activeTab === "profile" && (
