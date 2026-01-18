@@ -3,6 +3,9 @@ import { ModuleLayout } from "@/components/ModuleLayout";
 import { GlassCard } from "@/components/GlassCard";
 import { MetricRing } from "@/components/MetricRing";
 import { sovereigntyData } from "@/lib/demoData";
+import { ArbitrageSignals } from "@/components/ArbitrageSignals";
+import { ExitReadiness } from "@/components/ExitReadiness";
+import { BoundariesPanel } from "@/components/BoundariesPanel";
 import { 
   Shield, 
   Database, 
@@ -19,12 +22,17 @@ import {
   Mail,
   AlertTriangle,
   CheckCircle2,
-  ExternalLink
+  ExternalLink,
+  TrendingUp,
+  Target,
+  DollarSign
 } from "lucide-react";
 import { motion } from "framer-motion";
 
 const tabs = [
   { id: "overview", label: "Overview" },
+  { id: "wealth", label: "Wealth Engine" },
+  { id: "boundaries", label: "Boundaries" },
   { id: "data", label: "Data" },
   { id: "privacy", label: "Privacy" },
   { id: "identity", label: "Identity" },
@@ -40,6 +48,10 @@ export default function Sovereignty() {
     switch (activeTab) {
       case "overview":
         return <OverviewTab data={data} />;
+      case "wealth":
+        return <WealthTab />;
+      case "boundaries":
+        return <BoundariesTab />;
       case "data":
         return <DataTab data={data.data} />;
       case "privacy":
@@ -65,6 +77,79 @@ export default function Sovereignty() {
     >
       {renderContent()}
     </ModuleLayout>
+  );
+}
+
+function WealthTab() {
+  return (
+    <div className="grid grid-cols-12 gap-6">
+      {/* Arbitrage Signals */}
+      <div className="col-span-12 lg:col-span-7">
+        <ArbitrageSignals />
+      </div>
+      
+      {/* Exit Readiness */}
+      <div className="col-span-12 lg:col-span-5">
+        <ExitReadiness />
+      </div>
+
+      {/* Wealth Summary Cards */}
+      <div className="col-span-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <GlassCard className="p-5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 rounded-xl bg-secondary/10">
+                <DollarSign className="h-4 w-4 text-secondary" />
+              </div>
+              <span className="text-sm text-muted-foreground">Total Portfolio</span>
+            </div>
+            <p className="text-2xl font-display font-bold text-foreground">$142.8K</p>
+            <p className="text-xs text-secondary mt-1">+12.4% this month</p>
+          </GlassCard>
+
+          <GlassCard className="p-5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 rounded-xl bg-primary/10">
+                <TrendingUp className="h-4 w-4 text-primary" />
+              </div>
+              <span className="text-sm text-muted-foreground">Active Microbrands</span>
+            </div>
+            <p className="text-2xl font-display font-bold text-foreground">4</p>
+            <p className="text-xs text-muted-foreground mt-1">2 scaling, 2 stable</p>
+          </GlassCard>
+
+          <GlassCard className="p-5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 rounded-xl bg-secondary/10">
+                <Target className="h-4 w-4 text-secondary" />
+              </div>
+              <span className="text-sm text-muted-foreground">Opportunities</span>
+            </div>
+            <p className="text-2xl font-display font-bold text-foreground">3</p>
+            <p className="text-xs text-secondary mt-1">2 actionable now</p>
+          </GlassCard>
+
+          <GlassCard className="p-5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 rounded-xl bg-primary/10">
+                <Shield className="h-4 w-4 text-primary" />
+              </div>
+              <span className="text-sm text-muted-foreground">Risk Level</span>
+            </div>
+            <p className="text-2xl font-display font-bold text-secondary">Low</p>
+            <p className="text-xs text-muted-foreground mt-1">Diversified portfolio</p>
+          </GlassCard>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BoundariesTab() {
+  return (
+    <div className="max-w-2xl mx-auto">
+      <BoundariesPanel />
+    </div>
   );
 }
 
