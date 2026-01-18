@@ -30,10 +30,10 @@ export function PropertyDashboard() {
 
       {/* Property Signals */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <SignalCard title="Mortgage" value="$2,840/mo" subtitle="15 years left" icon={DollarSign} status="healthy" />
-        <SignalCard title="Property Tax" value="Due Apr 1" subtitle="$4,200" icon={DollarSign} status="attention" />
-        <SignalCard title="Insurance" value="Active" subtitle="Renews Dec" icon={Home} status="healthy" />
-        <SignalCard title="Neighborhood" value="A+" subtitle="Safety score" icon={MapPin} status="healthy" />
+        <MetricSignalCard title="Mortgage" value="$2,840/mo" subtitle="15 years left" icon={DollarSign} status="healthy" />
+        <MetricSignalCard title="Property Tax" value="Due Apr 1" subtitle="$4,200" icon={DollarSign} status="warning" />
+        <MetricSignalCard title="Insurance" value="Active" subtitle="Renews Dec" icon={Home} status="healthy" />
+        <MetricSignalCard title="Neighborhood" value="A+" subtitle="Safety score" icon={MapPin} status="healthy" />
       </div>
 
       {/* Neighborhood Insights */}

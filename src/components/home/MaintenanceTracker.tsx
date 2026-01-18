@@ -31,10 +31,10 @@ export function MaintenanceTracker() {
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <SignalCard title="Upcoming" value="3" subtitle="This month" icon={Calendar} status="neutral" />
-        <SignalCard title="Due Now" value="1" subtitle="Needs attention" icon={AlertTriangle} status="attention" />
-        <SignalCard title="Overdue" value="1" subtitle="Urgent" icon={AlertTriangle} status="critical" />
-        <SignalCard title="Completed" value="8" subtitle="This year" icon={CheckCircle2} status="healthy" />
+        <MetricSignalCard title="Upcoming" value="3" subtitle="This month" icon={Calendar} status="neutral" />
+        <MetricSignalCard title="Due Now" value="1" subtitle="Needs attention" icon={AlertTriangle} status="warning" />
+        <MetricSignalCard title="Overdue" value="1" subtitle="Urgent" icon={AlertTriangle} status="critical" />
+        <MetricSignalCard title="Completed" value="8" subtitle="This year" icon={CheckCircle2} status="healthy" />
       </div>
 
       {/* Task List */}

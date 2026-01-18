@@ -47,7 +47,7 @@ export function FamilyHub() {
           value="3"
           subtitle="Family events"
           icon={Calendar}
-          status="attention"
+          status="warning"
         />
         <MetricSignalCard
           title="Wellness"

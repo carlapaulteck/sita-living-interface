@@ -58,10 +58,10 @@ export function SecurityOverview() {
 
       {/* Signal Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <SignalCard title="Cameras" value={`${DEVICES.filter(d => d.name.includes("Camera")).length}`} subtitle="Recording" icon={Camera} status="healthy" />
-        <SignalCard title="Sensors" value="4" subtitle="Active" icon={Shield} status="healthy" />
-        <SignalCard title="Last Alert" value="None" subtitle="Past 24h" icon={Bell} status="healthy" />
-        <SignalCard title="Issue" value="1" subtitle="Offline sensor" icon={AlertTriangle} status="attention" />
+        <MetricSignalCard title="Cameras" value={`${DEVICES.filter(d => d.name.includes("Camera")).length}`} subtitle="Recording" icon={Camera} status="healthy" />
+        <MetricSignalCard title="Sensors" value="4" subtitle="Active" icon={Shield} status="healthy" />
+        <MetricSignalCard title="Last Alert" value="None" subtitle="Past 24h" icon={Bell} status="healthy" />
+        <MetricSignalCard title="Issue" value="1" subtitle="Offline sensor" icon={AlertTriangle} status="warning" />
       </div>
 
       {/* Device List */}
