@@ -14,6 +14,9 @@ import { OnboardingFlow } from "@/components/OnboardingFlow";
 import { ConversationConsole } from "@/components/ConversationConsole";
 import { WarRoom } from "@/components/WarRoom";
 import { WakeUpReceipt } from "@/components/WakeUpReceipt";
+import { MorningBriefing } from "@/components/MorningBriefing";
+import { TrustControlsDashboard } from "@/components/TrustControlsDashboard";
+import { AdaptationIndicator } from "@/components/TrustSafeguards";
 import { useNavigate } from "react-router-dom";
 import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
@@ -29,7 +32,8 @@ import {
   Map,
   Sunrise,
   Wallet,
-  Cpu
+  Cpu,
+  ShieldCheck
 } from "lucide-react";
 
 // Decorative graphics for stat cards
@@ -69,6 +73,8 @@ const Index = () => {
   const [showConsole, setShowConsole] = useState(false);
   const [showWarRoom, setShowWarRoom] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
+  const [showBriefing, setShowBriefing] = useState(false);
+  const [showTrustControls, setShowTrustControls] = useState(false);
   const [userName, setUserName] = useState("Alex");
   const [greeting, setGreeting] = useState("Good morning");
   const navigate = useNavigate();
@@ -107,7 +113,11 @@ const Index = () => {
     const lower = text.toLowerCase();
     if (lower.includes("war") || lower.includes("map") || lower.includes("system")) {
       setShowWarRoom(true);
-    } else if (lower.includes("receipt") || lower.includes("wake") || lower.includes("morning")) {
+    } else if (lower.includes("briefing") || lower.includes("morning")) {
+      setShowBriefing(true);
+    } else if (lower.includes("trust") || lower.includes("control") || lower.includes("adapt")) {
+      setShowTrustControls(true);
+    } else if (lower.includes("receipt") || lower.includes("wake")) {
       setShowReceipt(true);
     } else if (lower.includes("business") || lower.includes("revenue") || lower.includes("growth")) {
       navigate("/business-growth");
@@ -306,17 +316,30 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Adaptation Indicator */}
+      <AdaptationIndicator />
+
       {/* Quick Action Buttons */}
       <div className="fixed bottom-28 md:bottom-24 right-4 flex flex-col gap-2 z-30">
         <motion.button
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 1 }}
-          onClick={() => setShowReceipt(true)}
+          transition={{ delay: 0.9 }}
+          onClick={() => setShowBriefing(true)}
           className="p-3 rounded-xl bg-gradient-to-br from-[#FFD700]/20 to-[#9370DB]/20 border border-[#FFD700]/30 backdrop-blur-xl hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,215,0,0.15)]"
-          title="Wake-Up Receipt"
+          title="Morning Briefing"
         >
           <Sunrise className="h-5 w-5 text-[#FFD700]" />
+        </motion.button>
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1 }}
+          onClick={() => setShowTrustControls(true)}
+          className="p-3 rounded-xl bg-secondary/10 border border-secondary/20 backdrop-blur-xl hover:scale-105 transition-transform"
+          title="Trust Controls"
+        >
+          <ShieldCheck className="h-5 w-5 text-secondary" />
         </motion.button>
         <motion.button
           initial={{ opacity: 0, scale: 0.8 }}
@@ -348,6 +371,8 @@ const Index = () => {
         )}
         {showWarRoom && <WarRoom isOpen={showWarRoom} onClose={() => setShowWarRoom(false)} />}
         {showReceipt && <WakeUpReceipt isOpen={showReceipt} onClose={() => setShowReceipt(false)} />}
+        {showBriefing && <MorningBriefing isOpen={showBriefing} onClose={() => setShowBriefing(false)} />}
+        {showTrustControls && <TrustControlsDashboard isOpen={showTrustControls} onClose={() => setShowTrustControls(false)} />}
       </AnimatePresence>
     </div>
   );
