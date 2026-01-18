@@ -29,6 +29,7 @@ import { CognitiveBudgetVisualization } from "@/components/CognitiveBudgetVisual
 import { DemoModeIndicator } from "@/components/DemoModeIndicator";
 import { DemoTutorial } from "@/components/DemoTutorial";
 import { HelpGuide } from "@/components/HelpGuide";
+import { DashboardTour } from "@/components/DashboardTour";
 import { useNavigate } from "react-router-dom";
 import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
@@ -106,6 +107,7 @@ const Index = () => {
   const [showCognitiveBudget, setShowCognitiveBudget] = useState(false);
   const [showDemoTutorial, setShowDemoTutorial] = useState(false);
   const [showHelpGuide, setShowHelpGuide] = useState(false);
+  const [showDashboardTour, setShowDashboardTour] = useState(false);
   const [recoveryAutoActivated, setRecoveryAutoActivated] = useState(false);
   const [userName, setUserName] = useState("Alex");
   const [greeting, setGreeting] = useState("Good morning");
@@ -184,6 +186,15 @@ const Index = () => {
   const handleOnboardingComplete = (data: { name: string }) => {
     setUserName(data.name);
     setShowOnboarding(false);
+    // Show dashboard tour after onboarding completes
+    setTimeout(() => {
+      setShowDashboardTour(true);
+    }, 800);
+  };
+
+  const handleDashboardTourComplete = () => {
+    setShowDashboardTour(false);
+    localStorage.setItem("sita_dashboard_tour_completed", "true");
   };
 
   const handleCommand = (text: string) => {
@@ -600,6 +611,13 @@ const Index = () => {
       <HelpGuide 
         isOpen={showHelpGuide} 
         onClose={() => setShowHelpGuide(false)} 
+      />
+
+      {/* Dashboard Tour - shows after onboarding */}
+      <DashboardTour
+        isOpen={showDashboardTour}
+        onClose={() => setShowDashboardTour(false)}
+        onComplete={handleDashboardTourComplete}
       />
 
       {/* Modals */}
