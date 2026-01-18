@@ -386,53 +386,91 @@ const Index = () => {
             <BellOff className="h-5 w-5 text-primary" />
           </motion.button>
         )}
+        {/* Calendar Quick Action */}
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.6 }}
+          onClick={() => setShowCalendar(true)}
+          className="p-3 rounded-xl bg-gradient-to-br from-[#00FFFF]/20 to-[#9370DB]/20 border border-[#00FFFF]/30 backdrop-blur-xl hover:scale-105 transition-transform"
+          title="Calendar"
+        >
+          <CalendarDays className="h-5 w-5 text-[#00FFFF]" />
+        </motion.button>
+        {/* Habits Quick Action */}
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.7 }}
+          onClick={() => setShowHabitTracker(true)}
+          className="p-3 rounded-xl bg-gradient-to-br from-[#9370DB]/20 to-[#00FFFF]/20 border border-[#9370DB]/30 backdrop-blur-xl hover:scale-105 transition-transform"
+          title="Habits"
+        >
+          <CheckSquare className="h-5 w-5 text-[#9370DB]" />
+        </motion.button>
+        {/* Notifications Quick Action */}
         <motion.button
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.8 }}
-          onClick={() => {
-            setRecoveryAutoActivated(false);
-            setShowRecoveryMode(true);
-          }}
-          className="p-3 rounded-xl bg-gradient-to-br from-[#00FFFF]/20 to-[#9370DB]/20 border border-[#00FFFF]/30 backdrop-blur-xl hover:scale-105 transition-transform"
-          title="Recovery Mode"
+          onClick={() => setShowNotificationBatching(true)}
+          className="p-3 rounded-xl bg-gradient-to-br from-[#FFD700]/20 to-[#9370DB]/20 border border-[#FFD700]/30 backdrop-blur-xl hover:scale-105 transition-transform"
+          title="Smart Notifications"
         >
-          <Moon className="h-5 w-5 text-[#00FFFF]" />
+          <Layers className="h-5 w-5 text-[#FFD700]" />
         </motion.button>
+        {/* Recovery Mode */}
         <motion.button
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.9 }}
-          onClick={() => setShowBriefing(true)}
-          className="p-3 rounded-xl bg-gradient-to-br from-[#FFD700]/20 to-[#9370DB]/20 border border-[#FFD700]/30 backdrop-blur-xl hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,215,0,0.15)]"
-          title="Morning Briefing"
+          onClick={() => {
+            setRecoveryAutoActivated(false);
+            setShowRecoveryMode(true);
+          }}
+          className="p-3 rounded-xl bg-gradient-to-br from-pink-500/20 to-[#9370DB]/20 border border-pink-500/30 backdrop-blur-xl hover:scale-105 transition-transform"
+          title="Recovery Mode"
         >
-          <Sunrise className="h-5 w-5 text-[#FFD700]" />
+          <Moon className="h-5 w-5 text-pink-400" />
         </motion.button>
+        {/* Weekly Insights */}
         <motion.button
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 1 }}
-          onClick={() => setShowTrustControls(true)}
-          className="p-3 rounded-xl bg-secondary/10 border border-secondary/20 backdrop-blur-xl hover:scale-105 transition-transform"
-          title="Trust Controls"
-        >
-          <ShieldCheck className="h-5 w-5 text-secondary" />
-        </motion.button>
-        <motion.button
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 1.1 }}
+          transition={{ delay: 1.0 }}
           onClick={() => setShowWeeklyInsights(true)}
           className="p-3 rounded-xl bg-gradient-to-br from-[#9370DB]/20 to-[#00FFFF]/20 border border-[#9370DB]/30 backdrop-blur-xl hover:scale-105 transition-transform"
           title="Weekly Insights"
         >
           <BarChart3 className="h-5 w-5 text-[#9370DB]" />
         </motion.button>
+        {/* Morning Briefing */}
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1.1 }}
+          onClick={() => setShowBriefing(true)}
+          className="p-3 rounded-xl bg-gradient-to-br from-[#FFD700]/20 to-[#9370DB]/20 border border-[#FFD700]/30 backdrop-blur-xl hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,215,0,0.15)]"
+          title="Morning Briefing"
+        >
+          <Sunrise className="h-5 w-5 text-[#FFD700]" />
+        </motion.button>
+        {/* Trust Controls */}
         <motion.button
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 1.2 }}
+          onClick={() => setShowTrustControls(true)}
+          className="p-3 rounded-xl bg-secondary/10 border border-secondary/20 backdrop-blur-xl hover:scale-105 transition-transform"
+          title="Trust Controls"
+        >
+          <ShieldCheck className="h-5 w-5 text-secondary" />
+        </motion.button>
+        {/* War Room */}
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1.3 }}
           onClick={() => setShowWarRoom(true)}
           className="p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-xl hover:scale-105 transition-transform"
           title="War Room"
