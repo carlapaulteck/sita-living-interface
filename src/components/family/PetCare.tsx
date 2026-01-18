@@ -39,25 +39,25 @@ export function PetCare() {
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <SignalCard
+            <MetricSignalCard
               title="Health"
               value="Excellent"
               icon={Heart}
               status="healthy"
             />
-            <SignalCard
+            <MetricSignalCard
               title="Next Vet"
               value={pet.nextVet}
               icon={Calendar}
-              status="attention"
+              status="warning"
             />
-            <SignalCard
+            <MetricSignalCard
               title="Medications"
               value="Up to date"
               icon={Pill}
               status="healthy"
             />
-            <SignalCard
+            <MetricSignalCard
               title="Vaccines"
               value="Current"
               icon={Check}
