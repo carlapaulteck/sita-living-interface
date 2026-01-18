@@ -23,12 +23,16 @@ import { WeeklyInsights } from "@/components/WeeklyInsights";
 import { CalendarSync } from "@/components/CalendarSync";
 import { HabitTracker } from "@/components/HabitTracker";
 import { NotificationBatchingPanel } from "@/components/NotificationBatchingPanel";
+import { AdminDashboard } from "@/components/AdminDashboard";
+import { ClientDashboard } from "@/components/ClientDashboard";
 import { useNavigate } from "react-router-dom";
 import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
 import { useAdaptationSafe } from "@/contexts/AdaptationContext";
 import { useDoNotDisturb } from "@/hooks/useDoNotDisturb";
-import { 
+import { useUserRole } from "@/hooks/useUserRole";
+import { useAuth } from "@/hooks/useAuth";
+import {
   TrendingUp, 
   Moon, 
   Brain, 
@@ -99,6 +103,10 @@ const Index = () => {
   const [greeting, setGreeting] = useState("Good morning");
   const navigate = useNavigate();
   const { handleTouchStart, handleTouchEnd } = useSwipeNavigation();
+  
+  // Auth and role hooks
+  const { user } = useAuth();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   
   // Adaptation and DND hooks
   const adaptation = useAdaptationSafe();
@@ -225,147 +233,172 @@ const Index = () => {
           {/* Header */}
           <Header />
 
-          {/* Greeting */}
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mt-6 sm:mt-8 mb-4 sm:mb-6"
-          >
-            <h1 className="text-2xl sm:text-3xl font-['Playfair_Display'] font-medium text-foreground">
-              {greeting}, <span className="text-[#FFD700]">{userName}</span>.
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">Systems stable. No action required.</p>
-          </motion.div>
-
-          {/* Main Grid */}
-          <div className="grid grid-cols-12 gap-3 lg:gap-6">
-            {/* Left Column - Quick Stats */}
-            <div className="col-span-12 lg:col-span-3 space-y-3 order-2 lg:order-1">
-              <QuickStatCard 
-                title="Wealth Portfolio"
-                value="+8.2%"
-                subtitle="This Week"
-                icon={TrendingUp}
-                graphic={<GoldStarburst />}
-                accentColor="gold"
-                isLive
-                isConnected={isConnected}
-                delay={100}
-              />
-              <QuickStatCard 
-                title="Life Balance"
-                value="7.5"
-                suffix=" Hrs"
-                icon={Moon}
-                graphic={<GoldStarburst />}
-                accentColor="gold"
-                delay={200}
-              />
-              <QuickStatCard 
-                title="Mind State"
-                value="12"
-                suffix=" Min"
-                icon={Brain}
-                graphic={<CyanOrb />}
-                accentColor="cyan"
-                delay={300}
-              />
-              <QuickStatCard 
-                title="Connected Devices"
-                value="5"
-                suffix=" Active"
-                icon={Cpu}
-                accentColor="cyan"
-                delay={400}
-              />
+          {/* Role-Based Dashboard Content */}
+          {isAdmin && !roleLoading ? (
+            <div className="mt-6">
+              <AdminDashboard />
             </div>
-
-            {/* Center Column - Avatar & Metrics */}
-            <div className="col-span-12 lg:col-span-6 space-y-4 sm:space-y-6 order-1 lg:order-2">
-              {/* Avatar Area with glowing halo */}
-              <GlassCard 
-                className="p-6 sm:p-8 flex flex-col items-center justify-center min-h-[340px] sm:min-h-[380px] relative overflow-visible"
-                hover={false}
-                glow="brand"
-                onClick={() => setShowConsole(true)}
-              >
-                {/* Glow effect behind avatar - Cyan/Teal neon ring */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64">
-                  <div className="absolute inset-0 rounded-full border-2 border-[#00FFFF]/40 animate-pulse" />
-                  <div className="absolute inset-2 rounded-full border border-[#00FFFF]/20" />
-                  <div className="absolute inset-0 bg-gradient-to-b from-[#9370DB]/20 via-[#00FFFF]/15 to-[#FFD700]/20 rounded-full blur-3xl" />
-                </div>
-                
-                <div className="relative z-10">
-                  <AvatarHero />
-                </div>
-                
-                {/* Metric Rings - Neon tube style */}
-                <div className="flex items-center justify-center gap-4 sm:gap-8 mt-6 relative z-10">
-                  <MetricRing 
-                    label="Readiness"
-                    value="82%"
-                    percentage={82}
-                    color="cyan"
-                    size={80}
-                  />
-                  <MetricRing 
-                    label="Earnings"
-                    value="$5,420"
-                    percentage={75}
-                    color="gold"
-                    size={100}
-                  />
-                  <MetricRing 
-                    label="Focus Index"
-                    value="74%"
-                    percentage={74}
-                    color="cyan"
-                    size={80}
-                  />
-                </div>
-              </GlassCard>
-
-              {/* Module Tiles - Bottom Dock Style */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-                <ModuleTile 
-                  title="Wealth"
-                  icon={Coins}
-                  delay={400}
-                  variant="gold"
-                  onClick={() => handleModuleClick("Wealth")}
-                />
-                <ModuleTile 
-                  title="Life & Health"
-                  icon={Heart}
-                  delay={500}
-                  variant="gold"
-                  onClick={() => handleModuleClick("Life & Health")}
-                />
-                <ModuleTile 
-                  title="Mind & Growth"
-                  icon={Lightbulb}
-                  delay={600}
-                  variant="purple"
-                  onClick={() => handleModuleClick("Mind & Growth")}
-                />
-                <ModuleTile 
-                  title="Sovereignty"
-                  icon={Shield}
-                  delay={700}
-                  accentColor="cyan"
-                  onClick={() => handleModuleClick("Sovereignty")}
+          ) : (
+            <>
+              {/* Client Dashboard Quick Access */}
+              <div className="mt-6 mb-6">
+                <ClientDashboard
+                  onOpenCalendar={() => setShowCalendar(true)}
+                  onOpenHabits={() => setShowHabitTracker(true)}
+                  onOpenNotifications={() => setShowNotificationBatching(true)}
+                  onOpenRecovery={() => {
+                    setRecoveryAutoActivated(false);
+                    setShowRecoveryMode(true);
+                  }}
+                  onOpenWeeklyInsights={() => setShowWeeklyInsights(true)}
                 />
               </div>
-            </div>
 
-            {/* Right Column - Integrations & Insights */}
-            <div className="col-span-12 lg:col-span-3 space-y-3 order-3">
-              <DeviceIntegration />
-              <InsightsFeed />
+              {/* Greeting */}
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="text-center mt-6 sm:mt-8 mb-4 sm:mb-6"
+              >
+                <h1 className="text-2xl sm:text-3xl font-['Playfair_Display'] font-medium text-foreground">
+                  {greeting}, <span className="text-[#FFD700]">{userName}</span>.
+                </h1>
+                <p className="text-sm text-muted-foreground mt-1">Systems stable. No action required.</p>
+              </motion.div>
+            </>
+          )}
+
+          {/* Main Grid - Only show for non-admin users */}
+          {!isAdmin && (
+            <div className="grid grid-cols-12 gap-3 lg:gap-6">
+              {/* Left Column - Quick Stats */}
+              <div className="col-span-12 lg:col-span-3 space-y-3 order-2 lg:order-1">
+                <QuickStatCard 
+                  title="Wealth Portfolio"
+                  value="+8.2%"
+                  subtitle="This Week"
+                  icon={TrendingUp}
+                  graphic={<GoldStarburst />}
+                  accentColor="gold"
+                  isLive
+                  isConnected={isConnected}
+                  delay={100}
+                />
+                <QuickStatCard 
+                  title="Life Balance"
+                  value="7.5"
+                  suffix=" Hrs"
+                  icon={Moon}
+                  graphic={<GoldStarburst />}
+                  accentColor="gold"
+                  delay={200}
+                />
+                <QuickStatCard 
+                  title="Mind State"
+                  value="12"
+                  suffix=" Min"
+                  icon={Brain}
+                  graphic={<CyanOrb />}
+                  accentColor="cyan"
+                  delay={300}
+                />
+                <QuickStatCard 
+                  title="Connected Devices"
+                  value="5"
+                  suffix=" Active"
+                  icon={Cpu}
+                  accentColor="cyan"
+                  delay={400}
+                />
+              </div>
+
+              {/* Center Column - Avatar & Metrics */}
+              <div className="col-span-12 lg:col-span-6 space-y-4 sm:space-y-6 order-1 lg:order-2">
+                {/* Avatar Area with glowing halo */}
+                <GlassCard 
+                  className="p-6 sm:p-8 flex flex-col items-center justify-center min-h-[340px] sm:min-h-[380px] relative overflow-visible"
+                  hover={false}
+                  glow="brand"
+                  onClick={() => setShowConsole(true)}
+                >
+                  {/* Glow effect behind avatar - Cyan/Teal neon ring */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64">
+                    <div className="absolute inset-0 rounded-full border-2 border-[#00FFFF]/40 animate-pulse" />
+                    <div className="absolute inset-2 rounded-full border border-[#00FFFF]/20" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#9370DB]/20 via-[#00FFFF]/15 to-[#FFD700]/20 rounded-full blur-3xl" />
+                  </div>
+                  
+                  <div className="relative z-10">
+                    <AvatarHero />
+                  </div>
+                  
+                  {/* Metric Rings - Neon tube style */}
+                  <div className="flex items-center justify-center gap-4 sm:gap-8 mt-6 relative z-10">
+                    <MetricRing 
+                      label="Readiness"
+                      value="82%"
+                      percentage={82}
+                      color="cyan"
+                      size={80}
+                    />
+                    <MetricRing 
+                      label="Earnings"
+                      value="$5,420"
+                      percentage={75}
+                      color="gold"
+                      size={100}
+                    />
+                    <MetricRing 
+                      label="Focus Index"
+                      value="74%"
+                      percentage={74}
+                      color="cyan"
+                      size={80}
+                    />
+                  </div>
+                </GlassCard>
+
+                {/* Module Tiles - Bottom Dock Style */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                  <ModuleTile 
+                    title="Wealth"
+                    icon={Coins}
+                    delay={400}
+                    variant="gold"
+                    onClick={() => handleModuleClick("Wealth")}
+                  />
+                  <ModuleTile 
+                    title="Life & Health"
+                    icon={Heart}
+                    delay={500}
+                    variant="gold"
+                    onClick={() => handleModuleClick("Life & Health")}
+                  />
+                  <ModuleTile 
+                    title="Mind & Growth"
+                    icon={Lightbulb}
+                    delay={600}
+                    variant="purple"
+                    onClick={() => handleModuleClick("Mind & Growth")}
+                  />
+                  <ModuleTile 
+                    title="Sovereignty"
+                    icon={Shield}
+                    delay={700}
+                    accentColor="cyan"
+                    onClick={() => handleModuleClick("Sovereignty")}
+                  />
+                </div>
+              </div>
+
+              {/* Right Column - Integrations & Insights */}
+              <div className="col-span-12 lg:col-span-3 space-y-3 order-3">
+                <DeviceIntegration />
+                <InsightsFeed />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
