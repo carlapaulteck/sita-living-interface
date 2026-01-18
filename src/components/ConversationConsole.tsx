@@ -8,6 +8,7 @@ import { VoiceWaveform } from "./VoiceWaveform";
 import { SpeechWaveformVisualizer } from "./SpeechWaveformVisualizer";
 import { PersonalityModeSelector } from "./PersonalityModeSelector";
 import { ConversationHistoryPanel } from "./ConversationHistoryPanel";
+import { MemoryPanel } from "./MemoryPanel";
 import { useVoiceRecognition } from "@/hooks/useVoiceRecognition";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { useAvatarStateSafe } from "@/contexts/AvatarStateContext";
@@ -47,6 +48,7 @@ export function ConversationConsole({ isOpen, onClose, onMessageReceived }: Conv
   const [memoryEnabled, setMemoryEnabled] = useState(true);
   const [simulatedAudioLevel, setSimulatedAudioLevel] = useState(0);
   const [showHistory, setShowHistory] = useState(false);
+  const [showMemoryPanel, setShowMemoryPanel] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   
@@ -253,6 +255,12 @@ export function ConversationConsole({ isOpen, onClose, onMessageReceived }: Conv
         onClose={() => setShowHistory(false)} 
       />
       
+      {/* Memory Panel */}
+      <MemoryPanel
+        isOpen={showMemoryPanel}
+        onClose={() => setShowMemoryPanel(false)}
+      />
+      
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -295,17 +303,19 @@ export function ConversationConsole({ isOpen, onClose, onMessageReceived }: Conv
                     <Button 
                       variant="ghost" 
                       size="icon"
-                      onClick={() => setMemoryEnabled(!memoryEnabled)}
+                      onClick={() => setShowMemoryPanel(true)}
                       className={memoryEnabled ? "text-primary" : ""}
                     >
                       <Brain className="h-5 w-5" />
+                      {contexts.length > 0 && (
+                        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-[10px] flex items-center justify-center text-primary-foreground">
+                          {contexts.length > 9 ? '9+' : contexts.length}
+                        </span>
+                      )}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{memoryEnabled ? "Memory learning ON" : "Memory learning OFF"}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {contexts.length} memories stored
-                    </p>
+                    <p>View Memory Bank ({contexts.length})</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
