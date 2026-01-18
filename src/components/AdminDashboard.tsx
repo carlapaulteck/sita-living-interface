@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { GlassCard } from "@/components/GlassCard";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { UserManagementTable } from "@/components/UserManagementTable";
+import { PushNotificationSettings } from "@/components/PushNotificationSettings";
 import {
   Users,
   Activity,
@@ -15,7 +16,6 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
-  Search,
   RefreshCw,
   BarChart3,
   UserCog,
@@ -47,9 +47,8 @@ export function AdminDashboard() {
     realtime: "healthy",
   });
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-
+  const [showNotificationSettings, setShowNotificationSettings] = useState(false);
   useEffect(() => {
     fetchDashboardData();
   }, []);
@@ -227,11 +226,11 @@ export function AdminDashboard() {
             Quick Actions
           </h3>
           <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" size="sm" className="gap-2 justify-start">
+            <Button variant="outline" size="sm" className="gap-2 justify-start" onClick={() => document.getElementById('user-management')?.scrollIntoView({ behavior: 'smooth' })}>
               <UserCog className="h-4 w-4" />
               Manage Users
             </Button>
-            <Button variant="outline" size="sm" className="gap-2 justify-start">
+            <Button variant="outline" size="sm" className="gap-2 justify-start" onClick={() => setShowNotificationSettings(true)}>
               <Bell className="h-4 w-4" />
               Notifications
             </Button>
@@ -283,25 +282,16 @@ export function AdminDashboard() {
         </GlassCard>
       </div>
 
-      {/* User Search */}
-      <GlassCard className="p-6">
-        <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
-          <Search className="h-4 w-4" />
-          User Management
-        </h3>
-        <div className="flex gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search users by email or name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Button>Search</Button>
-        </div>
-      </GlassCard>
+      {/* User Management Table */}
+      <div id="user-management">
+        <UserManagementTable />
+      </div>
+
+      {/* Push Notification Settings Modal */}
+      <PushNotificationSettings 
+        isOpen={showNotificationSettings} 
+        onClose={() => setShowNotificationSettings(false)} 
+      />
     </div>
   );
 }
