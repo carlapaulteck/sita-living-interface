@@ -118,6 +118,13 @@ const Index = () => {
   const { user, isDemoMode } = useAuth();
   const { isAdmin, loading: roleLoading } = useUserRole();
   
+  // Redirect admins to admin panel
+  useEffect(() => {
+    if (!roleLoading && isAdmin) {
+      navigate('/admin');
+    }
+  }, [isAdmin, roleLoading, navigate]);
+  
   // Adaptation and DND hooks
   const adaptation = useAdaptationSafe();
   const { dndState } = useDoNotDisturb();
