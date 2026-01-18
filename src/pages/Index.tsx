@@ -14,6 +14,7 @@ import { ProactiveAISuggestions } from "@/components/ProactiveAISuggestions";
 import { WakeWordIndicator } from "@/components/WakeWordIndicator";
 import { useAvatarState } from "@/contexts/AvatarStateContext";
 import { useWakeWord } from "@/hooks/useWakeWord";
+import { useWakeWordSettingsSafe } from "@/contexts/WakeWordContext";
 import { OnboardingFlow } from "@/components/OnboardingFlow";
 import { ConversationConsole } from "@/components/ConversationConsole";
 import { WarRoom } from "@/components/WarRoom";
@@ -136,16 +137,20 @@ const Index = () => {
   const adaptation = useAdaptationSafe();
   const { dndState } = useDoNotDisturb();
   const avatarState = useAvatarState();
+  const wakeWordSettings = useWakeWordSettingsSafe();
   
-  // Wake word detection - "Hey SITA"
+  // Wake word detection - uses settings from context
   const { 
     isListening: wakeWordListening, 
     isAwake: isWokenByVoice,
     startListening: startWakeWord,
     stopListening: stopWakeWord,
     resetWake: resetWakeWord,
+    currentWakeWord,
   } = useWakeWord({
-    wakeWord: "hey sita",
+    wakeWord: wakeWordSettings?.currentWakeWord.phrase || "hey sita",
+    wakeWordVariations: wakeWordSettings?.currentWakeWord.variations || [],
+    sensitivity: wakeWordSettings?.sensitivity || 0.6,
     onWake: () => {
       // Trigger avatar to listening state and open console
       avatarState.setState("listening");

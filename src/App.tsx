@@ -7,6 +7,8 @@ import { ThemeProvider } from "next-themes";
 import { CognitiveProvider } from "@/contexts/CognitiveContext";
 import { AdaptationProvider } from "@/contexts/AdaptationContext";
 import { AvatarStateProvider } from "@/contexts/AvatarStateContext";
+import { PersonalityProvider } from "@/contexts/PersonalityContext";
+import { WakeWordProvider } from "@/contexts/WakeWordContext";
 import { AdaptationIndicator } from "@/components/TrustSafeguards";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
@@ -166,18 +168,22 @@ const App = () => (
       <CognitiveProvider>
         <AdaptationProvider>
           <AvatarStateProvider>
-            <TooltipProvider>
-              <ErrorBoundary>
-                {/* Aurora background effect */}
-                <div className="aurora-bg" aria-hidden="true" />
-                
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  <AppRoutes />
-                </BrowserRouter>
-              </ErrorBoundary>
-            </TooltipProvider>
+            <PersonalityProvider>
+              <WakeWordProvider>
+                <TooltipProvider>
+                  <ErrorBoundary>
+                    {/* Aurora background effect */}
+                    <div className="aurora-bg" aria-hidden="true" />
+                    
+                    <Toaster />
+                    <Sonner />
+                    <BrowserRouter>
+                      <AppRoutes />
+                    </BrowserRouter>
+                  </ErrorBoundary>
+                </TooltipProvider>
+              </WakeWordProvider>
+            </PersonalityProvider>
           </AvatarStateProvider>
         </AdaptationProvider>
       </CognitiveProvider>
