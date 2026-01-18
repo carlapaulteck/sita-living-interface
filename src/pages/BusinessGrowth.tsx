@@ -15,8 +15,13 @@ import { IntegrationsHub } from "@/components/IntegrationsHub";
 import { BoundariesPanel } from "@/components/BoundariesPanel";
 import { AdvisorPanel } from "@/components/AdvisorPanel";
 import { MoneyFlow } from "@/components/MoneyFlow";
+import { MarketingOS } from "@/components/MarketingOS";
+import { OperationsDashboard } from "@/components/OperationsDashboard";
+import { LiveEventFeed } from "@/components/LiveEventFeed";
+import { SimulationPanel } from "@/components/SimulationPanel";
 import bgParticles from "@/assets/bg-particles.jpg";
 import { scenarios, ScenarioType } from "@/lib/scenarioData";
+import { useScenarioSimulator } from "@/hooks/useScenarioSimulator";
 import {
   TrendingUp,
   Clock,
@@ -38,10 +43,13 @@ import {
   Settings,
   Link2,
   Brain,
+  Activity,
+  Gauge,
+  FlaskConical,
 } from "lucide-react";
 
 const BusinessGrowth = () => {
-  const [activeTab, setActiveTab] = useState<"overview" | "inbox" | "packs" | "growth" | "money">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "inbox" | "packs" | "growth" | "money" | "marketing" | "operations">("overview");
   const [showInbox, setShowInbox] = useState(false);
   const [showPacks, setShowPacks] = useState(false);
   const [showConsole, setShowConsole] = useState(false);
@@ -50,7 +58,11 @@ const BusinessGrowth = () => {
   const [showIntegrations, setShowIntegrations] = useState(false);
   const [showBoundaries, setShowBoundaries] = useState(false);
   const [showAdvisors, setShowAdvisors] = useState(false);
+  const [showSimulation, setShowSimulation] = useState(false);
   const [currentScenario, setCurrentScenario] = useState<ScenarioType>("service");
+
+  // Use demo simulator for live events
+  const { recentEvents } = useScenarioSimulator(currentScenario);
 
   const scenario = scenarios[currentScenario];
   const { metrics, experiments, campaigns, deals } = scenario;
@@ -65,6 +77,8 @@ const BusinessGrowth = () => {
       setShowWarRoom(true);
     } else if (lower.includes("receipt") || lower.includes("wake")) {
       setShowReceipt(true);
+    } else if (lower.includes("simulate") || lower.includes("model")) {
+      setShowSimulation(true);
     } else {
       setShowConsole(true);
     }
@@ -72,9 +86,9 @@ const BusinessGrowth = () => {
 
   const tabs = [
     { id: "overview", label: "Overview", icon: BarChart3 },
-    { id: "inbox", label: "Inbox", icon: Inbox },
-    { id: "packs", label: "Autopilot", icon: Workflow },
-    { id: "growth", label: "Growth", icon: TrendingUp },
+    { id: "marketing", label: "Marketing", icon: TrendingUp },
+    { id: "operations", label: "Operations", icon: Gauge },
+    { id: "growth", label: "Growth", icon: Sparkles },
     { id: "money", label: "Money", icon: DollarSign },
   ] as const;
 
@@ -151,11 +165,7 @@ const BusinessGrowth = () => {
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => {
-                  if (tab.id === "inbox") setShowInbox(true);
-                  else if (tab.id === "packs") setShowPacks(true);
-                  else setActiveTab(tab.id);
-                }}
+                onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
                   activeTab === tab.id
                     ? "bg-primary/20 text-primary border border-primary/30"
@@ -166,6 +176,28 @@ const BusinessGrowth = () => {
                 {tab.label}
               </button>
             ))}
+            {/* Quick action buttons */}
+            <button
+              onClick={() => setShowInbox(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap bg-card/50 text-muted-foreground hover:bg-card/80 border border-border/50"
+            >
+              <Inbox className="h-4 w-4" />
+              Inbox
+            </button>
+            <button
+              onClick={() => setShowPacks(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap bg-card/50 text-muted-foreground hover:bg-card/80 border border-border/50"
+            >
+              <Workflow className="h-4 w-4" />
+              Autopilot
+            </button>
+            <button
+              onClick={() => setShowSimulation(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap bg-card/50 text-muted-foreground hover:bg-card/80 border border-border/50"
+            >
+              <FlaskConical className="h-4 w-4" />
+              Simulate
+            </button>
           </motion.div>
 
           {activeTab === "overview" && (
@@ -397,7 +429,25 @@ const BusinessGrowth = () => {
                   </div>
                 </GlassCard>
               </motion.div>
+
+              {/* Live Event Feed */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1 }}
+                className="col-span-12"
+              >
+                <LiveEventFeed events={recentEvents} maxEvents={6} />
+              </motion.div>
             </div>
+          )}
+
+          {activeTab === "marketing" && (
+            <MarketingOS scenario={scenario} />
+          )}
+
+          {activeTab === "operations" && (
+            <OperationsDashboard scenario={scenario} />
           )}
 
           {activeTab === "growth" && (
@@ -664,6 +714,7 @@ const BusinessGrowth = () => {
         {showIntegrations && <IntegrationsHub isOpen={showIntegrations} onClose={() => setShowIntegrations(false)} />}
         {showBoundaries && <BoundariesPanel isOpen={showBoundaries} onClose={() => setShowBoundaries(false)} />}
         {showAdvisors && <AdvisorPanel isOpen={showAdvisors} onClose={() => setShowAdvisors(false)} />}
+        {showSimulation && <SimulationPanel isOpen={showSimulation} onClose={() => setShowSimulation(false)} />}
       </AnimatePresence>
     </div>
   );
