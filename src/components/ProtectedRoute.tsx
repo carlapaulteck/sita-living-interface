@@ -1,21 +1,34 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  adminOnly?: boolean;
 }
 
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, loading } = useAuth();
+export function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
 
+  const loading = authLoading || (adminOnly && roleLoading);
+
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       navigate("/auth");
     }
-  }, [isAuthenticated, loading, navigate]);
+  }, [isAuthenticated, authLoading, navigate]);
+
+  useEffect(() => {
+    if (adminOnly && !roleLoading && isAuthenticated && !isAdmin) {
+      toast.error("Access denied. Admin privileges required.");
+      navigate("/");
+    }
+  }, [adminOnly, isAdmin, roleLoading, isAuthenticated, navigate]);
 
   if (loading) {
     return (
@@ -29,6 +42,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   if (!isAuthenticated) {
+    return null;
+  }
+
+  if (adminOnly && !isAdmin) {
     return null;
   }
 
