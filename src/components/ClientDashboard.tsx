@@ -24,6 +24,7 @@ import {
   TrendingUp,
   Sunrise,
   HelpCircle,
+  MessageSquarePlus,
 } from "lucide-react";
 import { ContextualTooltip, tooltipContent } from "@/components/ContextualTooltip";
 
@@ -36,6 +37,7 @@ interface QuickActionProps {
   onOpenWakeUpReceipt?: () => void;
   onOpenCognitiveBudget?: () => void;
   onOpenHelp?: () => void;
+  onOpenSupport?: () => void;
 }
 
 export function ClientDashboard({
@@ -47,6 +49,7 @@ export function ClientDashboard({
   onOpenWakeUpReceipt,
   onOpenCognitiveBudget,
   onOpenHelp,
+  onOpenSupport,
 }: QuickActionProps) {
   const { user } = useAuth();
   const { habits, getTodayProgress, getStreak, isCompletedToday } = useHabits();
@@ -130,6 +133,15 @@ export function ClientDashboard({
       color: "text-primary",
       bgColor: "bg-primary/10",
       tooltip: tooltipContent.help,
+    }] : []),
+    ...(onOpenSupport ? [{
+      icon: MessageSquarePlus,
+      label: "Support",
+      description: "Get help",
+      onClick: onOpenSupport,
+      color: "text-emerald-400",
+      bgColor: "bg-emerald-400/10",
+      tooltip: { content: "Contact Support", description: "Submit a support ticket to get help from our team" },
     }] : []),
   ];
 
