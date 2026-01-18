@@ -6,3 +6,4 @@ export { default as AdminAnnouncementsPage } from './AdminAnnouncementsPage';
 export { default as AdminErrorLogsPage } from './AdminErrorLogsPage';
 export { default as AdminAuditLogsPage } from './AdminAuditLogsPage';
 export { default as AdminSettingsPage } from './AdminSettingsPage';
+export { default as AdminFeatureFlagsPage } from './AdminFeatureFlagsPage';

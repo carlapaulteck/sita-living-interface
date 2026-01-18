@@ -16,7 +16,8 @@ import {
   Menu,
   X,
   Shield,
-  Activity
+  Activity,
+  Flag
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -110,7 +111,8 @@ const AdminLayout = () => {
       'announcements': 'Announcements',
       'errors': 'Error Logs',
       'audit': 'Audit Logs',
-      'settings': 'Platform Settings'
+      'settings': 'Platform Settings',
+      'feature-flags': 'Feature Flags'
     };
     return titles[path] || 'Admin Panel';
   };
@@ -198,6 +200,12 @@ const AdminLayout = () => {
             to="/admin/settings"
             icon={<Settings className="w-5 h-5" />}
             label="Platform Config"
+            collapsed={collapsed}
+          />
+          <NavItem
+            to="/admin/feature-flags"
+            icon={<Flag className="w-5 h-5" />}
+            label="Feature Flags"
             collapsed={collapsed}
           />
         </NavSection>
