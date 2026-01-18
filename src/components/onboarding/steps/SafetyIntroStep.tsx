@@ -67,6 +67,22 @@ export function SafetyIntroStep() {
         transition={{ delay: 0.5 }}
         className="flex flex-col gap-3 max-w-md mx-auto"
       >
+        {/* Breathing animation for calming effect */}
+        <div className="flex justify-center mb-2">
+          <motion.div
+            className="w-3 h-3 rounded-full bg-secondary/50"
+            animate={{ 
+              scale: [1, 1.5, 1],
+              opacity: [0.5, 0.8, 0.5]
+            }}
+            transition={{ 
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+        </div>
+        
         <Button
           onClick={nextStep}
           className="w-full bg-gradient-to-r from-secondary to-primary hover:opacity-90"

@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp, Check, Clock, Sparkles } from "lucide-react";
 import { useOnboarding } from "./OnboardingContext";
 
-interface OnboardingProgressProps {
+export interface OnboardingProgressProps {
   mode: "quick" | "guided" | "deep";
+  currentStep?: number;
 }
 
 const MODE_STEPS = {
@@ -73,11 +74,12 @@ const MODE_TIMES = {
   deep: "~15 minutes",
 };
 
-export function OnboardingProgress({ mode }: OnboardingProgressProps) {
-  const { step } = useOnboarding();
+export function OnboardingProgress({ mode, currentStep: propStep }: OnboardingProgressProps) {
+  const { step: contextStep } = useOnboarding();
   const [isExpanded, setIsExpanded] = useState(false);
   const steps = MODE_STEPS[mode];
-  const currentStepIndex = step;
+  // Use prop if provided, otherwise fall back to context
+  const currentStepIndex = propStep !== undefined ? propStep : contextStep;
 
   // Estimate remaining time
   const remainingSteps = steps.length - currentStepIndex;

@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 import { useOnboarding } from "../OnboardingContext";
 import { GlassCard } from "@/components/GlassCard";
-import { ChevronRight } from "lucide-react";
+import { HelpHint } from "@/components/HelpHint";
+import { ChevronRight, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import avatarImage from "@/assets/avatar.jpg";
 
@@ -26,12 +27,22 @@ export function NameStep() {
         </div>
       </div>
 
-      <h2 className="text-3xl font-display font-medium text-foreground mb-2 text-center">
-        What should I call you?
-      </h2>
-      <p className="text-muted-foreground mb-8 text-center">
+      <div className="flex items-center gap-2 mb-2">
+        <h2 className="text-3xl font-display font-medium text-foreground text-center">
+          What should I call you?
+        </h2>
+        <HelpHint 
+          hint="SITA will use this to personalize messages. You can change it anytime in Settings."
+          variant="info"
+        />
+      </div>
+      <p className="text-muted-foreground mb-4 text-center">
         This makes every interaction personal
       </p>
+      <div className="flex items-center justify-center gap-2 mb-6 text-xs text-muted-foreground">
+        <Volume2 className="h-3 w-3" />
+        <span>Used in voice features too</span>
+      </div>
 
       <GlassCard className="p-1 mb-8 w-full">
         <input

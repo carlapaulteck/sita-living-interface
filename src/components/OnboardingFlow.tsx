@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { OnboardingProvider, useOnboarding } from "./onboarding/OnboardingContext";
+import { OnboardingProgress } from "./onboarding/OnboardingProgress";
 import { OnboardingData } from "@/types/onboarding";
 import logoImage from "@/assets/logo.jpg";
 
@@ -121,6 +122,17 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const STEPS = getSteps();
   const CurrentStepComponent = STEPS[currentStep];
 
+  // Save progress to localStorage for recovery
+  useEffect(() => {
+    if (currentStep > 0) {
+      localStorage.setItem("sita_onboarding_progress", JSON.stringify({
+        step: currentStep,
+        mode: setupMode,
+        timestamp: Date.now()
+      }));
+    }
+  }, [currentStep, setupMode]);
+
   return (
     <OnboardingProvider 
       onComplete={onComplete} 
@@ -157,6 +169,12 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             ))}
           </div>
         )}
+
+        {/* Onboarding Progress Side Panel */}
+        <OnboardingProgress 
+          currentStep={currentStep} 
+          mode={setupMode}
+        />
 
         <OnboardingStepRenderer 
           step={currentStep} 
@@ -210,7 +228,7 @@ function OnboardingStepRenderer({
   );
 }
 
-import { useEffect } from "react";
+
 
 function StepWrapper({ 
   children, 

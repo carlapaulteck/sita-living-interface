@@ -1,7 +1,9 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useOnboarding } from "../OnboardingContext";
 import { GlassCard } from "@/components/GlassCard";
-import { Zap, Compass, Crown, ChevronRight } from "lucide-react";
+import { HelpHint } from "@/components/HelpHint";
+import { Zap, Compass, Crown, ChevronRight, Info, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SetupMode } from "@/types/onboarding";
 
@@ -35,6 +37,7 @@ const SETUP_MODES = [
 
 export function SetupModeStep() {
   const { data, updateData, nextStep, prevStep } = useOnboarding();
+  const [showComparison, setShowComparison] = useState(false);
 
   return (
     <motion.div
@@ -43,12 +46,78 @@ export function SetupModeStep() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      <h2 className="text-3xl font-display font-medium text-foreground mb-2 text-center">
-        How would you like to set up SITA?
-      </h2>
-      <p className="text-muted-foreground mb-8 text-center">
+      <div className="flex items-center gap-2 mb-2">
+        <h2 className="text-3xl font-display font-medium text-foreground text-center">
+          How would you like to set up SITA?
+        </h2>
+        <HelpHint 
+          hint="Quick = essential settings only. Guided = recommended for most users. Deep = for power users who want full customization."
+          variant="info"
+        />
+      </div>
+      <p className="text-muted-foreground mb-4 text-center">
         Every moment spent here makes SITA smarter for you
       </p>
+      
+      <button
+        onClick={() => setShowComparison(!showComparison)}
+        className="text-xs text-secondary hover:underline mb-6 flex items-center gap-1"
+      >
+        <Info className="h-3 w-3" />
+        What's the difference?
+      </button>
+
+      {/* Comparison Table */}
+      <AnimatePresence>
+        {showComparison && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="w-full mb-6 overflow-hidden"
+          >
+            <GlassCard className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium text-foreground">Mode Comparison</span>
+                <button onClick={() => setShowComparison(false)} className="text-muted-foreground hover:text-foreground">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="grid grid-cols-4 gap-2 text-xs">
+                <div className="text-muted-foreground">Feature</div>
+                <div className="text-secondary">Quick</div>
+                <div className="text-primary">Guided</div>
+                <div className="text-primary">Deep</div>
+                
+                <div className="text-muted-foreground">Goals</div>
+                <div>✓</div>
+                <div>✓</div>
+                <div>✓</div>
+                
+                <div className="text-muted-foreground">Cognitive Discovery</div>
+                <div className="text-muted-foreground/50">—</div>
+                <div>✓</div>
+                <div>✓</div>
+                
+                <div className="text-muted-foreground">Automations</div>
+                <div className="text-muted-foreground/50">—</div>
+                <div>✓</div>
+                <div>✓</div>
+                
+                <div className="text-muted-foreground">Voice & Tone</div>
+                <div className="text-muted-foreground/50">—</div>
+                <div className="text-muted-foreground/50">—</div>
+                <div>✓</div>
+                
+                <div className="text-muted-foreground">Sovereignty Controls</div>
+                <div className="text-muted-foreground/50">—</div>
+                <div className="text-muted-foreground/50">—</div>
+                <div>✓</div>
+              </div>
+            </GlassCard>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="flex flex-col gap-4 w-full mb-8">
         {SETUP_MODES.map((mode) => {

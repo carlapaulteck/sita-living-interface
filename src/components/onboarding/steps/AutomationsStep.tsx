@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useOnboarding } from "../OnboardingContext";
 import { GlassCard } from "@/components/GlassCard";
+import { HelpHint } from "@/components/HelpHint";
 import { 
   ChevronRight, 
   Check, 
@@ -109,9 +110,15 @@ export function AutomationsStep() {
       exit={{ opacity: 0, y: -20 }}
     >
       <div className="text-center mb-6">
-        <h2 className="text-3xl font-display font-medium text-foreground mb-2">
-          Create Your First Automations
-        </h2>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <h2 className="text-3xl font-display font-medium text-foreground">
+            Create Your First Automations
+          </h2>
+          <HelpHint 
+            hint="Start with 1-2 automations - you can add more later. These run silently in the background and report in your morning briefing."
+            variant="tip"
+          />
+        </div>
         <p className="text-muted-foreground mb-4">
           Pick up to 3 templates to start with. These work in the background to protect your energy and surface opportunities.
         </p>
