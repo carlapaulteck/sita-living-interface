@@ -194,6 +194,95 @@ export type Database = {
         }
         Relationships: []
       }
+      bill_payments: {
+        Row: {
+          amount_paid: number
+          bill_id: string | null
+          created_at: string | null
+          id: string
+          paid_at: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_paid: number
+          bill_id?: string | null
+          created_at?: string | null
+          id?: string
+          paid_at?: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_paid?: number
+          bill_id?: string | null
+          created_at?: string | null
+          id?: string
+          paid_at?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bill_payments_bill_id_fkey"
+            columns: ["bill_id"]
+            isOneToOne: false
+            referencedRelation: "bills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bills: {
+        Row: {
+          amount: number
+          category: string | null
+          created_at: string | null
+          due_day: number
+          frequency: string
+          id: string
+          is_active: boolean | null
+          is_autopay: boolean | null
+          name: string
+          next_due_date: string | null
+          notes: string | null
+          provider: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category?: string | null
+          created_at?: string | null
+          due_day: number
+          frequency: string
+          id?: string
+          is_active?: boolean | null
+          is_autopay?: boolean | null
+          name: string
+          next_due_date?: string | null
+          notes?: string | null
+          provider?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          created_at?: string | null
+          due_day?: number
+          frequency?: string
+          id?: string
+          is_active?: boolean | null
+          is_autopay?: boolean | null
+          name?: string
+          next_due_date?: string | null
+          notes?: string | null
+          provider?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       calendar_events: {
         Row: {
           attendees: Json | null
@@ -1136,6 +1225,62 @@ export type Database = {
         }
         Relationships: []
       }
+      saving_rules: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          is_percentage: boolean | null
+          last_triggered_at: string | null
+          name: string
+          target_goal_id: string | null
+          total_saved: number | null
+          trigger_condition: Json | null
+          trigger_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_percentage?: boolean | null
+          last_triggered_at?: string | null
+          name: string
+          target_goal_id?: string | null
+          total_saved?: number | null
+          trigger_condition?: Json | null
+          trigger_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_percentage?: boolean | null
+          last_triggered_at?: string | null
+          name?: string
+          target_goal_id?: string | null
+          total_saved?: number | null
+          trigger_condition?: Json | null
+          trigger_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saving_rules_target_goal_id_fkey"
+            columns: ["target_goal_id"]
+            isOneToOne: false
+            referencedRelation: "savings_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       savings_goals: {
         Row: {
           category: string
@@ -1180,6 +1325,48 @@ export type Database = {
           name?: string
           target_amount?: number
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      spending_alerts: {
+        Row: {
+          alert_type: string
+          category: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          notification_method: string | null
+          threshold_amount: number | null
+          threshold_percentage: number | null
+          triggered_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_type: string
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          notification_method?: string | null
+          threshold_amount?: number | null
+          threshold_percentage?: number | null
+          triggered_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          notification_method?: string | null
+          threshold_amount?: number | null
+          threshold_percentage?: number | null
+          triggered_at?: string | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []

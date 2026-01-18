@@ -9,17 +9,21 @@ import { SmartTransactionForm } from "@/components/finance/SmartTransactionForm"
 import { SpendingForecast } from "@/components/finance/SpendingForecast";
 import { VoiceFinancialAdvisor } from "@/components/finance/VoiceFinancialAdvisor";
 import { SavingsGoals } from "@/components/finance/SavingsGoals";
+import { SpendingAlerts } from "@/components/finance/SpendingAlerts";
+import { AutomatedSavings } from "@/components/finance/AutomatedSavings";
+import { BillTracker } from "@/components/finance/BillTracker";
 import { Button } from "@/components/ui/button";
 import { Plus, Sparkles } from "lucide-react";
 
 const TABS = [
   { id: "insights", label: "AI Insights" },
+  { id: "alerts", label: "Alerts" },
+  { id: "bills", label: "Bills" },
+  { id: "auto-save", label: "Auto-Save" },
   { id: "forecast", label: "Forecast" },
   { id: "goals", label: "Goals" },
   { id: "budget", label: "Budget" },
   { id: "investments", label: "Investments" },
-  { id: "tax", label: "Tax" },
-  { id: "retirement", label: "Retirement" },
 ];
 
 export default function Finance() {
@@ -35,6 +39,12 @@ export default function Finance() {
             <FinancialInsights />
           </div>
         );
+      case "alerts":
+        return <SpendingAlerts />;
+      case "bills":
+        return <BillTracker />;
+      case "auto-save":
+        return <AutomatedSavings />;
       case "forecast":
         return <SpendingForecast />;
       case "goals":
@@ -43,10 +53,6 @@ export default function Finance() {
         return <BudgetManager />;
       case "investments":
         return <InvestmentPortfolio />;
-      case "tax":
-        return <TaxDashboard />;
-      case "retirement":
-        return <RetirementPlanning />;
       default:
         return <FinancialInsights />;
     }
