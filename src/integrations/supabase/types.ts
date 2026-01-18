@@ -401,6 +401,142 @@ export type Database = {
         }
         Relationships: []
       }
+      conversation_contexts: {
+        Row: {
+          confidence: number | null
+          content: string
+          context_type: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          source_conversation_id: string | null
+          user_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          content: string
+          context_type: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          source_conversation_id?: string | null
+          user_id: string
+        }
+        Update: {
+          confidence?: number | null
+          content?: string
+          context_type?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          source_conversation_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_contexts_source_conversation_id_fkey"
+            columns: ["source_conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_messages: {
+        Row: {
+          cognitive_state: string | null
+          content: string
+          conversation_id: string
+          created_at: string | null
+          id: string
+          latency_ms: number | null
+          metadata: Json | null
+          model_used: string | null
+          role: string
+          sentiment: string | null
+          tokens_used: number | null
+          user_id: string
+        }
+        Insert: {
+          cognitive_state?: string | null
+          content: string
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          latency_ms?: number | null
+          metadata?: Json | null
+          model_used?: string | null
+          role: string
+          sentiment?: string | null
+          tokens_used?: number | null
+          user_id: string
+        }
+        Update: {
+          cognitive_state?: string | null
+          content?: string
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          latency_ms?: number | null
+          metadata?: Json | null
+          model_used?: string | null
+          role?: string
+          sentiment?: string | null
+          tokens_used?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          archived_at: string | null
+          created_at: string | null
+          id: string
+          message_count: number | null
+          metadata: Json | null
+          personality_mode: string | null
+          summary: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          archived_at?: string | null
+          created_at?: string | null
+          id?: string
+          message_count?: number | null
+          metadata?: Json | null
+          personality_mode?: string | null
+          summary?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          archived_at?: string | null
+          created_at?: string | null
+          id?: string
+          message_count?: number | null
+          metadata?: Json | null
+          personality_mode?: string | null
+          summary?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       error_logs: {
         Row: {
           component: string | null

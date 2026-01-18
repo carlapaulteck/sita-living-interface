@@ -2,18 +2,20 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "./GlassCard";
 import { Button } from "./ui/button";
-import { X, Send, Mic, Loader2, Volume2, VolumeX } from "lucide-react";
+import { X, Send, Mic, Loader2, Volume2, VolumeX, History, Plus } from "lucide-react";
 import { SitaOrb3D } from "./SitaOrb3D";
 import { VoiceWaveform } from "./VoiceWaveform";
 import { SpeechWaveformVisualizer } from "./SpeechWaveformVisualizer";
 import { PersonalityModeSelector } from "./PersonalityModeSelector";
+import { ConversationHistoryPanel } from "./ConversationHistoryPanel";
 import { useVoiceRecognition } from "@/hooks/useVoiceRecognition";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { useAvatarStateSafe } from "@/contexts/AvatarStateContext";
 import { usePersonalitySafe } from "@/contexts/PersonalityContext";
 import { useAudioAnalyzer } from "@/hooks/useAudioAnalyzer";
+import { useConversationHistory } from "@/hooks/useConversationHistory";
+import { useAuth } from "@/hooks/useAuth";
 import avatarImage from "@/assets/avatar.jpg";
-
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -27,6 +29,7 @@ interface ConversationConsoleProps {
 
 export function ConversationConsole({ isOpen, onClose, onMessageReceived }: ConversationConsoleProps) {
   const personality = usePersonalitySafe();
+  const { user } = useAuth();
   const initialGreeting = personality?.config.greeting || 
     "Good morning. I've reviewed your metrics. Your business is performing well—revenue up 8% this week. Shall we discuss growth strategies or review your focus schedule?";
   
@@ -38,8 +41,8 @@ export function ConversationConsole({ isOpen, onClose, onMessageReceived }: Conv
   const [orbState, setOrbState] = useState<"idle" | "listening" | "speaking">("idle");
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [simulatedAudioLevel, setSimulatedAudioLevel] = useState(0);
+  const [showHistory, setShowHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   
   // Avatar state context for global avatar animations
   const avatarState = useAvatarStateSafe();
@@ -236,6 +239,12 @@ export function ConversationConsole({ isOpen, onClose, onMessageReceived }: Conv
 
   return (
     <AnimatePresence>
+      {/* History Panel */}
+      <ConversationHistoryPanel 
+        isOpen={showHistory} 
+        onClose={() => setShowHistory(false)} 
+      />
+      
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -262,6 +271,16 @@ export function ConversationConsole({ isOpen, onClose, onMessageReceived }: Conv
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {user && (
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => setShowHistory(true)}
+                  title="Conversation history"
+                >
+                  <History className="h-5 w-5" />
+                </Button>
+              )}
               <PersonalityModeSelector variant="compact" className="hidden sm:flex" />
               <Button 
                 variant="ghost" 
