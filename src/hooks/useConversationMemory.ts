@@ -272,6 +272,29 @@ export function useConversationMemory() {
     }
   }, [user]);
 
+  // Update context content
+  const updateContext = useCallback(async (
+    contextId: string,
+    content: string
+  ): Promise<void> => {
+    if (!user) return;
+
+    try {
+      await supabase
+        .from('conversation_contexts')
+        .update({ content })
+        .eq('id', contextId);
+
+      setContexts(prev =>
+        prev.map(ctx =>
+          ctx.id === contextId ? { ...ctx, content } : ctx
+        )
+      );
+    } catch (error) {
+      console.error('Error updating context:', error);
+    }
+  }, [user]);
+
   // Update context confidence
   const updateConfidence = useCallback(async (
     contextId: string,
@@ -310,6 +333,7 @@ export function useConversationMemory() {
     getContextsForPrompt,
     addContext,
     removeContext,
+    updateContext,
     updateConfidence,
   };
 }
