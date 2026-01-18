@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { CognitiveProvider } from "@/contexts/CognitiveContext";
 import { AdaptationProvider } from "@/contexts/AdaptationContext";
+import { AvatarStateProvider } from "@/contexts/AvatarStateContext";
 import { AdaptationIndicator } from "@/components/TrustSafeguards";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
@@ -164,18 +165,20 @@ const App = () => (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
       <CognitiveProvider>
         <AdaptationProvider>
-          <TooltipProvider>
-            <ErrorBoundary>
-              {/* Aurora background effect */}
-              <div className="aurora-bg" aria-hidden="true" />
-              
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <AppRoutes />
-              </BrowserRouter>
-            </ErrorBoundary>
-          </TooltipProvider>
+          <AvatarStateProvider>
+            <TooltipProvider>
+              <ErrorBoundary>
+                {/* Aurora background effect */}
+                <div className="aurora-bg" aria-hidden="true" />
+                
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <AppRoutes />
+                </BrowserRouter>
+              </ErrorBoundary>
+            </TooltipProvider>
+          </AvatarStateProvider>
         </AdaptationProvider>
       </CognitiveProvider>
     </ThemeProvider>

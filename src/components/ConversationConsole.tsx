@@ -7,6 +7,7 @@ import { SitaOrb3D } from "./SitaOrb3D";
 import { VoiceWaveform } from "./VoiceWaveform";
 import { useVoiceRecognition } from "@/hooks/useVoiceRecognition";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
+import { useAvatarStateSafe } from "@/contexts/AvatarStateContext";
 import avatarImage from "@/assets/avatar.jpg";
 
 interface Message {
@@ -32,6 +33,9 @@ export function ConversationConsole({ isOpen, onClose }: ConversationConsoleProp
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Avatar state context for global avatar animations
+  const avatarState = useAvatarStateSafe();
 
   const { speak, stop: stopSpeaking, isSpeaking } = useTextToSpeech({ voice: "nova", speed: 1.0 });
 
@@ -57,16 +61,19 @@ export function ConversationConsole({ isOpen, onClose }: ConversationConsoleProp
     },
   });
 
-  // Update orb state based on speaking
+  // Update orb state and global avatar state based on speaking
   useEffect(() => {
     if (isSpeaking) {
       setOrbState("speaking");
+      avatarState?.setState("speaking");
     } else if (isListening) {
       setOrbState("listening");
+      avatarState?.setState("listening");
     } else if (!isLoading) {
       setOrbState("idle");
+      avatarState?.setState("idle");
     }
-  }, [isSpeaking, isListening, isLoading]);
+  }, [isSpeaking, isListening, isLoading, avatarState]);
 
 
   const scrollToBottom = () => {
