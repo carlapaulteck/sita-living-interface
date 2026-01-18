@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { LayoutGrid, Square, Layers } from "lucide-react";
+import { LayoutGrid, Square, Layers, Sparkles } from "lucide-react";
 import { useOnboarding } from "../OnboardingContext";
 import { GlassCard } from "@/components/GlassCard";
 import { Button } from "@/components/ui/button";
+import { HelpHint } from "@/components/HelpHint";
 
 type DensityPreference = "dense" | "focused" | "adaptive";
 
@@ -88,11 +89,26 @@ export function DensityChoiceStep() {
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
       >
-        <h2 className="text-2xl sm:text-3xl font-display font-medium text-foreground mb-2">
-          How do you prefer to see information?
-        </h2>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <span className="text-xs text-primary font-medium uppercase tracking-wider">
+            Cognitive Discovery
+          </span>
+        </div>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <h2 className="text-2xl sm:text-3xl font-display font-medium text-foreground">
+            How do you prefer to see information?
+          </h2>
+          <HelpHint 
+            hint="This helps us adapt the interface density to match how your brain naturally processes visual information. No choice is 'better' - it's about comfort."
+            variant="tip"
+          />
+        </div>
         <p className="text-muted-foreground">
           Choose what feels most comfortable
+        </p>
+        <p className="text-xs text-muted-foreground/70 mt-1">
+          We use this to adjust how much information appears on screen at once
         </p>
       </motion.div>
       

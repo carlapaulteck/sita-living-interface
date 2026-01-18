@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, Minus, List, VolumeX } from "lucide-react";
+import { Heart, Minus, List, VolumeX, Sparkles, Shield } from "lucide-react";
 import { useOnboarding } from "../OnboardingContext";
 import { GlassCard } from "@/components/GlassCard";
 import { Button } from "@/components/ui/button";
+import { HelpHint } from "@/components/HelpHint";
 
 type PileUpResponse = "fewer_choices" | "clearer_steps" | "reassurance" | "silence";
 type ReminderFeeling = "helpful" | "stressful" | "depends";
@@ -14,6 +15,12 @@ interface QuestionOption {
   label: string;
   icon?: typeof Heart;
 }
+
+const questionHints = [
+  "Understanding your stress response helps us support you during overwhelm, not add to it.",
+  "Reminder tone makes a big difference. We'll adjust notification style based on this.",
+  "Some prefer predictable systems, others like adaptive ones. Both are valid."
+];
 
 export function EmotionalCalibrationStep() {
   const { nextStep, updateNestedData } = useOnboarding();
@@ -88,15 +95,38 @@ export function EmotionalCalibrationStep() {
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
       >
-        <p className="text-sm text-primary mb-2">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Shield className="h-4 w-4 text-primary" />
+          <span className="text-xs text-primary font-medium uppercase tracking-wider">
+            Emotional Calibration
+          </span>
+        </div>
+        <p className="text-sm text-muted-foreground mb-2">
           Question {currentQuestion + 1} of {questions.length}
         </p>
-        <h2 className="text-2xl sm:text-3xl font-display font-medium text-foreground mb-2">
-          {currentQ.question}
-        </h2>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <h2 className="text-2xl sm:text-3xl font-display font-medium text-foreground">
+            {currentQ.question}
+          </h2>
+          <HelpHint 
+            hint={questionHints[currentQuestion]}
+            variant="tip"
+          />
+        </div>
         <p className="text-muted-foreground text-sm">
           This helps us communicate in a way that works for you
         </p>
+        
+        {/* Privacy reassurance */}
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="text-xs text-muted-foreground/60 mt-2 flex items-center justify-center gap-1"
+        >
+          <Sparkles className="h-3 w-3" />
+          These answers shape your experience, not a profile others see
+        </motion.p>
       </motion.div>
       
       {/* Progress indicators */}
