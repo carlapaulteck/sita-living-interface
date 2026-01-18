@@ -5,9 +5,13 @@ import { Button } from "./ui/button";
 import { X, Send, Mic, Loader2, Volume2, VolumeX } from "lucide-react";
 import { SitaOrb3D } from "./SitaOrb3D";
 import { VoiceWaveform } from "./VoiceWaveform";
+import { SpeechWaveformVisualizer } from "./SpeechWaveformVisualizer";
+import { PersonalityModeSelector } from "./PersonalityModeSelector";
 import { useVoiceRecognition } from "@/hooks/useVoiceRecognition";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { useAvatarStateSafe } from "@/contexts/AvatarStateContext";
+import { usePersonalitySafe } from "@/contexts/PersonalityContext";
+import { useAudioAnalyzer } from "@/hooks/useAudioAnalyzer";
 import avatarImage from "@/assets/avatar.jpg";
 
 interface Message {
@@ -22,21 +26,26 @@ interface ConversationConsoleProps {
 }
 
 export function ConversationConsole({ isOpen, onClose, onMessageReceived }: ConversationConsoleProps) {
+  const personality = usePersonalitySafe();
+  const initialGreeting = personality?.config.greeting || 
+    "Good morning. I've reviewed your metrics. Your business is performing well—revenue up 8% this week. Shall we discuss growth strategies or review your focus schedule?";
+  
   const [messages, setMessages] = useState<Message[]>([
-    { 
-      role: "assistant", 
-      content: "Good morning. I've reviewed your metrics. Your business is performing well—revenue up 8% this week. Shall we discuss growth strategies or review your focus schedule?" 
-    }
+    { role: "assistant", content: initialGreeting }
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [orbState, setOrbState] = useState<"idle" | "listening" | "speaking">("idle");
   const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [simulatedAudioLevel, setSimulatedAudioLevel] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   
   // Avatar state context for global avatar animations
   const avatarState = useAvatarStateSafe();
+  
+  // Audio analyzer for real lip-sync
+  const { audioLevel, frequencyData, isAnalyzing } = useAudioAnalyzer();
 
   const { speak, stop: stopSpeaking, isSpeaking } = useTextToSpeech({ voice: "nova", speed: 1.0 });
 
@@ -75,6 +84,21 @@ export function ConversationConsole({ isOpen, onClose, onMessageReceived }: Conv
       avatarState?.setState("idle");
     }
   }, [isSpeaking, isListening, isLoading, avatarState]);
+
+  // Simulate audio level when speaking for waveform visualization
+  useEffect(() => {
+    if (isSpeaking) {
+      const interval = setInterval(() => {
+        setSimulatedAudioLevel(Math.random() * 0.6 + 0.2);
+      }, 80);
+      return () => clearInterval(interval);
+    } else {
+      setSimulatedAudioLevel(0);
+    }
+  }, [isSpeaking]);
+
+  // Use real audio level if available, otherwise use simulated
+  const effectiveAudioLevel = isAnalyzing ? audioLevel : simulatedAudioLevel;
 
 
   const scrollToBottom = () => {
@@ -226,11 +250,19 @@ export function ConversationConsole({ isOpen, onClose, onMessageReceived }: Conv
                 <img src={avatarImage} alt="SITA" className="w-full h-full object-cover" />
               </div>
               <div>
-                <h2 className="text-lg font-medium text-foreground">SITA Console</h2>
+                <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
+                  SITA Console
+                  {personality && (
+                    <span className="text-sm font-normal text-muted-foreground">
+                      • {personality.config.icon} {personality.config.name}
+                    </span>
+                  )}
+                </h2>
                 <p className="text-xs text-muted-foreground">The Living Interface</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <PersonalityModeSelector variant="compact" className="hidden sm:flex" />
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -247,6 +279,29 @@ export function ConversationConsole({ isOpen, onClose, onMessageReceived }: Conv
               </Button>
             </div>
           </div>
+
+          {/* Speech Waveform Visualization when speaking */}
+          <AnimatePresence>
+            {(isSpeaking || isListening) && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-4"
+              >
+                <div className="flex items-center justify-center gap-4 p-4 rounded-xl bg-primary/5 border border-primary/20">
+                  <SpeechWaveformVisualizer
+                    audioLevel={effectiveAudioLevel}
+                    frequencyData={frequencyData}
+                    isActive={isSpeaking || isListening}
+                    variant="bars"
+                    colorScheme="gradient"
+                    size="md"
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Orb visualization */}
           <div className="flex-shrink-0 h-48 mb-4">
