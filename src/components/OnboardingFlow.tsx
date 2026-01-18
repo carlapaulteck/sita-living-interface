@@ -1,10 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { FastForward } from "lucide-react";
 import { OnboardingProvider, useOnboarding } from "./onboarding/OnboardingContext";
 import { OnboardingProgress } from "./onboarding/OnboardingProgress";
 import { OnboardingRecoveryModal } from "./onboarding/OnboardingRecoveryModal";
 import { SkipToEndModal } from "./onboarding/SkipToEndModal";
+import { ConfettiCelebration } from "./onboarding/ConfettiCelebration";
+import { KeyboardHints } from "./onboarding/KeyboardHints";
+import { useOnboardingKeyboard } from "@/hooks/useOnboardingKeyboard";
 import { OnboardingData } from "@/types/onboarding";
 import logoImage from "@/assets/logo.jpg";
 
@@ -122,6 +125,8 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const [showRecoveryModal, setShowRecoveryModal] = useState(false);
   const [showSkipModal, setShowSkipModal] = useState(false);
   const [savedProgress, setSavedProgress] = useState<SavedProgress | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
 
   const getSteps = () => {
     switch (setupMode) {
@@ -133,6 +138,42 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
   const STEPS = getSteps();
   const CurrentStepComponent = STEPS[currentStep];
+  const isLastStep = currentStep === STEPS.length - 1;
+  const isCinematicEntry = currentStep === 0;
+
+  // Handle completion with confetti
+  const handleComplete = useCallback((data: OnboardingData) => {
+    setIsCompleting(true);
+    setShowConfetti(true);
+    localStorage.removeItem("sita_onboarding_progress");
+    
+    // Delay actual completion to show celebration
+    setTimeout(() => {
+      onComplete(data);
+    }, 3500);
+  }, [onComplete]);
+
+  // Keyboard navigation
+  const handleKeyboardNext = useCallback(() => {
+    if (currentStep < STEPS.length - 1 && !showRecoveryModal && !showSkipModal) {
+      setCurrentStep(prev => prev + 1);
+    }
+  }, [currentStep, STEPS.length, showRecoveryModal, showSkipModal]);
+
+  const handleKeyboardPrev = useCallback(() => {
+    if (currentStep > 0 && !showRecoveryModal && !showSkipModal) {
+      setCurrentStep(prev => prev - 1);
+    }
+  }, [currentStep, showRecoveryModal, showSkipModal]);
+
+  useOnboardingKeyboard({
+    onNext: handleKeyboardNext,
+    onPrev: handleKeyboardPrev,
+    onConfirm: handleKeyboardNext,
+    canGoNext: currentStep < STEPS.length - 1 && currentStep > 0,
+    canGoPrev: currentStep > 1, // Can't go back from cinematic entry or safety intro
+    enabled: !showRecoveryModal && !showSkipModal && !isCompleting,
+  });
 
   // Check for saved progress on mount
   useEffect(() => {
@@ -182,9 +223,15 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
   return (
     <OnboardingProvider 
-      onComplete={onComplete} 
+      onComplete={handleComplete} 
       totalSteps={STEPS.length}
     >
+      {/* Confetti Celebration */}
+      <ConfettiCelebration 
+        isActive={showConfetti} 
+        duration={3500}
+      />
+
       {/* Recovery Modal */}
       {showRecoveryModal && (
         <OnboardingRecoveryModal
@@ -215,7 +262,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         </div>
 
         {/* Skip to end button - show after setup mode selection */}
-        {currentStep > 2 && currentStep < STEPS.length - 1 && (
+        {currentStep > 2 && currentStep < STEPS.length - 1 && !isCompleting && (
           <motion.button
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -229,7 +276,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         )}
 
         {/* Progress dots */}
-        {currentStep > 0 && currentStep < STEPS.length - 1 && (
+        {currentStep > 0 && currentStep < STEPS.length - 1 && !isCompleting && (
           <div className="fixed top-8 left-1/2 -translate-x-1/2 flex gap-1.5 z-50">
             {STEPS.slice(1, -1).map((_, i) => (
               <div
@@ -246,11 +293,20 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           </div>
         )}
 
-        {/* Onboarding Progress Side Panel */}
-        <OnboardingProgress 
-          currentStep={currentStep} 
-          mode={setupMode}
+        {/* Keyboard navigation hints */}
+        <KeyboardHints 
+          show={currentStep > 1 && currentStep < STEPS.length - 1 && !isCompleting}
+          canGoBack={currentStep > 1}
+          canGoNext={currentStep < STEPS.length - 1}
         />
+
+        {/* Onboarding Progress Side Panel */}
+        {!isCompleting && (
+          <OnboardingProgress 
+            currentStep={currentStep} 
+            mode={setupMode}
+          />
+        )}
 
         <OnboardingStepRenderer 
           step={currentStep} 
