@@ -4,8 +4,13 @@ import { BudgetManager } from "@/components/finance/BudgetManager";
 import { InvestmentPortfolio } from "@/components/finance/InvestmentPortfolio";
 import { TaxDashboard } from "@/components/finance/TaxDashboard";
 import { RetirementPlanning } from "@/components/finance/RetirementPlanning";
+import { FinancialInsights } from "@/components/finance/FinancialInsights";
+import { SmartTransactionForm } from "@/components/finance/SmartTransactionForm";
+import { Button } from "@/components/ui/button";
+import { Plus, Sparkles } from "lucide-react";
 
 const TABS = [
+  { id: "insights", label: "AI Insights" },
   { id: "budget", label: "Budget" },
   { id: "investments", label: "Investments" },
   { id: "tax", label: "Tax" },
@@ -13,10 +18,13 @@ const TABS = [
 ];
 
 export default function Finance() {
-  const [activeTab, setActiveTab] = useState("budget");
+  const [activeTab, setActiveTab] = useState("insights");
+  const [showTransactionForm, setShowTransactionForm] = useState(false);
 
   const renderContent = () => {
     switch (activeTab) {
+      case "insights":
+        return <FinancialInsights />;
       case "budget":
         return <BudgetManager />;
       case "investments":
@@ -26,19 +34,36 @@ export default function Finance() {
       case "retirement":
         return <RetirementPlanning />;
       default:
-        return <BudgetManager />;
+        return <FinancialInsights />;
     }
   };
 
   return (
-    <ModuleLayout
-      title="Personal Finance"
-      subtitle="Budget, investments, and financial planning"
-      tabs={TABS}
-      activeTab={activeTab}
-      onTabChange={setActiveTab}
-    >
-      {renderContent()}
-    </ModuleLayout>
+    <>
+      <ModuleLayout
+        title="Personal Finance"
+        subtitle="AI-powered budget, investments, and financial planning"
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        actions={
+          <Button
+            onClick={() => setShowTransactionForm(true)}
+            className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-primary-foreground gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Add Transaction</span>
+            <Sparkles className="h-4 w-4" />
+          </Button>
+        }
+      >
+        {renderContent()}
+      </ModuleLayout>
+      
+      <SmartTransactionForm 
+        open={showTransactionForm} 
+        onOpenChange={setShowTransactionForm} 
+      />
+    </>
   );
 }

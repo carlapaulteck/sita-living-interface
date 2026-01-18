@@ -21,6 +21,7 @@ interface ModuleLayoutProps {
   activeTab: string;
   onTabChange: (tabId: string) => void;
   children: ReactNode;
+  actions?: ReactNode;
 }
 
 export function ModuleLayout({
@@ -30,6 +31,7 @@ export function ModuleLayout({
   activeTab,
   onTabChange,
   children,
+  actions,
 }: ModuleLayoutProps) {
   const navigate = useNavigate();
   const [showConsole, setShowConsole] = useState(false);
@@ -75,32 +77,43 @@ export function ModuleLayout({
         {/* Header */}
         <header className="px-4 sm:px-6 lg:px-8 py-6">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate("/")}
-                className="p-2 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
-              >
-                <ArrowLeft className="h-5 w-5 text-muted-foreground" />
-              </button>
-              <div>
-                <motion.h1
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-2xl font-display font-medium text-foreground"
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => navigate("/")}
+                  className="p-2 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
                 >
-                  {title}
-                </motion.h1>
-                {subtitle && (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.1 }}
-                    className="text-sm text-muted-foreground"
+                  <ArrowLeft className="h-5 w-5 text-muted-foreground" />
+                </button>
+                <div>
+                  <motion.h1
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-2xl font-display font-medium text-foreground"
                   >
-                    {subtitle}
-                  </motion.p>
-                )}
+                    {title}
+                  </motion.h1>
+                  {subtitle && (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.1 }}
+                      className="text-sm text-muted-foreground"
+                    >
+                      {subtitle}
+                    </motion.p>
+                  )}
+                </div>
               </div>
+              {actions && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  {actions}
+                </motion.div>
+              )}
             </div>
 
             {/* Tabs */}
