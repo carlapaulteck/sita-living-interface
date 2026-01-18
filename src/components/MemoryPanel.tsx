@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Brain, 
@@ -12,7 +12,10 @@ import {
   Shield,
   Lightbulb,
   Users,
-  Sparkles
+  Sparkles,
+  Search,
+  Loader2,
+  Zap
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -61,25 +64,58 @@ const CONTEXT_LABELS: Record<ContextType, string> = {
   relationship: "Relationships",
 };
 
+interface SearchResult extends ConversationContext {
+  relevance_score?: number;
+}
+
 export function MemoryPanel({ isOpen, onClose }: MemoryPanelProps) {
-  const { contexts, isLoading, addContext, removeContext, updateContext } = useConversationMemory();
+  const { contexts, isLoading, addContext, removeContext, updateContext, semanticSearch } = useConversationMemory();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [newType, setNewType] = useState<ContextType>("preference");
   const [newContent, setNewContent] = useState("");
   const [filterType, setFilterType] = useState<ContextType | "all">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[] | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
 
-  const filteredContexts = filterType === "all" 
+  const displayContexts = searchResults || (filterType === "all" 
     ? contexts 
-    : contexts.filter(ctx => ctx.context_type === filterType);
+    : contexts.filter(ctx => ctx.context_type === filterType));
 
-  const groupedContexts = filteredContexts.reduce((acc, ctx) => {
+  const groupedContexts = displayContexts.reduce((acc, ctx) => {
     const type = ctx.context_type as ContextType;
     if (!acc[type]) acc[type] = [];
-    acc[type].push(ctx);
+    acc[type].push(ctx as SearchResult);
     return acc;
-  }, {} as Record<ContextType, ConversationContext[]>);
+  }, {} as Record<ContextType, SearchResult[]>);
+
+  const handleSemanticSearch = useCallback(async () => {
+    if (!searchQuery.trim()) {
+      setSearchResults(null);
+      return;
+    }
+    
+    setIsSearching(true);
+    try {
+      const results = await semanticSearch(searchQuery, 20);
+      setSearchResults(results as SearchResult[]);
+      if (results.length === 0) {
+        toast.info("No relevant memories found");
+      }
+    } catch (error) {
+      console.error("Search error:", error);
+      toast.error("Search failed");
+    } finally {
+      setIsSearching(false);
+    }
+  }, [searchQuery, semanticSearch]);
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    setSearchResults(null);
+  };
 
   const handleDelete = async (id: string) => {
     await removeContext(id);
@@ -132,8 +168,54 @@ export function MemoryPanel({ isOpen, onClose }: MemoryPanelProps) {
               </Button>
             </div>
 
-            {/* Filter & Add */}
+            {/* Semantic Search */}
             <div className="flex gap-2 mt-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Semantic search memories..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSemanticSearch()}
+                  className="pl-9 pr-8"
+                />
+                {searchQuery && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6"
+                    onClick={clearSearch}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={handleSemanticSearch}
+                disabled={isSearching || !searchQuery.trim()}
+              >
+                {isSearching ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Zap className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+
+            {/* Search Results Info */}
+            {searchResults && (
+              <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+                <span>{searchResults.length} relevant memories found</span>
+                <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={clearSearch}>
+                  Clear search
+                </Button>
+              </div>
+            )}
+
+            {/* Filter & Add */}
+            <div className="flex gap-2 mt-3">
               <Select value={filterType} onValueChange={(v) => setFilterType(v as ContextType | "all")}>
                 <SelectTrigger className="flex-1">
                   <SelectValue placeholder="Filter by type" />
@@ -279,15 +361,25 @@ export function MemoryPanel({ isOpen, onClose }: MemoryPanelProps) {
                                   <>
                                     <p className="text-sm">{ctx.content}</p>
                                     <div className="flex items-center gap-2 mt-2">
-                                      <div className="h-1.5 w-16 bg-foreground/10 rounded-full overflow-hidden">
-                                        <div 
-                                          className="h-full bg-primary rounded-full"
-                                          style={{ width: `${(ctx.confidence || 0.7) * 100}%` }}
-                                        />
-                                      </div>
-                                      <span className="text-xs text-muted-foreground">
-                                        {Math.round((ctx.confidence || 0.7) * 100)}% confidence
-                                      </span>
+                                      {ctx.relevance_score !== undefined ? (
+                                        <>
+                                          <Badge variant="outline" className="text-[10px] bg-primary/10">
+                                            {Math.round(ctx.relevance_score * 100)}% match
+                                          </Badge>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <div className="h-1.5 w-16 bg-foreground/10 rounded-full overflow-hidden">
+                                            <div 
+                                              className="h-full bg-primary rounded-full"
+                                              style={{ width: `${(ctx.confidence || 0.7) * 100}%` }}
+                                            />
+                                          </div>
+                                          <span className="text-xs text-muted-foreground">
+                                            {Math.round((ctx.confidence || 0.7) * 100)}% confidence
+                                          </span>
+                                        </>
+                                      )}
                                     </div>
                                   </>
                                 )}

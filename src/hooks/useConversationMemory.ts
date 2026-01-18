@@ -318,6 +318,46 @@ export function useConversationMemory() {
     }
   }, [user]);
 
+  // Semantic search through memories using AI
+  const semanticSearch = useCallback(async (
+    query: string,
+    limit: number = 10
+  ): Promise<Array<ConversationContext & { relevance_score?: number }>> => {
+    if (!user || !query.trim()) return [];
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/semantic-memory-search`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            query,
+            userId: user.id,
+            limit,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Semantic search failed");
+      }
+
+      const data = await response.json();
+      return data.results || [];
+    } catch (error) {
+      console.error("Semantic search error:", error);
+      // Fallback to local keyword search
+      const queryLower = query.toLowerCase();
+      return contexts.filter(ctx => 
+        ctx.content.toLowerCase().includes(queryLower)
+      );
+    }
+  }, [user, contexts]);
+
   // Load contexts on mount
   useEffect(() => {
     loadContexts();
@@ -335,5 +375,6 @@ export function useConversationMemory() {
     removeContext,
     updateContext,
     updateConfidence,
+    semanticSearch,
   };
 }
