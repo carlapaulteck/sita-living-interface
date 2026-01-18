@@ -29,9 +29,10 @@ import { cognitiveBudgetLedger, CognitiveDomain } from "@/lib/cognitiveBudgetLed
 import { toast } from "@/hooks/use-toast";
 
 interface ActivityLoggerProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
   onActivityLogged?: () => void;
+  embedded?: boolean;
 }
 
 interface ActivityPreset {
@@ -92,7 +93,7 @@ const domainColors: Record<CognitiveDomain, { bg: string; border: string; text: 
   },
 };
 
-export function ActivityLogger({ isOpen, onClose, onActivityLogged }: ActivityLoggerProps) {
+export function ActivityLogger({ isOpen = true, onClose, onActivityLogged, embedded = false }: ActivityLoggerProps) {
   const { user } = useAuth();
   const [selectedActivity, setSelectedActivity] = useState<ActivityPreset | null>(null);
   const [customActivity, setCustomActivity] = useState("");
@@ -160,8 +161,174 @@ export function ActivityLogger({ isOpen, onClose, onActivityLogged }: ActivityLo
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen && !embedded) return null;
 
+  // Content that's shared between modal and embedded modes
+  const loggerContent = (
+    <>
+      {/* Activity Grid by Domain */}
+      <div className="space-y-5 mb-6">
+        {(["work", "health", "social", "learning"] as CognitiveDomain[]).map((domain) => {
+          const domainActivities = activityPresets.filter(a => a.domain === domain);
+          const colors = domainColors[domain];
+          const DomainIcon = domain === "work" ? Briefcase : 
+                             domain === "health" ? Heart : 
+                             domain === "social" ? Users : BookOpen;
+
+          return (
+            <motion.div 
+              key={domain}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: ["work", "health", "social", "learning"].indexOf(domain) * 0.05 }}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <DomainIcon className={`h-4 w-4 ${colors.text}`} />
+                <span className="text-sm font-medium text-foreground capitalize">{domain}</span>
+              </div>
+              
+              <div className="flex flex-wrap gap-2">
+                {domainActivities.map((activity) => {
+                  const isRestorative = activity.cost < 0;
+                  const isRecent = recentlyLogged === activity.id;
+                  
+                  return (
+                    <motion.button
+                      key={activity.id}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleLogActivity(activity)}
+                      disabled={isLogging}
+                      className={`
+                        relative px-4 py-2.5 rounded-xl border transition-all flex items-center gap-2.5
+                        ${isRecent 
+                          ? `${colors.bg} ${colors.border} ring-2 ring-offset-2 ring-offset-background ring-emerald-400/50` 
+                          : `${colors.bg} ${colors.border} hover:bg-opacity-20`
+                        }
+                        ${selectedActivity?.id === activity.id && isLogging ? "opacity-50" : ""}
+                      `}
+                    >
+                      {isRecent ? (
+                        <Check className="h-4 w-4 text-emerald-400" />
+                      ) : (
+                        <activity.icon className={`h-4 w-4 ${colors.text}`} />
+                      )}
+                      <span className="text-sm font-medium text-foreground">{activity.label}</span>
+                      <span className={`text-xs ${isRestorative ? "text-emerald-400" : "text-muted-foreground"}`}>
+                        {isRestorative ? "+" : "-"}{Math.abs(Math.round(activity.cost * 100))}%
+                      </span>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Custom Activity */}
+      <div className="border-t border-foreground/10 pt-5">
+        {!showCustom ? (
+          <motion.button
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            onClick={() => setShowCustom(true)}
+            className="w-full p-4 rounded-xl border border-dashed border-foreground/20 text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors flex items-center justify-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            <span className="text-sm">Log custom activity</span>
+          </motion.button>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="space-y-3"
+          >
+            <Input
+              value={customActivity}
+              onChange={(e) => setCustomActivity(e.target.value)}
+              placeholder="Activity name..."
+              className="bg-foreground/5 border-foreground/10"
+            />
+            
+            <div className="flex gap-2">
+              {(["work", "health", "social", "learning"] as CognitiveDomain[]).map((domain) => {
+                const colors = domainColors[domain];
+                const DomainIcon = domain === "work" ? Briefcase : 
+                                   domain === "health" ? Heart : 
+                                   domain === "social" ? Users : BookOpen;
+                
+                return (
+                  <motion.button
+                    key={domain}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setCustomDomain(domain)}
+                    className={`
+                      flex-1 p-2.5 rounded-lg border transition-all flex items-center justify-center gap-2
+                      ${customDomain === domain 
+                        ? `${colors.bg} ${colors.border} ring-1 ring-offset-1 ring-offset-background ${colors.border}`
+                        : "bg-foreground/5 border-foreground/10 hover:bg-foreground/10"
+                      }
+                    `}
+                  >
+                    <DomainIcon className={`h-4 w-4 ${customDomain === domain ? colors.text : "text-muted-foreground"}`} />
+                  </motion.button>
+                );
+              })}
+            </div>
+            
+            <div className="flex gap-2">
+              <Button 
+                variant="ghost" 
+                className="flex-1"
+                onClick={() => setShowCustom(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                className="flex-1 bg-gradient-to-r from-secondary to-primary text-white"
+                onClick={handleLogCustomActivity}
+                disabled={!customActivity.trim() || isLogging}
+              >
+                Log Activity
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </div>
+    </>
+  );
+
+  // Embedded mode - just render content directly
+  if (embedded) {
+    return (
+      <GlassCard className="p-6 relative overflow-hidden">
+        {/* Ambient glow */}
+        <motion.div 
+          className="absolute -top-32 -right-32 w-64 h-64 rounded-full blur-3xl pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(147,112,219,0.15) 0%, transparent 70%)" }}
+          animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
+          transition={{ duration: 4, repeat: Infinity }}
+        />
+
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-6 relative">
+          <div className="p-3 rounded-xl bg-gradient-to-br from-secondary/20 to-primary/20 border border-secondary/20">
+            <Zap className="h-5 w-5 text-secondary" />
+          </div>
+          <div>
+            <h2 className="text-lg font-display font-medium text-foreground">Log Activity</h2>
+            <p className="text-sm text-muted-foreground">Track your energy expenditure</p>
+          </div>
+        </div>
+
+        {loggerContent}
+      </GlassCard>
+    );
+  }
+
+  // Modal mode
   return (
     <AnimatePresence>
       <motion.div
@@ -204,140 +371,11 @@ export function ActivityLogger({ isOpen, onClose, onActivityLogged }: ActivityLo
               </Button>
             </div>
 
-            {/* Activity Grid by Domain */}
-            <div className="space-y-5 mb-6">
-              {(["work", "health", "social", "learning"] as CognitiveDomain[]).map((domain) => {
-                const domainActivities = activityPresets.filter(a => a.domain === domain);
-                const colors = domainColors[domain];
-                const DomainIcon = domain === "work" ? Briefcase : 
-                                   domain === "health" ? Heart : 
-                                   domain === "social" ? Users : BookOpen;
-
-                return (
-                  <motion.div 
-                    key={domain}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: ["work", "health", "social", "learning"].indexOf(domain) * 0.05 }}
-                  >
-                    <div className="flex items-center gap-2 mb-3">
-                      <DomainIcon className={`h-4 w-4 ${colors.text}`} />
-                      <span className="text-sm font-medium text-foreground capitalize">{domain}</span>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-2">
-                      {domainActivities.map((activity) => {
-                        const isRestorative = activity.cost < 0;
-                        const isRecent = recentlyLogged === activity.id;
-                        
-                        return (
-                          <motion.button
-                            key={activity.id}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => handleLogActivity(activity)}
-                            disabled={isLogging}
-                            className={`
-                              relative px-4 py-2.5 rounded-xl border transition-all flex items-center gap-2.5
-                              ${isRecent 
-                                ? `${colors.bg} ${colors.border} ring-2 ring-offset-2 ring-offset-background ring-emerald-400/50` 
-                                : `${colors.bg} ${colors.border} hover:bg-opacity-20`
-                              }
-                              ${selectedActivity?.id === activity.id && isLogging ? "opacity-50" : ""}
-                            `}
-                          >
-                            {isRecent ? (
-                              <Check className="h-4 w-4 text-emerald-400" />
-                            ) : (
-                              <activity.icon className={`h-4 w-4 ${colors.text}`} />
-                            )}
-                            <span className="text-sm font-medium text-foreground">{activity.label}</span>
-                            <span className={`text-xs ${isRestorative ? "text-emerald-400" : "text-muted-foreground"}`}>
-                              {isRestorative ? "+" : "-"}{Math.abs(Math.round(activity.cost * 100))}%
-                            </span>
-                          </motion.button>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {/* Custom Activity */}
-            <div className="border-t border-foreground/10 pt-5">
-              {!showCustom ? (
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  onClick={() => setShowCustom(true)}
-                  className="w-full p-4 rounded-xl border border-dashed border-foreground/20 text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span className="text-sm">Log custom activity</span>
-                </motion.button>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  className="space-y-3"
-                >
-                  <Input
-                    value={customActivity}
-                    onChange={(e) => setCustomActivity(e.target.value)}
-                    placeholder="Activity name..."
-                    className="bg-foreground/5 border-foreground/10"
-                  />
-                  
-                  <div className="flex gap-2">
-                    {(["work", "health", "social", "learning"] as CognitiveDomain[]).map((domain) => {
-                      const colors = domainColors[domain];
-                      const DomainIcon = domain === "work" ? Briefcase : 
-                                         domain === "health" ? Heart : 
-                                         domain === "social" ? Users : BookOpen;
-                      
-                      return (
-                        <motion.button
-                          key={domain}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => setCustomDomain(domain)}
-                          className={`
-                            flex-1 p-2.5 rounded-lg border transition-all flex items-center justify-center gap-2
-                            ${customDomain === domain 
-                              ? `${colors.bg} ${colors.border} ring-1 ring-offset-1 ring-offset-background ${colors.border}`
-                              : "bg-foreground/5 border-foreground/10 hover:bg-foreground/10"
-                            }
-                          `}
-                        >
-                          <DomainIcon className={`h-4 w-4 ${customDomain === domain ? colors.text : "text-muted-foreground"}`} />
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="ghost" 
-                      className="flex-1"
-                      onClick={() => setShowCustom(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button 
-                      className="flex-1 bg-gradient-to-r from-secondary to-primary text-white"
-                      onClick={handleLogCustomActivity}
-                      disabled={!customActivity.trim() || isLogging}
-                    >
-                      Log Activity
-                    </Button>
-                  </div>
-                </motion.div>
-              )}
-            </div>
+            {loggerContent}
           </GlassCard>
         </motion.div>
       </motion.div>
     </AnimatePresence>
   );
 }
+

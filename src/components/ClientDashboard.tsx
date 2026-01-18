@@ -4,6 +4,7 @@ import { GlassCard } from "@/components/GlassCard";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { CognitiveBudgetVisualization } from "@/components/CognitiveBudgetVisualization";
+import { EnergyForecast } from "@/components/EnergyForecast";
 import { useAuth } from "@/hooks/useAuth";
 import { useHabits } from "@/hooks/useHabits";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
@@ -349,8 +350,14 @@ export function ClientDashboard({
         </GlassCard>
       </div>
 
-      {/* Cognitive Budget Visualization */}
-      <CognitiveBudgetVisualization compact />
+      {/* Energy Tracking Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Cognitive Budget Visualization */}
+        <CognitiveBudgetVisualization compact />
+
+        {/* Energy Forecast */}
+        <EnergyForecast compact />
+      </div>
     </div>
   );
 }
