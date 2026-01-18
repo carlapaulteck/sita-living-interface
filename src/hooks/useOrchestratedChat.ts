@@ -1,8 +1,10 @@
 import { useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrchestrator } from '@/lib/cognitiveOrchestrator';
-import { useConversationHistory, ConversationMessage } from './useConversationHistory';
+import { useConversationHistory } from './useConversationHistory';
+import { useConversationMemory } from './useConversationMemory';
 import { usePersonality } from '@/contexts/PersonalityContext';
+import { useAuth } from './useAuth';
 
 export type TaskComplexity = 'quick' | 'moderate' | 'complex' | 'reasoning';
 
@@ -74,6 +76,7 @@ function generateCacheKey(message: string, context: string): string {
 export function useOrchestratedChat() {
   const orchestrator = useOrchestrator();
   const { currentMode, config: personalityConfig } = usePersonality();
+  const { user } = useAuth();
   const { 
     currentConversation, 
     messages, 
@@ -81,6 +84,7 @@ export function useOrchestratedChat() {
     createConversation,
     getMessagesForContext 
   } = useConversationHistory();
+  const { getContextsForPrompt, processConversation } = useConversationMemory();
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
@@ -151,13 +155,15 @@ export function useOrchestratedChat() {
       // Create abort controller for cancellation
       abortControllerRef.current = new AbortController();
       
-      // Call the chat edge function
+      // Call the chat edge function with memory extraction
       const { data, error } = await supabase.functions.invoke('chat', {
         body: { 
           messages: apiMessages,
           model,
           personality: currentMode,
           conversationId,
+          userId: user?.id,
+          extractMemory: true,
         },
       });
       
