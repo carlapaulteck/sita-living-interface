@@ -6,11 +6,16 @@ import { TaxDashboard } from "@/components/finance/TaxDashboard";
 import { RetirementPlanning } from "@/components/finance/RetirementPlanning";
 import { FinancialInsights } from "@/components/finance/FinancialInsights";
 import { SmartTransactionForm } from "@/components/finance/SmartTransactionForm";
+import { SpendingForecast } from "@/components/finance/SpendingForecast";
+import { VoiceFinancialAdvisor } from "@/components/finance/VoiceFinancialAdvisor";
+import { SavingsGoals } from "@/components/finance/SavingsGoals";
 import { Button } from "@/components/ui/button";
 import { Plus, Sparkles } from "lucide-react";
 
 const TABS = [
   { id: "insights", label: "AI Insights" },
+  { id: "forecast", label: "Forecast" },
+  { id: "goals", label: "Goals" },
   { id: "budget", label: "Budget" },
   { id: "investments", label: "Investments" },
   { id: "tax", label: "Tax" },
@@ -24,7 +29,16 @@ export default function Finance() {
   const renderContent = () => {
     switch (activeTab) {
       case "insights":
-        return <FinancialInsights />;
+        return (
+          <div className="space-y-6">
+            <VoiceFinancialAdvisor />
+            <FinancialInsights />
+          </div>
+        );
+      case "forecast":
+        return <SpendingForecast />;
+      case "goals":
+        return <SavingsGoals />;
       case "budget":
         return <BudgetManager />;
       case "investments":
