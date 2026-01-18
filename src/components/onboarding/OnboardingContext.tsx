@@ -3,6 +3,26 @@ import { OnboardingData, defaultOnboardingData } from "@/types/onboarding";
 import { saveUserPreferences, saveUserProfile } from "@/lib/userPreferences";
 import { supabase } from "@/integrations/supabase/client";
 
+// Smart defaults for skip-to-end
+const skipToEndDefaults: Partial<OnboardingData> = {
+  setupMode: "quick",
+  assistantStyle: "executive",
+  autonomyLevel: "suggest",
+  dailyRhythm: {
+    template: "early-bird",
+    wakeTime: "07:00",
+    sleepTime: "23:00",
+    workStart: "09:00",
+    workEnd: "18:00",
+    focusBlocks: [{ start: "09:00", end: "12:00" }],
+    mealWindows: [
+      { start: "07:30", end: "08:30" },
+      { start: "12:30", end: "13:30" },
+      { start: "19:00", end: "20:00" },
+    ],
+  },
+};
+
 interface OnboardingContextType {
   step: number;
   totalSteps: number;
@@ -17,6 +37,7 @@ interface OnboardingContextType {
     value: unknown
   ) => void;
   complete: () => void;
+  skipToEnd: () => void;
   isQuickMode: boolean;
   isDeepMode: boolean;
 }
@@ -78,6 +99,7 @@ export function OnboardingProvider({ children, onComplete, totalSteps }: Onboard
     localStorage.setItem("sita_onboarded", "true");
     localStorage.setItem("sita_user_name", data.name);
     localStorage.setItem("sita_onboarding_data", JSON.stringify(finalData));
+    localStorage.removeItem("sita_onboarding_progress"); // Clear progress
     
     // Try to save to database if user is authenticated
     try {
@@ -98,6 +120,41 @@ export function OnboardingProvider({ children, onComplete, totalSteps }: Onboard
     onComplete(finalData);
   }, [data, onComplete]);
 
+  const skipToEnd = useCallback(async () => {
+    // Merge current data with smart defaults
+    const skippedData: OnboardingData = {
+      ...defaultOnboardingData,
+      ...data,
+      ...skipToEndDefaults,
+      name: data.name || "User",
+      completedAt: new Date().toISOString(),
+    };
+    
+    // Save to localStorage for quick access
+    localStorage.setItem("sita_onboarded", "true");
+    localStorage.setItem("sita_user_name", skippedData.name);
+    localStorage.setItem("sita_onboarding_data", JSON.stringify(skippedData));
+    localStorage.setItem("sita_skipped_onboarding", "true"); // Flag for later prompting
+    localStorage.removeItem("sita_onboarding_progress");
+    
+    // Try to save to database if user is authenticated
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData.session?.user) {
+        const userId = sessionData.session.user.id;
+        await Promise.all([
+          saveUserPreferences(userId, skippedData),
+          saveUserProfile(userId, skippedData.name)
+        ]);
+        console.log("Skipped onboarding data saved to database");
+      }
+    } catch (error) {
+      console.error("Failed to save skipped onboarding data:", error);
+    }
+    
+    onComplete(skippedData);
+  }, [data, onComplete]);
+
   const isQuickMode = data.setupMode === "quick";
   const isDeepMode = data.setupMode === "deep";
 
@@ -113,6 +170,7 @@ export function OnboardingProvider({ children, onComplete, totalSteps }: Onboard
         updateData,
         updateNestedData,
         complete,
+        skipToEnd,
         isQuickMode,
         isDeepMode,
       }}

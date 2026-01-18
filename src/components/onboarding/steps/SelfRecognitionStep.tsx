@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Check, Sparkles, Shield } from "lucide-react";
 import { useOnboarding } from "../OnboardingContext";
 import { GlassCard } from "@/components/GlassCard";
 import { Button } from "@/components/ui/button";
+import { HelpHint } from "@/components/HelpHint";
 
 interface RecognitionTag {
   id: string;
@@ -46,13 +47,35 @@ export function SelfRecognitionStep() {
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
       >
-        <p className="text-sm text-secondary mb-2">Optional</p>
-        <h2 className="text-2xl sm:text-3xl font-display font-medium text-foreground mb-2">
-          Anything feel familiar?
-        </h2>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Sparkles className="h-4 w-4 text-secondary" />
+          <span className="text-xs text-secondary font-medium uppercase tracking-wider">
+            Optional Self-Recognition
+          </span>
+        </div>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <h2 className="text-2xl sm:text-3xl font-display font-medium text-foreground">
+            Anything feel familiar?
+          </h2>
+          <HelpHint 
+            hint="This is entirely optional. These are common patterns - not diagnoses. Selecting any helps us fine-tune support without labels."
+            variant="info"
+          />
+        </div>
         <p className="text-muted-foreground">
           Select any that resonate with you - this is completely optional
         </p>
+        
+        {/* Privacy reassurance */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="flex items-center justify-center gap-1.5 mt-3 text-xs text-muted-foreground/60"
+        >
+          <Shield className="h-3 w-3" />
+          <span>Private to you - never shared or analyzed externally</span>
+        </motion.div>
       </motion.div>
       
       <motion.div
