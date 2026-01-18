@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Users, Calendar, Bell, Heart, Target, Star } from "lucide-react";
 import { GlassCard } from "@/components/GlassCard";
-import { SignalCard } from "@/components/SignalCard";
+import { MetricSignalCard } from "@/components/MetricSignalCard";
 
 interface FamilyMember {
   id: string;
@@ -28,28 +28,28 @@ export function FamilyHub() {
     <div className="space-y-6">
       {/* Signal Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <SignalCard
+          <MetricSignalCard
           title="Family Sync"
           value="92%"
           subtitle="Schedule alignment"
           icon={Users}
           status="healthy"
         />
-        <SignalCard
+          <MetricSignalCard
           title="Shared Tasks"
           value="8"
           subtitle="Active this week"
           icon={Target}
           status="healthy"
         />
-        <SignalCard
+          <MetricSignalCard
           title="Upcoming"
           value="3"
           subtitle="Family events"
           icon={Calendar}
           status="attention"
         />
-        <SignalCard
+        <MetricSignalCard
           title="Wellness"
           value="Good"
           subtitle="Family health score"

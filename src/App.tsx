@@ -19,6 +19,12 @@ import MindGrowth from "./pages/MindGrowth";
 import Settings from "./pages/Settings";
 import Sovereignty from "./pages/Sovereignty";
 import Automations from "./pages/Automations";
+import Family from "./pages/Family";
+import HomeIntelligence from "./pages/HomeIntelligence";
+import Finance from "./pages/Finance";
+import Healthcare from "./pages/Healthcare";
+import Agents from "./pages/Agents";
+import Intelligence from "./pages/Intelligence";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { BottomDock } from "./components/BottomDock";
@@ -147,6 +153,54 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <Automations />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/family"
+          element={
+            <ProtectedRoute>
+              <Family />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute>
+              <HomeIntelligence />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finance"
+          element={
+            <ProtectedRoute>
+              <Finance />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/healthcare"
+          element={
+            <ProtectedRoute>
+              <Healthcare />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/agents"
+          element={
+            <ProtectedRoute>
+              <Agents />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/intelligence"
+          element={
+            <ProtectedRoute>
+              <Intelligence />
             </ProtectedRoute>
           }
         />

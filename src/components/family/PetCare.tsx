@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Heart, Calendar, Pill, AlertTriangle, Check } from "lucide-react";
 import { GlassCard } from "@/components/GlassCard";
-import { SignalCard } from "@/components/SignalCard";
+import { MetricSignalCard } from "@/components/MetricSignalCard";
 
 interface Pet {
   id: string;

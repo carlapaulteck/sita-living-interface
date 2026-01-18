@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Home, TrendingUp, MapPin, DollarSign } from "lucide-react";
 import { GlassCard } from "@/components/GlassCard";
-import { SignalCard } from "@/components/SignalCard";
+import { MetricSignalCard } from "@/components/MetricSignalCard";
 import { MetricRing } from "@/components/MetricRing";
 
 export function PropertyDashboard() {

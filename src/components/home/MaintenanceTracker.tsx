@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Wrench, Calendar, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import { GlassCard } from "@/components/GlassCard";
-import { SignalCard } from "@/components/SignalCard";
+import { MetricSignalCard } from "@/components/MetricSignalCard";
 
 interface MaintenanceTask {
   id: string;
