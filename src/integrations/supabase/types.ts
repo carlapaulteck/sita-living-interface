@@ -479,6 +479,54 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_flags: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          disabled_for_users: string[] | null
+          enabled_for_roles: string[] | null
+          enabled_for_users: string[] | null
+          id: string
+          is_enabled: boolean | null
+          key: string
+          metadata: Json | null
+          name: string
+          percentage_rollout: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          disabled_for_users?: string[] | null
+          enabled_for_roles?: string[] | null
+          enabled_for_users?: string[] | null
+          id?: string
+          is_enabled?: boolean | null
+          key: string
+          metadata?: Json | null
+          name: string
+          percentage_rollout?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          disabled_for_users?: string[] | null
+          enabled_for_roles?: string[] | null
+          enabled_for_users?: string[] | null
+          id?: string
+          is_enabled?: boolean | null
+          key?: string
+          metadata?: Json | null
+          name?: string
+          percentage_rollout?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       habit_completions: {
         Row: {
           completed_at: string
