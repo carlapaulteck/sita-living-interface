@@ -374,6 +374,39 @@ export default function Auth() {
                 </button>
               </p>
             </div>
+
+            {/* Dev Mode Quick Access */}
+            <div className="mt-6 pt-4 border-t border-border/30">
+              <p className="text-xs text-muted-foreground text-center mb-3">Quick Access (Dev Mode)</p>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 text-xs"
+                  onClick={() => {
+                    setEmail("admin@sita.ai");
+                    setPassword("admin123!");
+                    toast({ title: "Admin credentials filled", description: "Click Sign In to continue" });
+                  }}
+                >
+                  <Shield className="h-3 w-3 mr-1" />
+                  Fill Admin
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 text-xs"
+                  onClick={() => {
+                    setEmail("client@sita.ai");
+                    setPassword("client123!");
+                    toast({ title: "Client credentials filled", description: "Click Sign In to continue" });
+                  }}
+                >
+                  <User className="h-3 w-3 mr-1" />
+                  Fill Client
+                </Button>
+              </div>
+            </div>
           </GlassCard>
 
           {/* Footer note */}
