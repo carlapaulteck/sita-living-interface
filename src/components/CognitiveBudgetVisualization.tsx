@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "./GlassCard";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { 
   Brain, 
   Briefcase, 
@@ -24,7 +25,9 @@ import {
   Activity,
   Plus,
   Clock,
-  Calendar
+  Calendar,
+  BarChart3,
+  Leaf
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { 
@@ -95,6 +98,7 @@ export function CognitiveBudgetVisualization({
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showActivityLogger, setShowActivityLogger] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
 
   const fetchBudgetState = async () => {
     if (!user?.id) return;
@@ -310,15 +314,15 @@ export function CognitiveBudgetVisualization({
             </div>
 
             {/* Header */}
-            <div className="flex items-center justify-between mb-8 relative">
+            <div className="flex items-center justify-between mb-6 relative">
               <div className="flex items-center gap-4">
                 <motion.div 
                   className="relative"
                   animate={{ rotate: [0, 5, -5, 0] }}
                   transition={{ duration: 6, repeat: Infinity }}
                 >
-                  <div className="p-4 rounded-2xl bg-gradient-to-br from-secondary/20 to-primary/20 border border-secondary/20">
-                    <Brain className="h-7 w-7 text-secondary" />
+                  <div className="p-3 rounded-2xl bg-gradient-to-br from-secondary/20 to-primary/20 border border-secondary/20">
+                    <Brain className="h-6 w-6 text-secondary" />
                   </div>
                   <motion.div
                     className="absolute -inset-1 rounded-2xl bg-secondary/20 blur-lg"
@@ -327,7 +331,7 @@ export function CognitiveBudgetVisualization({
                   />
                 </motion.div>
                 <div>
-                  <h2 className="text-2xl font-display font-medium text-foreground">Cognitive Budget</h2>
+                  <h2 className="text-xl font-display font-medium text-foreground">Cognitive Budget</h2>
                   <p className="text-sm text-muted-foreground flex items-center gap-2">
                     <Activity className="h-3.5 w-3.5" />
                     Real-time energy tracking
@@ -352,6 +356,30 @@ export function CognitiveBudgetVisualization({
                 )}
               </div>
             </div>
+
+            {/* Tabs Navigation */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="relative">
+              <TabsList className="w-full bg-foreground/5 p-1 mb-6">
+                <TabsTrigger value="overview" className="flex-1 gap-2 data-[state=active]:bg-secondary/20">
+                  <Brain className="h-4 w-4" />
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger value="forecast" className="flex-1 gap-2 data-[state=active]:bg-accent/20">
+                  <BarChart3 className="h-4 w-4" />
+                  Forecast
+                </TabsTrigger>
+                <TabsTrigger value="log" className="flex-1 gap-2 data-[state=active]:bg-primary/20">
+                  <Plus className="h-4 w-4" />
+                  Log Activity
+                </TabsTrigger>
+                <TabsTrigger value="recovery" className="flex-1 gap-2 data-[state=active]:bg-rose-500/20">
+                  <Leaf className="h-4 w-4" />
+                  Recovery
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Overview Tab */}
+              <TabsContent value="overview" className="mt-0">
 
             {/* Main Energy Display */}
             <motion.div 
@@ -491,10 +519,27 @@ export function CognitiveBudgetVisualization({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
-              className="text-center text-xs text-muted-foreground mt-6"
+              className="text-center text-xs text-muted-foreground mt-4"
             >
               Last updated: {budgetState?.lastUpdated ? new Date(budgetState.lastUpdated).toLocaleTimeString() : "Just now"}
             </motion.p>
+              </TabsContent>
+
+              {/* Forecast Tab */}
+              <TabsContent value="forecast" className="mt-0">
+                <EnergyForecast compact={false} />
+              </TabsContent>
+
+              {/* Log Activity Tab */}
+              <TabsContent value="log" className="mt-0">
+                <ActivityLogger embedded onActivityLogged={handleRefresh} />
+              </TabsContent>
+
+              {/* Recovery Tab */}
+              <TabsContent value="recovery" className="mt-0">
+                <RecoverySuggestions compact={false} />
+              </TabsContent>
+            </Tabs>
           </GlassCard>
         </motion.div>
       </motion.div>
