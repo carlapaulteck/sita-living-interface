@@ -26,6 +26,9 @@ import { NotificationBatchingPanel } from "@/components/NotificationBatchingPane
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { ClientDashboard } from "@/components/ClientDashboard";
 import { CognitiveBudgetVisualization } from "@/components/CognitiveBudgetVisualization";
+import { DemoModeIndicator } from "@/components/DemoModeIndicator";
+import { DemoTutorial } from "@/components/DemoTutorial";
+import { HelpGuide } from "@/components/HelpGuide";
 import { useNavigate } from "react-router-dom";
 import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
@@ -51,7 +54,8 @@ import {
   BarChart3,
   CalendarDays,
   CheckSquare,
-  Layers
+  Layers,
+  HelpCircle
 } from "lucide-react";
 
 // Decorative graphics for stat cards
@@ -100,6 +104,8 @@ const Index = () => {
   const [showHabitTracker, setShowHabitTracker] = useState(false);
   const [showNotificationBatching, setShowNotificationBatching] = useState(false);
   const [showCognitiveBudget, setShowCognitiveBudget] = useState(false);
+  const [showDemoTutorial, setShowDemoTutorial] = useState(false);
+  const [showHelpGuide, setShowHelpGuide] = useState(false);
   const [recoveryAutoActivated, setRecoveryAutoActivated] = useState(false);
   const [userName, setUserName] = useState("Alex");
   const [greeting, setGreeting] = useState("Good morning");
@@ -107,7 +113,7 @@ const Index = () => {
   const { handleTouchStart, handleTouchEnd } = useSwipeNavigation();
   
   // Auth and role hooks
-  const { user } = useAuth();
+  const { user, isDemoMode } = useAuth();
   const { isAdmin, loading: roleLoading } = useUserRole();
   
   // Adaptation and DND hooks
