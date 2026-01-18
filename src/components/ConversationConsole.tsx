@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "./GlassCard";
 import { Button } from "./ui/button";
-import { X, Send, Mic, Loader2, Volume2, VolumeX, History } from "lucide-react";
+import { X, Send, Mic, Loader2, Volume2, VolumeX, History, Brain } from "lucide-react";
 import { SitaOrb3D } from "./SitaOrb3D";
 import { VoiceWaveform } from "./VoiceWaveform";
 import { SpeechWaveformVisualizer } from "./SpeechWaveformVisualizer";
@@ -14,8 +14,11 @@ import { useAvatarStateSafe } from "@/contexts/AvatarStateContext";
 import { usePersonalitySafe } from "@/contexts/PersonalityContext";
 import { useAudioAnalyzer } from "@/hooks/useAudioAnalyzer";
 import { useConversationHistory } from "@/hooks/useConversationHistory";
+import { useConversationMemory } from "@/hooks/useConversationMemory";
 import { useAuth } from "@/hooks/useAuth";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import avatarImage from "@/assets/avatar.jpg";
+
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -30,6 +33,7 @@ interface ConversationConsoleProps {
 export function ConversationConsole({ isOpen, onClose, onMessageReceived }: ConversationConsoleProps) {
   const personality = usePersonalitySafe();
   const { user } = useAuth();
+  const { contexts, extractContextsFromMessage, processConversation } = useConversationMemory();
   const initialGreeting = personality?.config.greeting || 
     "Good morning. I've reviewed your metrics. Your business is performing well—revenue up 8% this week. Shall we discuss growth strategies or review your focus schedule?";
   
@@ -40,6 +44,7 @@ export function ConversationConsole({ isOpen, onClose, onMessageReceived }: Conv
   const [isLoading, setIsLoading] = useState(false);
   const [orbState, setOrbState] = useState<"idle" | "listening" | "speaking">("idle");
   const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [memoryEnabled, setMemoryEnabled] = useState(true);
   const [simulatedAudioLevel, setSimulatedAudioLevel] = useState(0);
   const [showHistory, setShowHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -50,7 +55,6 @@ export function ConversationConsole({ isOpen, onClose, onMessageReceived }: Conv
   
   // Audio analyzer for real lip-sync
   const { audioLevel, frequencyData, isAnalyzing } = useAudioAnalyzer();
-
   const { speak, stop: stopSpeaking, isSpeaking } = useTextToSpeech({ voice: "nova", speed: 1.0 });
 
   const {
@@ -144,6 +148,9 @@ export function ConversationConsole({ isOpen, onClose, onMessageReceived }: Conv
               role: m.role,
               content: m.content,
             })),
+            personality: personality?.currentMode || 'executive',
+            userId: user?.id,
+            extractMemory: memoryEnabled,
           }),
         }
       );
@@ -282,6 +289,26 @@ export function ConversationConsole({ isOpen, onClose, onMessageReceived }: Conv
                   <History className="h-5 w-5" />
                 </Button>
               )}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => setMemoryEnabled(!memoryEnabled)}
+                      className={memoryEnabled ? "text-primary" : ""}
+                    >
+                      <Brain className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{memoryEnabled ? "Memory learning ON" : "Memory learning OFF"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {contexts.length} memories stored
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <PersonalityModeSelector variant="compact" className="hidden sm:flex" />
               <Button 
                 variant="ghost" 
