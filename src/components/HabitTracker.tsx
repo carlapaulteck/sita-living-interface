@@ -14,13 +14,18 @@ import {
   Coffee,
   Moon,
   Sparkles,
-  TrendingUp
+  TrendingUp,
+  Bell,
+  BellOff,
+  Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { GlassCard } from "@/components/GlassCard";
 import { useHabits, CreateHabitInput, ContributionDay } from "@/hooks/useHabits";
+import { useHabitReminders } from "@/hooks/useHabitReminders";
 
 // Icon mapping for habits
 const HABIT_ICONS: Record<string, typeof Heart> = {
@@ -110,26 +115,44 @@ export function HabitTracker({ isOpen, onClose }: HabitTrackerProps) {
     getTodayProgress
   } = useHabits();
   
+  const {
+    reminders,
+    enableReminder,
+    disableReminder,
+    getReminderForHabit,
+    getUpcomingReminders
+  } = useHabitReminders();
+  
   const [showAddHabit, setShowAddHabit] = useState(false);
+  const [showReminderSettings, setShowReminderSettings] = useState<string | null>(null);
+  const [reminderTime, setReminderTime] = useState("09:00");
   const [selectedHabit, setSelectedHabit] = useState<string | null>(null);
   const [newHabit, setNewHabit] = useState<Partial<CreateHabitInput>>({
     name: "",
     description: "",
     icon: "check",
     domain: "general",
+    reminder_time: "",
   });
   
   const handleCreateHabit = async () => {
     if (!newHabit.name) return;
     
-    await createHabit(newHabit as CreateHabitInput);
+    const savedReminderTime = newHabit.reminder_time;
+    const createdHabit = await createHabit(newHabit as CreateHabitInput);
     setNewHabit({
       name: "",
       description: "",
       icon: "check",
       domain: "general",
+      reminder_time: "",
     });
     setShowAddHabit(false);
+    
+    // Enable reminder if time was set
+    if (savedReminderTime && createdHabit) {
+      enableReminder(createdHabit.id, savedReminderTime);
+    }
   };
   
   const overallGrid = getContributionGrid(undefined, 16);
@@ -281,6 +304,20 @@ export function HabitTracker({ isOpen, onClose }: HabitTrackerProps) {
                       </div>
                       
                       <div className="flex items-center gap-2">
+                        {/* Reminder Toggle */}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={`h-8 w-8 ${getReminderForHabit(habit.id)?.isEnabled ? "text-primary" : "text-muted-foreground"}`}
+                          onClick={() => setShowReminderSettings(showReminderSettings === habit.id ? null : habit.id)}
+                          title="Set Reminder"
+                        >
+                          {getReminderForHabit(habit.id)?.isEnabled ? (
+                            <Bell className="h-4 w-4" />
+                          ) : (
+                            <BellOff className="h-4 w-4" />
+                          )}
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -298,6 +335,54 @@ export function HabitTracker({ isOpen, onClose }: HabitTrackerProps) {
                         </Button>
                       </div>
                     </div>
+                    
+                    {/* Reminder Settings */}
+                    <AnimatePresence>
+                      {showReminderSettings === habit.id && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="pt-4 mt-4 border-t border-foreground/10">
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-3">
+                                <Clock className="h-4 w-4 text-muted-foreground" />
+                                <div>
+                                  <p className="text-sm font-medium text-foreground">Daily Reminder</p>
+                                  <p className="text-xs text-muted-foreground">Get notified to complete this habit</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <Input
+                                  type="time"
+                                  value={getReminderForHabit(habit.id)?.scheduledTime || reminderTime}
+                                  onChange={(e) => setReminderTime(e.target.value)}
+                                  className="w-28"
+                                />
+                                <Switch
+                                  checked={getReminderForHabit(habit.id)?.isEnabled || false}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      enableReminder(habit.id, reminderTime);
+                                    } else {
+                                      disableReminder(habit.id);
+                                    }
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            {getReminderForHabit(habit.id)?.isEnabled && (
+                              <p className="text-xs text-primary mt-2 flex items-center gap-1">
+                                <Bell className="h-3 w-3" />
+                                Reminder set for {getReminderForHabit(habit.id)?.scheduledTime}
+                              </p>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                     
                     {/* Expanded Details */}
                     <AnimatePresence>
@@ -392,6 +477,24 @@ export function HabitTracker({ isOpen, onClose }: HabitTrackerProps) {
                           </button>
                         ))}
                       </div>
+                    </div>
+                    
+                    {/* Reminder Time */}
+                    <div>
+                      <Label className="flex items-center gap-2">
+                        <Bell className="h-4 w-4" />
+                        Daily Reminder (optional)
+                      </Label>
+                      <Input
+                        type="time"
+                        value={newHabit.reminder_time || ""}
+                        onChange={(e) => setNewHabit(prev => ({ ...prev, reminder_time: e.target.value }))}
+                        className="mt-2"
+                        placeholder="Set reminder time"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Leave empty for no reminder
+                      </p>
                     </div>
                   </div>
                   
