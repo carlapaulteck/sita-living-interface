@@ -19,6 +19,7 @@ import { TrustControlsDashboard } from "@/components/TrustControlsDashboard";
 import { AdaptationIndicator } from "@/components/TrustSafeguards";
 import { RecoveryMode } from "@/components/RecoveryMode";
 import { DoNotDisturbPanel } from "@/components/DoNotDisturbPanel";
+import { WeeklyInsights } from "@/components/WeeklyInsights";
 import { useNavigate } from "react-router-dom";
 import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
@@ -38,7 +39,8 @@ import {
   Wallet,
   Cpu,
   ShieldCheck,
-  BellOff
+  BellOff,
+  BarChart3
 } from "lucide-react";
 
 // Decorative graphics for stat cards
@@ -82,6 +84,7 @@ const Index = () => {
   const [showTrustControls, setShowTrustControls] = useState(false);
   const [showRecoveryMode, setShowRecoveryMode] = useState(false);
   const [showDNDPanel, setShowDNDPanel] = useState(false);
+  const [showWeeklyInsights, setShowWeeklyInsights] = useState(false);
   const [recoveryAutoActivated, setRecoveryAutoActivated] = useState(false);
   const [userName, setUserName] = useState("Alex");
   const [greeting, setGreeting] = useState("Good morning");
@@ -152,6 +155,8 @@ const Index = () => {
       setShowRecoveryMode(true);
     } else if (lower.includes("dnd") || lower.includes("disturb") || lower.includes("quiet")) {
       setShowDNDPanel(true);
+    } else if (lower.includes("weekly") || lower.includes("insight") || lower.includes("pattern") || lower.includes("trend")) {
+      setShowWeeklyInsights(true);
     } else if (lower.includes("business") || lower.includes("revenue") || lower.includes("growth")) {
       navigate("/business-growth");
     } else if (lower.includes("health") || lower.includes("sleep") || lower.includes("fitness")) {
@@ -403,6 +408,16 @@ const Index = () => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 1.1 }}
+          onClick={() => setShowWeeklyInsights(true)}
+          className="p-3 rounded-xl bg-gradient-to-br from-[#9370DB]/20 to-[#00FFFF]/20 border border-[#9370DB]/30 backdrop-blur-xl hover:scale-105 transition-transform"
+          title="Weekly Insights"
+        >
+          <BarChart3 className="h-5 w-5 text-[#9370DB]" />
+        </motion.button>
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1.2 }}
           onClick={() => setShowWarRoom(true)}
           className="p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-xl hover:scale-105 transition-transform"
           title="War Room"
@@ -442,6 +457,7 @@ const Index = () => {
           />
         )}
         {showDNDPanel && <DoNotDisturbPanel isOpen={showDNDPanel} onClose={() => setShowDNDPanel(false)} />}
+        {showWeeklyInsights && <WeeklyInsights isOpen={showWeeklyInsights} onClose={() => setShowWeeklyInsights(false)} />}
       </AnimatePresence>
     </div>
   );

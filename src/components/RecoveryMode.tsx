@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Heart, 
@@ -14,7 +14,12 @@ import {
   VolumeX,
   CheckCircle2,
   Brain,
-  Leaf
+  Leaf,
+  Eye,
+  Waves,
+  Sun,
+  CloudRain,
+  Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/GlassCard";
@@ -27,8 +32,10 @@ interface RecoveryActivity {
   description: string;
   duration: number; // minutes
   icon: typeof Heart;
-  category: "breathwork" | "movement" | "rest" | "sensory" | "cognitive";
+  category: "breathwork" | "movement" | "rest" | "sensory" | "cognitive" | "grounding";
   intensity: "gentle" | "moderate";
+  forStates: ("overload" | "fatigued" | "distracted" | "hyperfocus" | "neutral")[];
+  guidedInstructions?: string[];
 }
 
 const RECOVERY_ACTIVITIES: RecoveryActivity[] = [
@@ -40,6 +47,14 @@ const RECOVERY_ACTIVITIES: RecoveryActivity[] = [
     icon: Wind,
     category: "breathwork",
     intensity: "gentle",
+    forStates: ["overload", "fatigued", "distracted"],
+    guidedInstructions: [
+      "Breathe in slowly for 4 seconds",
+      "Hold your breath for 4 seconds",
+      "Breathe out slowly for 4 seconds",
+      "Hold empty for 4 seconds",
+      "Repeat this cycle gently"
+    ]
   },
   {
     id: "body-scan",
@@ -49,6 +64,31 @@ const RECOVERY_ACTIVITIES: RecoveryActivity[] = [
     icon: Heart,
     category: "rest",
     intensity: "gentle",
+    forStates: ["overload", "fatigued"],
+    guidedInstructions: [
+      "Close your eyes and take a slow breath",
+      "Notice any tension in your forehead and jaw",
+      "Let your shoulders drop",
+      "Relax your hands",
+      "Feel the ground beneath your feet"
+    ]
+  },
+  {
+    id: "5-4-3-2-1",
+    name: "5-4-3-2-1 Grounding",
+    description: "Anchor to the present moment",
+    duration: 2,
+    icon: Eye,
+    category: "grounding",
+    intensity: "gentle",
+    forStates: ["overload", "distracted"],
+    guidedInstructions: [
+      "Notice 5 things you can see",
+      "Notice 4 things you can touch",
+      "Notice 3 things you can hear",
+      "Notice 2 things you can smell",
+      "Notice 1 thing you can taste"
+    ]
   },
   {
     id: "nature-sounds",
@@ -58,6 +98,7 @@ const RECOVERY_ACTIVITIES: RecoveryActivity[] = [
     icon: Leaf,
     category: "sensory",
     intensity: "gentle",
+    forStates: ["overload", "fatigued", "neutral"],
   },
   {
     id: "gentle-stretch",
@@ -67,6 +108,14 @@ const RECOVERY_ACTIVITIES: RecoveryActivity[] = [
     icon: Sparkles,
     category: "movement",
     intensity: "gentle",
+    forStates: ["fatigued", "hyperfocus", "neutral"],
+    guidedInstructions: [
+      "Roll your shoulders back slowly",
+      "Tilt your head to the left, hold 10 seconds",
+      "Tilt your head to the right, hold 10 seconds",
+      "Interlace your fingers and stretch arms forward",
+      "Stand and shake out your body"
+    ]
   },
   {
     id: "focus-reset",
@@ -76,6 +125,13 @@ const RECOVERY_ACTIVITIES: RecoveryActivity[] = [
     icon: Brain,
     category: "cognitive",
     intensity: "gentle",
+    forStates: ["hyperfocus", "fatigued"],
+    guidedInstructions: [
+      "Look at something 20 feet away",
+      "Blink slowly 10 times",
+      "Close your eyes for 5 seconds",
+      "Open and refocus gently"
+    ]
   },
   {
     id: "hydration-break",
@@ -85,6 +141,51 @@ const RECOVERY_ACTIVITIES: RecoveryActivity[] = [
     icon: Coffee,
     category: "movement",
     intensity: "gentle",
+    forStates: ["fatigued", "hyperfocus", "neutral"],
+  },
+  {
+    id: "ocean-waves",
+    name: "Wave Breathing",
+    description: "Sync breath with imagined ocean waves",
+    duration: 3,
+    icon: Waves,
+    category: "breathwork",
+    intensity: "gentle",
+    forStates: ["overload", "distracted"],
+    guidedInstructions: [
+      "Imagine a calm ocean",
+      "Breathe in as a wave approaches",
+      "Breathe out as the wave retreats",
+      "Let the rhythm become natural",
+      "Feel tension wash away with each wave"
+    ]
+  },
+  {
+    id: "sunlight-break",
+    name: "Light Exposure",
+    description: "Step into natural light briefly",
+    duration: 2,
+    icon: Sun,
+    category: "sensory",
+    intensity: "moderate",
+    forStates: ["fatigued", "neutral"],
+  },
+  {
+    id: "rain-meditation",
+    name: "Rain Visualization",
+    description: "Imagine stress washing away",
+    duration: 2,
+    icon: CloudRain,
+    category: "rest",
+    intensity: "gentle",
+    forStates: ["overload"],
+    guidedInstructions: [
+      "Close your eyes",
+      "Imagine a gentle, warm rain",
+      "Feel it washing away tension",
+      "Each droplet carries away one worry",
+      "Feel cleansed and calm"
+    ]
   },
 ];
 
@@ -103,25 +204,45 @@ export function RecoveryMode({ isOpen, onClose, autoActivated = false }: Recover
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [completedActivities, setCompletedActivities] = useState<string[]>([]);
   const [audioEnabled, setAudioEnabled] = useState(true);
+  const [currentInstruction, setCurrentInstruction] = useState(0);
   
-  // Get recommended activities based on cognitive state
-  const recommendedActivities = RECOVERY_ACTIVITIES.filter(activity => {
-    if (adaptation?.momentState === "overload") {
-      return activity.category === "breathwork" || activity.category === "rest";
-    }
-    if (adaptation?.momentState === "fatigued") {
-      return activity.category === "movement" || activity.category === "sensory";
-    }
-    return true;
-  });
+  // Get current moment state for personalization
+  const currentState = adaptation?.momentState || "neutral";
+  
+  // Get recommended activities based on cognitive state - personalized
+  const recommendedActivities = useMemo(() => {
+    return RECOVERY_ACTIVITIES.filter(activity => {
+      return activity.forStates.includes(currentState as any);
+    }).slice(0, 4);
+  }, [currentState]);
+  
+  // Get all activities sorted by relevance
+  const sortedActivities = useMemo(() => {
+    return [...RECOVERY_ACTIVITIES].sort((a, b) => {
+      const aRelevant = a.forStates.includes(currentState as any) ? 0 : 1;
+      const bRelevant = b.forStates.includes(currentState as any) ? 0 : 1;
+      return aRelevant - bRelevant;
+    });
+  }, [currentState]);
   
   const startActivity = (activity: RecoveryActivity) => {
     setSelectedActivity(activity);
     setTimeRemaining(activity.duration * 60);
+    setCurrentInstruction(0);
     setIsRunning(true);
     
     if (audioEnabled) {
-      speak(`Starting ${activity.name}. ${activity.description}`);
+      const intro = `Starting ${activity.name}. ${activity.description}`;
+      speak(intro);
+      
+      // If there are guided instructions, start them after intro
+      if (activity.guidedInstructions && activity.guidedInstructions.length > 0) {
+        setTimeout(() => {
+          if (audioEnabled) {
+            speak(activity.guidedInstructions![0]);
+          }
+        }, 3000);
+      }
     }
   };
   
@@ -142,7 +263,29 @@ export function RecoveryMode({ isOpen, onClose, autoActivated = false }: Recover
     setIsRunning(false);
     setSelectedActivity(null);
     setTimeRemaining(0);
+    setCurrentInstruction(0);
   };
+  
+  // Progress through guided instructions
+  useEffect(() => {
+    if (isRunning && selectedActivity?.guidedInstructions) {
+      const instructions = selectedActivity.guidedInstructions;
+      const totalTime = selectedActivity.duration * 60;
+      const intervalTime = (totalTime / instructions.length) * 1000;
+      
+      const timer = setInterval(() => {
+        setCurrentInstruction(prev => {
+          const next = prev + 1;
+          if (next < instructions.length && audioEnabled) {
+            speak(instructions[next]);
+          }
+          return next;
+        });
+      }, intervalTime);
+      
+      return () => clearInterval(timer);
+    }
+  }, [isRunning, selectedActivity, audioEnabled]);
   
   // Timer countdown
   useEffect(() => {
@@ -166,6 +309,23 @@ export function RecoveryMode({ isOpen, onClose, autoActivated = false }: Recover
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
   
+  const getStateMessage = () => {
+    switch (currentState) {
+      case "overload":
+        return "I noticed you're feeling overwhelmed. These activities are specifically chosen to help you decompress.";
+      case "fatigued":
+        return "Energy is running low. These activities can help restore your vitality.";
+      case "hyperfocus":
+        return "Time for a healthy break from deep focus. These will help you reset.";
+      case "distracted":
+        return "Let's help you find your center again with these grounding activities.";
+      default:
+        return autoActivated 
+          ? "I noticed you might need a moment. Here are some gentle options." 
+          : "Take a mindful pause to recharge.";
+    }
+  };
+  
   if (!isOpen) return null;
   
   return (
@@ -180,7 +340,7 @@ export function RecoveryMode({ isOpen, onClose, autoActivated = false }: Recover
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="w-full max-w-lg"
+          className="w-full max-w-lg max-h-[90vh] overflow-y-auto"
         >
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -190,10 +350,14 @@ export function RecoveryMode({ isOpen, onClose, autoActivated = false }: Recover
                 Recovery Mode
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
-                {autoActivated 
-                  ? "I noticed you might need a moment. Here are some gentle options." 
-                  : "Take a mindful pause to recharge."}
+                {getStateMessage()}
               </p>
+              {currentState !== "neutral" && (
+                <div className="mt-2 inline-flex items-center gap-2 px-2 py-1 rounded-full bg-primary/10 text-xs text-primary">
+                  <Zap className="h-3 w-3" />
+                  Personalized for: {currentState}
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -232,9 +396,29 @@ export function RecoveryMode({ isOpen, onClose, autoActivated = false }: Recover
                 <h3 className="text-xl font-medium text-foreground mb-2">
                   {selectedActivity.name}
                 </h3>
-                <p className="text-sm text-muted-foreground mb-6">
+                <p className="text-sm text-muted-foreground mb-4">
                   {selectedActivity.description}
                 </p>
+                
+                {/* Guided Instructions */}
+                {selectedActivity.guidedInstructions && (
+                  <div className="mb-6 text-left p-4 rounded-lg bg-foreground/5">
+                    <p className="text-xs text-muted-foreground mb-2">Current step:</p>
+                    <p className="text-sm text-foreground font-medium">
+                      {selectedActivity.guidedInstructions[Math.min(currentInstruction, selectedActivity.guidedInstructions.length - 1)]}
+                    </p>
+                    <div className="flex gap-1 mt-3">
+                      {selectedActivity.guidedInstructions.map((_, i) => (
+                        <div 
+                          key={i} 
+                          className={`h-1 flex-1 rounded-full transition-colors ${
+                            i <= currentInstruction ? "bg-primary" : "bg-foreground/20"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
                 {/* Timer Ring */}
                 <div className="relative w-32 h-32 mx-auto mb-6">
@@ -328,28 +512,36 @@ export function RecoveryMode({ isOpen, onClose, autoActivated = false }: Recover
                   All recovery activities
                 </h3>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {RECOVERY_ACTIVITIES.map(activity => (
-                    <button
-                      key={activity.id}
-                      onClick={() => startActivity(activity)}
-                      className={`w-full p-3 rounded-xl flex items-center gap-3 text-left transition-all ${
-                        completedActivities.includes(activity.id)
-                          ? "bg-primary/10"
-                          : "bg-foreground/5 hover:bg-foreground/10"
-                      }`}
-                    >
-                      <activity.icon className="h-4 w-4 text-primary shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <span className="text-sm text-foreground">{activity.name}</span>
-                        <span className="text-xs text-muted-foreground ml-2">
-                          {activity.duration} min
-                        </span>
-                      </div>
-                      {completedActivities.includes(activity.id) && (
-                        <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                      )}
-                    </button>
-                  ))}
+                  {sortedActivities.map(activity => {
+                    const isRelevant = activity.forStates.includes(currentState as any);
+                    return (
+                      <button
+                        key={activity.id}
+                        onClick={() => startActivity(activity)}
+                        className={`w-full p-3 rounded-xl flex items-center gap-3 text-left transition-all ${
+                          completedActivities.includes(activity.id)
+                            ? "bg-primary/10"
+                            : isRelevant 
+                              ? "bg-foreground/5 hover:bg-foreground/10" 
+                              : "bg-foreground/3 hover:bg-foreground/5 opacity-70"
+                        }`}
+                      >
+                        <activity.icon className={`h-4 w-4 shrink-0 ${isRelevant ? "text-primary" : "text-muted-foreground"}`} />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm text-foreground">{activity.name}</span>
+                          <span className="text-xs text-muted-foreground ml-2">
+                            {activity.duration} min
+                          </span>
+                          {activity.guidedInstructions && (
+                            <span className="text-xs text-primary ml-2">• Guided</span>
+                          )}
+                        </div>
+                        {completedActivities.includes(activity.id) && (
+                          <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </>
