@@ -1,11 +1,13 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useContext } from "react";
 
 interface UseWakeWordOptions {
   wakeWord?: string;
+  wakeWordVariations?: string[];
   onWake?: () => void;
   onSleep?: () => void;
   sensitivity?: number;
   autoRestart?: boolean;
+  sleepTimeout?: number;
 }
 
 interface UseWakeWordReturn {
@@ -17,19 +19,23 @@ interface UseWakeWordReturn {
   resetWake: () => void;
   lastHeard: string;
   error: string | null;
+  currentWakeWord: string;
 }
 
 /**
  * Voice-activated wake word detection hook
  * Listens for a specific phrase (default: "Hey SITA") to activate the avatar
+ * Now supports customizable wake words with variations
  */
 export function useWakeWord(options: UseWakeWordOptions = {}): UseWakeWordReturn {
   const {
     wakeWord = "hey sita",
+    wakeWordVariations = [],
     onWake,
     onSleep,
     sensitivity = 0.6,
     autoRestart = true,
+    sleepTimeout = 30000,
   } = options;
 
   const [isActive, setIsActive] = useState(false);
@@ -63,8 +69,8 @@ export function useWakeWord(options: UseWakeWordOptions = {}): UseWakeWordReturn
       return true;
     }
     
-    // Fuzzy matching for common misrecognitions
-    const variations = [
+    // Default variations for common misrecognitions
+    const defaultVariations = [
       "hey sita",
       "hey cita",
       "hey seeta",
@@ -78,14 +84,17 @@ export function useWakeWord(options: UseWakeWordOptions = {}): UseWakeWordReturn
       "hey sitter",
     ];
     
-    return variations.some(variation => {
-      if (normalized.includes(variation)) return true;
+    // Combine default with custom variations
+    const allVariations = [...defaultVariations, ...wakeWordVariations, wakeWordNormalized];
+    
+    return allVariations.some(variation => {
+      if (normalized.includes(variation.toLowerCase())) return true;
       
       // Check similarity
-      const similarity = calculateSimilarity(normalized, variation);
+      const similarity = calculateSimilarity(normalized, variation.toLowerCase());
       return similarity >= sensitivity;
     });
-  }, [wakeWord, sensitivity]);
+  }, [wakeWord, wakeWordVariations, sensitivity]);
 
   // Simple similarity calculation (Levenshtein-based ratio)
   const calculateSimilarity = (str1: string, str2: string): number => {
@@ -182,12 +191,12 @@ export function useWakeWord(options: UseWakeWordOptions = {}): UseWakeWordReturn
             setIsAwake(true);
             onWake?.();
             
-            // Set auto-sleep timeout (30 seconds of inactivity)
+            // Set auto-sleep timeout based on config
             clearWakeTimeout();
             wakeTimeoutRef.current = setTimeout(() => {
               setIsAwake(false);
               onSleep?.();
-            }, 30000);
+            }, sleepTimeout);
             
             return;
           }
@@ -261,6 +270,7 @@ export function useWakeWord(options: UseWakeWordOptions = {}): UseWakeWordReturn
     resetWake,
     lastHeard,
     error,
+    currentWakeWord: wakeWord,
   };
 }
 
