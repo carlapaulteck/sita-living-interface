@@ -29,18 +29,23 @@ import {
   BellRing,
   BellOff,
   CheckCircle2,
-  Loader2
+  Loader2,
+  Mic
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCognitiveSafe } from "@/contexts/CognitiveContext";
 import { useCognitiveSignals } from "@/hooks/useCognitiveSignals";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { PersonalityModeSelector } from "@/components/PersonalityModeSelector";
+import { WakeWordSettings } from "@/components/WakeWordSettings";
+import { usePersonalitySafe } from "@/contexts/PersonalityContext";
 import { toast } from "sonner";
 
-type SettingsTab = "profile" | "autonomy" | "cognitive" | "personalization" | "notifications" | "boundaries" | "data" | "appearance" | "automations";
+type SettingsTab = "profile" | "autonomy" | "cognitive" | "personalization" | "notifications" | "boundaries" | "data" | "appearance" | "automations" | "voice";
 
 const TABS: { id: SettingsTab; label: string; icon: typeof User }[] = [
   { id: "profile", label: "Profile", icon: User },
+  { id: "voice", label: "Voice & AI", icon: Mic },
   { id: "autonomy", label: "Autonomy", icon: Zap },
   { id: "automations", label: "Automations", icon: Zap },
   { id: "cognitive", label: "Cognitive", icon: Brain },
@@ -254,9 +259,10 @@ function NotificationsSettings() {
 }
 
 export default function Settings() {
-  const [activeTab, setActiveTab] = useState<SettingsTab>("autonomy");
+  const [activeTab, setActiveTab] = useState<SettingsTab>("voice");
   const [autonomyLevel, setAutonomyLevel] = useState(2); // 0-3
   const [budgetCap, setBudgetCap] = useState(500);
+  const personality = usePersonalitySafe();
   
   const autonomyLabels = ["Observe", "Suggest", "Act", "Autopilot"];
 
@@ -297,6 +303,89 @@ export default function Settings() {
 
         {/* Content */}
         <div className="col-span-1 lg:col-span-3 space-y-6">
+          {/* Voice & AI Tab */}
+          {activeTab === "voice" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-xl font-display font-medium text-foreground mb-1">
+                  Voice & AI Settings
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Customize how SITA speaks and listens
+                </p>
+              </div>
+
+              {/* Personality Mode Section */}
+              <GlassCard className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  <div>
+                    <h3 className="text-lg font-medium text-foreground">Personality Mode</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Choose how SITA communicates with you
+                    </p>
+                  </div>
+                </div>
+                
+                {personality && (
+                  <div className="mb-4 p-4 rounded-xl bg-primary/5 border border-primary/20">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-2xl">{personality.config.icon}</span>
+                      <div>
+                        <p className="font-medium text-foreground">{personality.config.name}</p>
+                        <p className="text-xs text-muted-foreground">{personality.config.tone}</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground italic">
+                      "{personality.config.greeting}"
+                    </p>
+                  </div>
+                )}
+                
+                <PersonalityModeSelector variant="cards" showDescription />
+              </GlassCard>
+
+              {/* Wake Word Settings */}
+              <WakeWordSettings />
+
+              {/* Voice Output Settings */}
+              <GlassCard className="p-6">
+                <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
+                  <Volume2 className="h-4 w-4 text-primary" />
+                  Voice Output
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-sm text-foreground">Voice Responses</span>
+                      <p className="text-xs text-muted-foreground">SITA speaks responses aloud</p>
+                    </div>
+                    <div className="w-10 h-5 rounded-full bg-primary cursor-pointer">
+                      <div className="w-4 h-4 rounded-full bg-foreground mt-0.5 translate-x-5" />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-muted-foreground">Speaking Speed</span>
+                      <span className="text-sm text-primary">1.0x</span>
+                    </div>
+                    <Slider
+                      defaultValue={[1]}
+                      min={0.5}
+                      max={2}
+                      step={0.1}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </GlassCard>
+            </motion.div>
+          )}
+
           {activeTab === "autonomy" && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
