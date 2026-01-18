@@ -23,6 +23,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
+import UserAnalyticsWidget from '@/components/admin/UserAnalyticsWidget';
+import OnboardingFunnelChart from '@/components/admin/OnboardingFunnelChart';
+import SystemHealthPanel from '@/components/admin/SystemHealthPanel';
+import AdminActivityFeed from '@/components/admin/AdminActivityFeed';
 
 interface StatCardProps {
   title: string;
@@ -199,6 +203,18 @@ const AdminDashboardPage = () => {
           icon={<AlertTriangle className="w-5 h-5 text-primary" />}
           loading={errorsLoading}
         />
+      </div>
+
+      {/* Analytics & Health Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <UserAnalyticsWidget />
+        <SystemHealthPanel />
+      </div>
+
+      {/* Funnel & Activity Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <OnboardingFunnelChart />
+        <AdminActivityFeed />
       </div>
 
       {/* Recent Activity */}
