@@ -38,6 +38,7 @@ const benefits = [
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
+  const [showResetPassword, setShowResetPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -46,6 +47,63 @@ export default function Auth() {
   const [errors, setErrors] = useState<{ email?: string; password?: string; name?: string }>({});
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Demo mode - skip authentication entirely
+  const handleDemoMode = (role: 'admin' | 'client') => {
+    // Store demo mode in localStorage
+    localStorage.setItem('sita_demo_mode', role);
+    toast({
+      title: `Demo Mode Activated`,
+      description: `Viewing app as ${role === 'admin' ? 'Admin' : 'Client'} (no login required)`,
+    });
+    navigate("/");
+  };
+
+  // Password reset handler
+  const handlePasswordReset = async () => {
+    if (!email) {
+      setErrors({ email: "Please enter your email address" });
+      return;
+    }
+    
+    try {
+      emailSchema.parse(email);
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        setErrors({ email: e.errors[0].message });
+        return;
+      }
+    }
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Reset failed",
+          description: error.message,
+        });
+      } else {
+        toast({
+          title: "Check your email",
+          description: "Password reset link has been sent to your email.",
+        });
+        setShowResetPassword(false);
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Check if user is already logged in
   useEffect(() => {
@@ -340,6 +398,15 @@ export default function Auth() {
                 {errors.password && (
                   <p className="text-xs text-destructive">{errors.password}</p>
                 )}
+                {isLogin && (
+                  <button
+                    type="button"
+                    onClick={() => setShowResetPassword(true)}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Forgot password?
+                  </button>
+                )}
               </div>
 
               <Button
@@ -375,13 +442,37 @@ export default function Auth() {
               </p>
             </div>
 
-            {/* Dev Mode Quick Access */}
+            {/* Demo Mode - Skip Authentication */}
             <div className="mt-6 pt-4 border-t border-border/30">
-              <p className="text-xs text-muted-foreground text-center mb-3">Quick Access (Dev Mode)</p>
+              <p className="text-xs text-muted-foreground text-center mb-3">Skip Authentication (Demo Mode)</p>
+              <div className="flex gap-2 mb-3">
+                <Button
+                  type="button"
+                  variant="default"
+                  className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90"
+                  onClick={() => handleDemoMode('admin')}
+                >
+                  <Shield className="h-4 w-4 mr-2" />
+                  Enter as Admin
+                </Button>
+                <Button
+                  type="button"
+                  variant="default"
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:opacity-90"
+                  onClick={() => handleDemoMode('client')}
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  Enter as Client
+                </Button>
+              </div>
+              
+              {/* Quick fill credentials */}
+              <p className="text-xs text-muted-foreground text-center mb-2">Or use test credentials:</p>
               <div className="flex gap-2">
                 <Button
                   type="button"
                   variant="outline"
+                  size="sm"
                   className="flex-1 text-xs"
                   onClick={() => {
                     setEmail("admin@sita.ai");
@@ -389,12 +480,12 @@ export default function Auth() {
                     toast({ title: "Admin credentials filled", description: "Click Sign In to continue" });
                   }}
                 >
-                  <Shield className="h-3 w-3 mr-1" />
                   Fill Admin
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
+                  size="sm"
                   className="flex-1 text-xs"
                   onClick={() => {
                     setEmail("client@sita.ai");
@@ -402,11 +493,75 @@ export default function Auth() {
                     toast({ title: "Client credentials filled", description: "Click Sign In to continue" });
                   }}
                 >
-                  <User className="h-3 w-3 mr-1" />
                   Fill Client
                 </Button>
               </div>
             </div>
+
+            {/* Password Reset Modal */}
+            <AnimatePresence>
+              {showResetPassword && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+                  onClick={() => setShowResetPassword(false)}
+                >
+                  <motion.div
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.95, opacity: 0 }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-full max-w-md p-6 mx-4"
+                  >
+                    <GlassCard className="p-6">
+                      <h3 className="text-lg font-semibold text-foreground mb-2">Reset Password</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Enter your email address and we'll send you a link to reset your password.
+                      </p>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="reset-email">Email</Label>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                              id="reset-email"
+                              type="email"
+                              placeholder="you@example.com"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              className="pl-10 bg-foreground/5 border-border/50"
+                            />
+                          </div>
+                          {errors.email && (
+                            <p className="text-xs text-destructive">{errors.email}</p>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setShowResetPassword(false)}
+                            className="flex-1"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="button"
+                            onClick={handlePasswordReset}
+                            disabled={isLoading}
+                            className="flex-1"
+                          >
+                            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send Reset Link"}
+                          </Button>
+                        </div>
+                      </div>
+                    </GlassCard>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </GlassCard>
 
           {/* Footer note */}
