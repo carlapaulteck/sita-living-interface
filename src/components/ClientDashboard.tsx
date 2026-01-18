@@ -22,7 +22,9 @@ import {
   Zap,
   TrendingUp,
   Sunrise,
+  HelpCircle,
 } from "lucide-react";
+import { ContextualTooltip, tooltipContent } from "@/components/ContextualTooltip";
 
 interface QuickActionProps {
   onOpenCalendar: () => void;
@@ -32,6 +34,7 @@ interface QuickActionProps {
   onOpenWeeklyInsights: () => void;
   onOpenWakeUpReceipt?: () => void;
   onOpenCognitiveBudget?: () => void;
+  onOpenHelp?: () => void;
 }
 
 export function ClientDashboard({
@@ -42,6 +45,7 @@ export function ClientDashboard({
   onOpenWeeklyInsights,
   onOpenWakeUpReceipt,
   onOpenCognitiveBudget,
+  onOpenHelp,
 }: QuickActionProps) {
   const { user } = useAuth();
   const { habits, getTodayProgress, getStreak, isCompletedToday } = useHabits();
@@ -70,6 +74,7 @@ export function ClientDashboard({
       onClick: onOpenCalendar,
       color: "text-[#00FFFF]",
       bgColor: "bg-[#00FFFF]/10",
+      tooltip: tooltipContent.calendar,
     },
     {
       icon: CheckCircle2,
@@ -78,6 +83,7 @@ export function ClientDashboard({
       onClick: onOpenHabits,
       color: "text-[#9370DB]",
       bgColor: "bg-[#9370DB]/10",
+      tooltip: tooltipContent.habits,
     },
     {
       icon: TrendingUp,
@@ -86,6 +92,7 @@ export function ClientDashboard({
       onClick: onOpenWeeklyInsights,
       color: "text-[#FFD700]",
       bgColor: "bg-[#FFD700]/10",
+      tooltip: tooltipContent.insights,
     },
     {
       icon: Heart,
@@ -94,6 +101,7 @@ export function ClientDashboard({
       onClick: onOpenRecovery,
       color: "text-pink-400",
       bgColor: "bg-pink-400/10",
+      tooltip: tooltipContent.recovery,
     },
     ...(onOpenWakeUpReceipt ? [{
       icon: Sunrise,
@@ -102,6 +110,7 @@ export function ClientDashboard({
       onClick: onOpenWakeUpReceipt,
       color: "text-amber-400",
       bgColor: "bg-amber-400/10",
+      tooltip: tooltipContent.wakeUpReceipt,
     }] : []),
     ...(onOpenCognitiveBudget ? [{
       icon: Brain,
@@ -110,6 +119,16 @@ export function ClientDashboard({
       onClick: onOpenCognitiveBudget,
       color: "text-secondary",
       bgColor: "bg-secondary/10",
+      tooltip: tooltipContent.cognitiveBudget,
+    }] : []),
+    ...(onOpenHelp ? [{
+      icon: HelpCircle,
+      label: "Help",
+      description: "Guides & tips",
+      onClick: onOpenHelp,
+      color: "text-primary",
+      bgColor: "bg-primary/10",
+      tooltip: tooltipContent.help,
     }] : []),
   ];
 
@@ -169,22 +188,28 @@ export function ClientDashboard({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
           >
-            <button
-              onClick={action.onClick}
-              className="w-full p-4 rounded-xl bg-foreground/5 border border-foreground/10 hover:border-primary/30 transition-all group"
+            <ContextualTooltip
+              content={action.tooltip?.content || action.label}
+              description={action.tooltip?.description || action.description}
+              side="bottom"
             >
-              <div
-                className={`w-10 h-10 rounded-lg ${action.bgColor} flex items-center justify-center mx-auto mb-2`}
+              <button
+                onClick={action.onClick}
+                className="w-full p-4 rounded-xl bg-foreground/5 border border-foreground/10 hover:border-primary/30 transition-all group"
               >
-                <action.icon className={`h-5 w-5 ${action.color}`} />
-              </div>
-              <p className="text-sm font-medium text-foreground">
-                {action.label}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {action.description}
-              </p>
-            </button>
+                <div
+                  className={`w-10 h-10 rounded-lg ${action.bgColor} flex items-center justify-center mx-auto mb-2`}
+                >
+                  <action.icon className={`h-5 w-5 ${action.color}`} />
+                </div>
+                <p className="text-sm font-medium text-foreground">
+                  {action.label}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {action.description}
+                </p>
+              </button>
+            </ContextualTooltip>
           </motion.div>
         ))}
       </div>

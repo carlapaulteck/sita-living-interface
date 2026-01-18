@@ -146,6 +146,27 @@ const Index = () => {
       setUserName(savedName);
     }
   }, []);
+
+  // Auto-show demo tutorial for new demo sessions
+  useEffect(() => {
+    if (isDemoMode) {
+      const demoTutorialShown = sessionStorage.getItem("demo_tutorial_shown");
+      if (!demoTutorialShown) {
+        const timer = setTimeout(() => {
+          setShowDemoTutorial(true);
+          sessionStorage.setItem("demo_tutorial_shown", "true");
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isDemoMode]);
+
+  // Listen for help guide open event from DemoModeIndicator
+  useEffect(() => {
+    const handleOpenHelp = () => setShowHelpGuide(true);
+    document.addEventListener("openHelpGuide", handleOpenHelp);
+    return () => document.removeEventListener("openHelpGuide", handleOpenHelp);
+  }, []);
   
   // Auto-activate recovery mode when overload is detected
   useEffect(() => {
@@ -261,6 +282,7 @@ const Index = () => {
                   onOpenWeeklyInsights={() => setShowWeeklyInsights(true)}
                   onOpenWakeUpReceipt={() => setShowReceipt(true)}
                   onOpenCognitiveBudget={() => setShowCognitiveBudget(true)}
+                  onOpenHelp={() => setShowHelpGuide(true)}
                 />
               </div>
 
@@ -542,6 +564,17 @@ const Index = () => {
         >
           <Map className="h-5 w-5 text-muted-foreground" />
         </motion.button>
+        {/* Help Button */}
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1.4 }}
+          onClick={() => setShowHelpGuide(true)}
+          className="p-3 rounded-xl bg-primary/10 border border-primary/20 backdrop-blur-xl hover:scale-105 transition-transform"
+          title="Help & Guides"
+        >
+          <HelpCircle className="h-5 w-5 text-primary" />
+        </motion.button>
       </div>
 
       {/* Command Bar */}
@@ -551,6 +584,23 @@ const Index = () => {
       <div onClick={() => setShowConsole(true)}>
         <AvatarBubble />
       </div>
+
+      {/* Demo Mode Components */}
+      {isDemoMode && (
+        <>
+          <DemoModeIndicator onStartTutorial={() => setShowDemoTutorial(true)} />
+          <DemoTutorial 
+            isOpen={showDemoTutorial} 
+            onClose={() => setShowDemoTutorial(false)} 
+          />
+        </>
+      )}
+
+      {/* Help Guide */}
+      <HelpGuide 
+        isOpen={showHelpGuide} 
+        onClose={() => setShowHelpGuide(false)} 
+      />
 
       {/* Modals */}
       <AnimatePresence>
