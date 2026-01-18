@@ -132,6 +132,38 @@ const helpArticles: HelpArticle[] = [
     content: "Customize SITA to match your preferences. Adjust cognitive profile settings, notification preferences, theme, and integration connections. SITA adapts to your unique cognitive style.",
     tags: ["settings", "personalization", "customize", "preferences"],
   },
+  {
+    id: "setup-modes",
+    title: "Understanding Setup Modes",
+    category: "Onboarding",
+    icon: Sparkles,
+    content: "SITA offers three setup modes: Quick (90 seconds) for essentials only, Guided (7 minutes) for a balanced discovery experience, and Deep (15+ minutes) for comprehensive cognitive profiling. You can always revisit settings later.",
+    tags: ["setup", "onboarding", "modes", "quick", "guided", "deep"],
+  },
+  {
+    id: "automations-explained",
+    title: "Automations Explained",
+    category: "Onboarding",
+    icon: Zap,
+    content: "Automations are trigger-action pairs that let SITA act on your behalf. When a condition is met (like low sleep score), SITA performs actions (like adjusting your schedule). Start with 1-3 automations and add more as you learn what works.",
+    tags: ["automations", "triggers", "actions", "workflow"],
+  },
+  {
+    id: "cognitive-discovery",
+    title: "Cognitive Discovery: What We Learn",
+    category: "Onboarding",
+    icon: Brain,
+    content: "During onboarding, SITA learns your cognitive style: how you prefer information density, your task switching costs, change tolerance, and emotional calibration. This creates your unique 'Identity Imprint' that shapes all interactions.",
+    tags: ["cognitive", "discovery", "profile", "imprint", "style"],
+  },
+  {
+    id: "onboarding-privacy",
+    title: "Your Privacy During Onboarding",
+    category: "Onboarding",
+    icon: Shield,
+    content: "Everything shared during onboarding stays private and encrypted. You can skip any question, and all preferences can be changed later. SITA never shares your cognitive profile with third parties.",
+    tags: ["privacy", "onboarding", "data", "skip", "secure"],
+  },
 ];
 
 interface HelpGuideProps {
