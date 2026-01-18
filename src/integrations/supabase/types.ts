@@ -89,6 +89,39 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_activities: {
+        Row: {
+          action: string
+          agent_name: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          priority: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          agent_name: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          priority?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          agent_name?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          priority?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -663,6 +696,120 @@ export type Database = {
         }
         Relationships: []
       }
+      finance_budgets: {
+        Row: {
+          budget_amount: number
+          category: string
+          color: string | null
+          created_at: string
+          id: string
+          period: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          budget_amount: number
+          category: string
+          color?: string | null
+          created_at?: string
+          id?: string
+          period?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          budget_amount?: number
+          category?: string
+          color?: string | null
+          created_at?: string
+          id?: string
+          period?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      finance_investments: {
+        Row: {
+          allocation_percentage: number | null
+          cost_basis: number
+          created_at: string
+          current_value: number
+          id: string
+          investment_type: string
+          name: string
+          shares: number | null
+          symbol: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allocation_percentage?: number | null
+          cost_basis: number
+          created_at?: string
+          current_value: number
+          id?: string
+          investment_type: string
+          name: string
+          shares?: number | null
+          symbol?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          allocation_percentage?: number | null
+          cost_basis?: number
+          created_at?: string
+          current_value?: number
+          id?: string
+          investment_type?: string
+          name?: string
+          shares?: number | null
+          symbol?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      finance_transactions: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          is_recurring: boolean | null
+          name: string
+          transaction_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          name: string
+          transaction_date?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          name?: string
+          transaction_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       habit_completions: {
         Row: {
           completed_at: string
@@ -1104,6 +1251,45 @@ export type Database = {
           status?: string
           subject?: string
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_agents: {
+        Row: {
+          agent_name: string
+          config: Json | null
+          created_at: string
+          id: string
+          last_action: string | null
+          last_action_at: string | null
+          status: string
+          tasks_completed: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agent_name: string
+          config?: Json | null
+          created_at?: string
+          id?: string
+          last_action?: string | null
+          last_action_at?: string | null
+          status?: string
+          tasks_completed?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agent_name?: string
+          config?: Json | null
+          created_at?: string
+          id?: string
+          last_action?: string | null
+          last_action_at?: string | null
+          status?: string
+          tasks_completed?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
