@@ -47,51 +47,111 @@ export type Database = {
         }
         Relationships: []
       }
+      cognitive_budget_log: {
+        Row: {
+          activity: string
+          created_at: string | null
+          domain: string
+          energy_cost: number
+          id: string
+          user_id: string
+        }
+        Insert: {
+          activity: string
+          created_at?: string | null
+          domain: string
+          energy_cost?: number
+          id?: string
+          user_id: string
+        }
+        Update: {
+          activity?: string
+          created_at?: string | null
+          domain?: string
+          energy_cost?: number
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cognitive_profiles: {
         Row: {
           adaptation_mode: string | null
           attention_window: number | null
+          auto_change_preference: string | null
+          change_tolerance: string | null
           created_at: string | null
+          density_preference: string | null
           id: string
           initiation_friction: string | null
+          language_softness_preference: number | null
           let_me_struggle: boolean | null
+          novelty_tolerance: number | null
+          pile_up_response: string | null
           predictability_need: string | null
+          progress_visualization: string | null
+          reminder_feeling: string | null
           reward_sensitivity: string | null
+          self_recognition_tags: string[] | null
           sensory_load_tolerance: Json | null
           structure_preference: string | null
           switching_cost: string | null
+          task_organization: string | null
           updated_at: string | null
           user_id: string
+          visual_processing: number | null
         }
         Insert: {
           adaptation_mode?: string | null
           attention_window?: number | null
+          auto_change_preference?: string | null
+          change_tolerance?: string | null
           created_at?: string | null
+          density_preference?: string | null
           id?: string
           initiation_friction?: string | null
+          language_softness_preference?: number | null
           let_me_struggle?: boolean | null
+          novelty_tolerance?: number | null
+          pile_up_response?: string | null
           predictability_need?: string | null
+          progress_visualization?: string | null
+          reminder_feeling?: string | null
           reward_sensitivity?: string | null
+          self_recognition_tags?: string[] | null
           sensory_load_tolerance?: Json | null
           structure_preference?: string | null
           switching_cost?: string | null
+          task_organization?: string | null
           updated_at?: string | null
           user_id: string
+          visual_processing?: number | null
         }
         Update: {
           adaptation_mode?: string | null
           attention_window?: number | null
+          auto_change_preference?: string | null
+          change_tolerance?: string | null
           created_at?: string | null
+          density_preference?: string | null
           id?: string
           initiation_friction?: string | null
+          language_softness_preference?: number | null
           let_me_struggle?: boolean | null
+          novelty_tolerance?: number | null
+          pile_up_response?: string | null
           predictability_need?: string | null
+          progress_visualization?: string | null
+          reminder_feeling?: string | null
           reward_sensitivity?: string | null
+          self_recognition_tags?: string[] | null
           sensory_load_tolerance?: Json | null
           structure_preference?: string | null
           switching_cost?: string | null
+          task_organization?: string | null
           updated_at?: string | null
           user_id?: string
+          visual_processing?: number | null
         }
         Relationships: []
       }
@@ -164,6 +224,39 @@ export type Database = {
         }
         Relationships: []
       }
+      evolution_patterns: {
+        Row: {
+          confidence: number | null
+          created_at: string | null
+          id: string
+          last_observed: string | null
+          pattern_data: Json | null
+          pattern_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string | null
+          id?: string
+          last_observed?: string | null
+          pattern_data?: Json | null
+          pattern_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string | null
+          id?: string
+          last_observed?: string | null
+          pattern_data?: Json | null
+          pattern_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           action_url: string | null
@@ -172,6 +265,9 @@ export type Database = {
           id: string
           message: string
           metadata: Json | null
+          priority: string | null
+          push_sent: boolean | null
+          push_sent_at: string | null
           read: boolean | null
           title: string
           type: string
@@ -184,6 +280,9 @@ export type Database = {
           id?: string
           message: string
           metadata?: Json | null
+          priority?: string | null
+          push_sent?: boolean | null
+          push_sent_at?: string | null
           read?: boolean | null
           title: string
           type: string
@@ -196,6 +295,9 @@ export type Database = {
           id?: string
           message?: string
           metadata?: Json | null
+          priority?: string | null
+          push_sent?: boolean | null
+          push_sent_at?: string | null
           read?: boolean | null
           title?: string
           type?: string
@@ -287,6 +389,36 @@ export type Database = {
           name?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth_key: string
+          created_at: string | null
+          endpoint: string
+          id: string
+          p256dh_key: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth_key: string
+          created_at?: string | null
+          endpoint: string
+          id?: string
+          p256dh_key: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth_key?: string
+          created_at?: string | null
+          endpoint?: string
+          id?: string
+          p256dh_key?: string
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }
