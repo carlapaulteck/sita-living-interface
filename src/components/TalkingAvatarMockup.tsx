@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import avatarImage from "@/assets/avatar.jpg";
 import { HaloRings } from "./HaloRings";
 import { AvatarLipSync, AvatarEyeBlink } from "./AvatarLipSync";
+import { MoodAura } from "./MoodAura";
 import { useAvatarStateSafe, AvatarState } from "@/contexts/AvatarStateContext";
 
 interface TalkingAvatarMockupProps {
@@ -62,6 +63,9 @@ export function TalkingAvatarMockup({
 
   return (
     <div className="relative flex items-center justify-center">
+      {/* Mood-based Aura from cognitive state */}
+      <MoodAura />
+      
       {/* Halo Rings System */}
       <HaloRings state={state} audioLevel={effectiveAudioLevel} />
 

@@ -10,6 +10,7 @@ import { InsightsFeed } from "@/components/InsightsFeed";
 import { CommandBar } from "@/components/CommandBar";
 import { AvatarBubble } from "@/components/AvatarBubble";
 import { TalkingAvatarMockup } from "@/components/TalkingAvatarMockup";
+import { ProactiveAISuggestions } from "@/components/ProactiveAISuggestions";
 import { useAvatarState } from "@/contexts/AvatarStateContext";
 import { OnboardingFlow } from "@/components/OnboardingFlow";
 import { ConversationConsole } from "@/components/ConversationConsole";
