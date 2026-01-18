@@ -5,7 +5,6 @@ import { MetricRing } from "@/components/MetricRing";
 import { sovereigntyData } from "@/lib/demoData";
 import { ArbitrageSignals } from "@/components/ArbitrageSignals";
 import { ExitReadiness } from "@/components/ExitReadiness";
-import { BoundariesPanel } from "@/components/BoundariesPanel";
 import { 
   Shield, 
   Database, 
@@ -25,7 +24,8 @@ import {
   ExternalLink,
   TrendingUp,
   Target,
-  DollarSign
+  DollarSign,
+  Clock
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -146,9 +146,241 @@ function WealthTab() {
 }
 
 function BoundariesTab() {
+  const [autonomyLevel, setAutonomyLevel] = useState(2);
+  const [budgetCap, setBudgetCap] = useState(500);
+  const [quietHoursEnabled, setQuietHoursEnabled] = useState(true);
+  const [emergencyMode, setEmergencyMode] = useState(false);
+
+  const autonomyLevels = [
+    { level: 0, name: "Observe", desc: "Only watch and learn", color: "from-muted to-muted" },
+    { level: 1, name: "Suggest", desc: "Recommend actions, wait for approval", color: "from-primary/40 to-primary/20" },
+    { level: 2, name: "Act", desc: "Execute low-risk actions automatically", color: "from-secondary/40 to-secondary/20" },
+    { level: 3, name: "Autopilot", desc: "Full autonomy within guardrails", color: "from-secondary to-primary" },
+  ];
+
   return (
-    <div className="max-w-2xl mx-auto">
-      <BoundariesPanel />
+    <div className="max-w-3xl mx-auto space-y-6">
+      {/* Header with ambient glow */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative"
+      >
+        <GlassCard className="p-6 relative overflow-hidden">
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-secondary/15 rounded-full blur-2xl" />
+          
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/20 backdrop-blur-sm">
+              <Shield className="h-8 w-8 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-display font-medium text-foreground">Boundaries Control</h2>
+              <p className="text-sm text-muted-foreground">Configure how the system operates on your behalf</p>
+            </div>
+          </div>
+        </GlassCard>
+      </motion.div>
+
+      {/* Autonomy Level Selector */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <GlassCard className="p-6">
+          <h3 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+            <Zap className="h-5 w-5 text-primary" />
+            Autopilot Level
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {autonomyLevels.map((level) => (
+              <motion.button
+                key={level.level}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setAutonomyLevel(level.level)}
+                className={`p-4 rounded-2xl text-left transition-all relative overflow-hidden group ${
+                  autonomyLevel === level.level
+                    ? "bg-gradient-to-br " + level.color + " border-2 border-primary/50 shadow-lg shadow-primary/10"
+                    : "bg-foreground/5 hover:bg-foreground/10 border-2 border-transparent"
+                }`}
+              >
+                {autonomyLevel === level.level && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
+                )}
+                <div className="relative z-10 flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-foreground">{level.name}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{level.desc}</p>
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                    autonomyLevel === level.level
+                      ? "border-primary bg-primary"
+                      : "border-muted-foreground/50"
+                  }`}>
+                    {autonomyLevel === level.level && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="w-2 h-2 bg-white rounded-full"
+                      />
+                    )}
+                  </div>
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </GlassCard>
+      </motion.div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Budget Caps */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <GlassCard className="p-6 h-full">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-medium text-foreground flex items-center gap-2">
+                <DollarSign className="h-5 w-5 text-secondary" />
+                Budget Caps
+              </h3>
+              <span className="text-lg font-display font-bold text-primary">${budgetCap}/mo</span>
+            </div>
+            <div className="relative">
+              <input
+                type="range"
+                min="100"
+                max="2000"
+                step="100"
+                value={budgetCap}
+                onChange={(e) => setBudgetCap(parseInt(e.target.value))}
+                className="w-full h-3 bg-gradient-to-r from-secondary/20 via-primary/30 to-primary/50 rounded-full appearance-none cursor-pointer 
+                [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 
+                [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-br [&::-webkit-slider-thumb]:from-primary 
+                [&::-webkit-slider-thumb]:to-secondary [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-primary/30
+                [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white/20"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground mt-3">
+                <span>$100</span>
+                <span>$1,000</span>
+                <span>$2,000</span>
+              </div>
+            </div>
+          </GlassCard>
+        </motion.div>
+
+        {/* Quiet Hours */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <GlassCard className="p-6 h-full">
+            <button
+              onClick={() => setQuietHoursEnabled(!quietHoursEnabled)}
+              className="w-full text-left"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-xl transition-colors ${
+                    quietHoursEnabled ? "bg-primary/20" : "bg-foreground/5"
+                  }`}>
+                    {quietHoursEnabled ? (
+                      <AlertTriangle className="h-5 w-5 text-primary" />
+                    ) : (
+                      <Globe className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-foreground">Quiet Hours</h3>
+                    <p className="text-sm text-muted-foreground">10pm - 7am · No notifications</p>
+                  </div>
+                </div>
+                <div className={`w-14 h-8 rounded-full transition-all relative ${
+                  quietHoursEnabled ? "bg-gradient-to-r from-primary to-secondary" : "bg-muted"
+                }`}>
+                  <motion.div 
+                    animate={{ x: quietHoursEnabled ? 26 : 2 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    className="absolute top-1 w-6 h-6 rounded-full bg-white shadow-lg"
+                  />
+                </div>
+              </div>
+            </button>
+          </GlassCard>
+        </motion.div>
+      </div>
+
+      {/* Approval Requirements */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <GlassCard className="p-6">
+          <h3 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-secondary" />
+            Always Require Approval
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[
+              { text: "Spend over $50", icon: DollarSign },
+              { text: "External messages to new contacts", icon: Globe },
+              { text: "Calendar changes", icon: Clock },
+              { text: "Posting public content", icon: Fingerprint }
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                whileHover={{ scale: 1.02 }}
+                className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-br from-secondary/10 to-primary/5 border border-secondary/20"
+              >
+                <div className="p-2 rounded-lg bg-secondary/20">
+                  <item.icon className="h-4 w-4 text-secondary" />
+                </div>
+                <span className="text-sm font-medium text-foreground">{item.text}</span>
+              </motion.div>
+            ))}
+          </div>
+        </GlassCard>
+      </motion.div>
+
+      {/* Emergency Stop */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <motion.button
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
+          onClick={() => setEmergencyMode(!emergencyMode)}
+          className={`w-full p-6 rounded-2xl border-2 transition-all ${
+            emergencyMode
+              ? "bg-gradient-to-br from-destructive/30 to-destructive/10 border-destructive shadow-lg shadow-destructive/20"
+              : "bg-card/50 border-destructive/30 hover:border-destructive/50 hover:bg-destructive/5"
+          }`}
+        >
+          <div className="flex items-center gap-4">
+            <div className={`p-4 rounded-xl ${emergencyMode ? "bg-destructive/30" : "bg-destructive/10"}`}>
+              <AlertTriangle className={`h-8 w-8 ${emergencyMode ? "text-destructive animate-pulse" : "text-destructive/70"}`} />
+            </div>
+            <div className="text-left flex-1">
+              <p className={`text-xl font-display font-medium ${emergencyMode ? "text-destructive" : "text-foreground"}`}>
+                {emergencyMode ? "⚠️ All Automation Paused" : "Emergency Stop"}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {emergencyMode ? "Click again to resume all automated actions" : "Instantly pause all outbound actions"}
+              </p>
+            </div>
+            {emergencyMode && (
+              <div className="w-3 h-3 rounded-full bg-destructive animate-ping" />
+            )}
+          </div>
+        </motion.button>
+      </motion.div>
     </div>
   );
 }
