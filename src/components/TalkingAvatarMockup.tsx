@@ -4,24 +4,61 @@ import avatarImage from "@/assets/avatar.jpg";
 import { HaloRings } from "./HaloRings";
 import { AvatarLipSync, AvatarEyeBlink } from "./AvatarLipSync";
 import { MoodAura } from "./MoodAura";
+import { AvatarEmotions, EmotionType } from "./AvatarEmotions";
 import { useAvatarStateSafe, AvatarState } from "@/contexts/AvatarStateContext";
 
 interface TalkingAvatarMockupProps {
   onAvatarClick?: () => void;
   externalState?: AvatarState;
   externalAudioLevel?: number;
+  emotion?: EmotionType;
+  lastMessage?: string | null;
 }
 
 export function TalkingAvatarMockup({ 
   onAvatarClick, 
   externalState,
-  externalAudioLevel 
+  externalAudioLevel,
+  emotion = "neutral",
+  lastMessage,
 }: TalkingAvatarMockupProps) {
   const avatarContext = useAvatarStateSafe();
   
   // Use external state if provided, otherwise use context, fallback to idle
   const state = externalState ?? avatarContext?.state ?? "idle";
   const audioLevel = externalAudioLevel ?? avatarContext?.audioLevel ?? 0;
+
+  // Derive emotion from last message if not explicitly provided
+  const [currentEmotion, setCurrentEmotion] = useState<EmotionType>(emotion);
+  
+  useEffect(() => {
+    if (lastMessage) {
+      // Simple sentiment analysis
+      const text = lastMessage.toLowerCase();
+      if (/excellent|great|wonderful|amazing|congratulations/i.test(text)) {
+        setCurrentEmotion("excited");
+      } else if (/happy|pleased|good|nice/i.test(text)) {
+        setCurrentEmotion("happy");
+      } else if (/concern|warning|careful|issue|problem/i.test(text)) {
+        setCurrentEmotion("concerned");
+      } else if (/think|consider|analyze|let me/i.test(text)) {
+        setCurrentEmotion("thinking");
+      } else if (/calm|relax|steady/i.test(text)) {
+        setCurrentEmotion("calm");
+      } else if (/urgent|critical|immediately/i.test(text)) {
+        setCurrentEmotion("alert");
+      } else {
+        setCurrentEmotion("neutral");
+      }
+    }
+  }, [lastMessage]);
+  
+  // Use explicit emotion prop if provided
+  useEffect(() => {
+    if (emotion !== "neutral") {
+      setCurrentEmotion(emotion);
+    }
+  }, [emotion]);
 
   const [hasGreeted, setHasGreeted] = useState(false);
   const [showGreetingText, setShowGreetingText] = useState(false);
@@ -136,6 +173,9 @@ export function TalkingAvatarMockup({
             alt="AI Avatar" 
             className="w-full h-full object-cover object-top scale-110"
           />
+
+          {/* Emotion expressions overlay */}
+          <AvatarEmotions emotion={currentEmotion} intensity={0.8} />
 
           {/* Lip sync overlay */}
           <AvatarLipSync state={state} audioLevel={effectiveAudioLevel} />

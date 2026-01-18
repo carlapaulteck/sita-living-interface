@@ -18,9 +18,10 @@ interface Message {
 interface ConversationConsoleProps {
   isOpen: boolean;
   onClose: () => void;
+  onMessageReceived?: (message: string) => void;
 }
 
-export function ConversationConsole({ isOpen, onClose }: ConversationConsoleProps) {
+export function ConversationConsole({ isOpen, onClose, onMessageReceived }: ConversationConsoleProps) {
   const [messages, setMessages] = useState<Message[]>([
     { 
       role: "assistant", 
@@ -182,6 +183,9 @@ export function ConversationConsole({ isOpen, onClose }: ConversationConsoleProp
       if (voiceEnabled && assistantContent) {
         speak(assistantContent);
       }
+      
+      // Notify parent of received message for emotion detection
+      onMessageReceived?.(assistantContent);
     } catch (error) {
       console.error("Chat error:", error);
       setMessages(prev => [

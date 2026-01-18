@@ -11,7 +11,9 @@ import { CommandBar } from "@/components/CommandBar";
 import { AvatarBubble } from "@/components/AvatarBubble";
 import { TalkingAvatarMockup } from "@/components/TalkingAvatarMockup";
 import { ProactiveAISuggestions } from "@/components/ProactiveAISuggestions";
+import { WakeWordIndicator } from "@/components/WakeWordIndicator";
 import { useAvatarState } from "@/contexts/AvatarStateContext";
+import { useWakeWord } from "@/hooks/useWakeWord";
 import { OnboardingFlow } from "@/components/OnboardingFlow";
 import { ConversationConsole } from "@/components/ConversationConsole";
 import { WarRoom } from "@/components/WarRoom";
@@ -133,6 +135,29 @@ const Index = () => {
   // Adaptation and DND hooks
   const adaptation = useAdaptationSafe();
   const { dndState } = useDoNotDisturb();
+  const avatarState = useAvatarState();
+  
+  // Wake word detection - "Hey SITA"
+  const { 
+    isListening: wakeWordListening, 
+    isAwake: isWokenByVoice,
+    startListening: startWakeWord,
+    stopListening: stopWakeWord,
+    resetWake: resetWakeWord,
+  } = useWakeWord({
+    wakeWord: "hey sita",
+    onWake: () => {
+      // Trigger avatar to listening state and open console
+      avatarState.setState("listening");
+      setShowConsole(true);
+    },
+    onSleep: () => {
+      avatarState.setState("idle");
+    },
+  });
+  
+  // Track last AI message for emotion detection
+  const [lastAIMessage, setLastAIMessage] = useState<string | null>(null);
   
   // Track if we've already shown recovery mode this session
   const recoveryShownRef = useRef(false);
@@ -383,7 +408,10 @@ const Index = () => {
                 >
                   {/* TalkingAvatarMockup with integrated halo rings */}
                   <div className="relative z-10 mb-4">
-                    <TalkingAvatarMockup onAvatarClick={() => setShowConsole(true)} />
+                    <TalkingAvatarMockup 
+                      onAvatarClick={() => setShowConsole(true)} 
+                      lastMessage={lastAIMessage}
+                    />
                   </div>
                   
                   {/* Metric Rings - Neon tube style */}
@@ -635,7 +663,11 @@ const Index = () => {
         {showConsole && (
           <ConversationConsole 
             isOpen={showConsole} 
-            onClose={() => setShowConsole(false)} 
+            onClose={() => {
+              setShowConsole(false);
+              resetWakeWord();
+            }}
+            onMessageReceived={(msg) => setLastAIMessage(msg)}
           />
         )}
         {showWarRoom && <WarRoom isOpen={showWarRoom} onClose={() => setShowWarRoom(false)} />}
@@ -662,6 +694,13 @@ const Index = () => {
 
       {/* Support Ticket Form */}
       <SupportTicketForm isOpen={showSupportTicket} onClose={() => setShowSupportTicket(false)} />
+
+      {/* Wake Word Indicator */}
+      <WakeWordIndicator
+        isListening={wakeWordListening}
+        isAwake={isWokenByVoice}
+        onToggle={() => wakeWordListening ? stopWakeWord() : startWakeWord()}
+      />
     </div>
   );
 };
