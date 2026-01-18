@@ -5,11 +5,18 @@ import { useAuth } from "./useAuth";
 export type AppRole = "admin" | "moderator" | "user";
 
 export function useUserRole() {
-  const { user } = useAuth();
+  const { user, demoMode } = useAuth();
   const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Handle demo mode - return role based on demo mode type
+    if (demoMode) {
+      setRole(demoMode === 'admin' ? 'admin' : 'user');
+      setLoading(false);
+      return;
+    }
+
     if (!user) {
       setRole(null);
       setLoading(false);
@@ -34,7 +41,7 @@ export function useUserRole() {
     };
 
     fetchRole();
-  }, [user]);
+  }, [user, demoMode]);
 
   return {
     role,
@@ -42,5 +49,6 @@ export function useUserRole() {
     isAdmin: role === "admin",
     isModerator: role === "moderator" || role === "admin",
     isUser: !!role,
+    isDemoMode: !!demoMode,
   };
 }

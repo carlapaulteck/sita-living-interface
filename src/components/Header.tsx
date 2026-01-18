@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Settings, LogOut, Menu, X, Command, DollarSign } from "lucide-react";
+import { Bell, Settings, LogOut, Menu, X, Command, DollarSign, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -11,10 +11,11 @@ import avatarImage from "@/assets/avatar.jpg";
 import { LiveIndicator } from "./LiveIndicator";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
 import { Notification, NotificationCenter } from "./NotificationCenter";
+import { Badge } from "@/components/ui/badge";
 
 export function Header() {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, isDemoMode, demoMode, exitDemoMode } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([
@@ -47,11 +48,15 @@ export function Header() {
   // Subscribe to notifications for live status
   const { isConnected } = useRealtimeSubscription({
     table: 'notifications',
-    enabled: !!user,
+    enabled: !!user && !isDemoMode,
   });
 
   const handleSignOut = async () => {
-    await signOut();
+    if (isDemoMode) {
+      exitDemoMode();
+    } else {
+      await signOut();
+    }
     navigate("/auth");
   };
 
@@ -104,7 +109,14 @@ export function Header() {
                 SITA <span className="text-muted-foreground text-xs font-sans">• The Living Interface</span>
               </h1>
               <div className="flex items-center gap-2">
-                <LiveIndicator isConnected={isConnected} size="sm" />
+                {isDemoMode ? (
+                  <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/30 text-[10px] px-1.5 py-0">
+                    <Eye className="w-3 h-3 mr-1" />
+                    Demo Mode ({demoMode === 'admin' ? 'Admin' : 'Client'})
+                  </Badge>
+                ) : (
+                  <LiveIndicator isConnected={isConnected} size="sm" />
+                )}
               </div>
             </div>
           </motion.div>
