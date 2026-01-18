@@ -30,7 +30,8 @@ import {
   AdminAnnouncementsPage,
   AdminErrorLogsPage,
   AdminAuditLogsPage,
-  AdminSettingsPage
+  AdminSettingsPage,
+  AdminFeatureFlagsPage
 } from "./pages/admin";
 
 const queryClient = new QueryClient();
@@ -62,6 +63,7 @@ function AppRoutes() {
           <Route path="errors" element={<AdminErrorLogsPage />} />
           <Route path="audit" element={<AdminAuditLogsPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
+          <Route path="feature-flags" element={<AdminFeatureFlagsPage />} />
         </Route>
         
         {/* Client Routes */}
