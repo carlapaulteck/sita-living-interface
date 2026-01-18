@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useOnboarding } from "../OnboardingContext";
 import { GlassCard } from "@/components/GlassCard";
+import { HelpHint } from "@/components/HelpHint";
 import { ChevronRight, Eye, MessageSquare, Zap, Rocket, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AutonomyLevel } from "@/types/onboarding";
@@ -54,9 +55,15 @@ export function AutonomyStep() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      <h2 className="text-3xl font-display font-medium text-foreground mb-2 text-center">
-        Autonomy Level
-      </h2>
+      <div className="flex items-center gap-2 mb-2">
+        <h2 className="text-3xl font-display font-medium text-foreground text-center">
+          Autonomy Level
+        </h2>
+        <HelpHint 
+          hint="Observe mode = SITA watches but never acts without asking. You can always increase autonomy later as trust builds."
+          variant="tip"
+        />
+      </div>
       <p className="text-muted-foreground mb-8 text-center">
         How much should SITA do on its own?
       </p>

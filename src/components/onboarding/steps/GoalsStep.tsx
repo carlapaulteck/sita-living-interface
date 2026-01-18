@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useOnboarding } from "../OnboardingContext";
 import { GlassCard } from "@/components/GlassCard";
+import { HelpHint } from "@/components/HelpHint";
 import { 
   TrendingUp, 
   Moon, 
@@ -9,7 +10,8 @@ import {
   Shield, 
   User,
   ChevronRight,
-  Check
+  Check,
+  Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PrimaryIntent } from "@/types/onboarding";
@@ -72,12 +74,22 @@ export function GoalsStep() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      <h2 className="text-3xl font-display font-medium text-foreground mb-2 text-center">
-        What brings you here?
-      </h2>
-      <p className="text-muted-foreground mb-8 text-center">
+      <div className="flex items-center gap-2 mb-2">
+        <h2 className="text-3xl font-display font-medium text-foreground text-center">
+          What brings you here?
+        </h2>
+        <HelpHint 
+          hint="You can change these priorities anytime in Settings. Your selections help SITA understand what matters most to you."
+          variant="info"
+        />
+      </div>
+      <p className="text-muted-foreground mb-4 text-center">
         Select all that apply — we'll personalize everything
       </p>
+      <div className="flex items-center justify-center gap-2 mb-6">
+        <Sparkles className="h-3 w-3 text-primary" />
+        <span className="text-xs text-muted-foreground">Most users select 2-3 priorities</span>
+      </div>
 
       <div className="grid grid-cols-2 gap-4 w-full mb-8">
         {INTENT_OPTIONS.map((option) => {

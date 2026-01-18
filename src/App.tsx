@@ -14,6 +14,7 @@ import LifeHealth from "./pages/LifeHealth";
 import MindGrowth from "./pages/MindGrowth";
 import Settings from "./pages/Settings";
 import Sovereignty from "./pages/Sovereignty";
+import Automations from "./pages/Automations";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { BottomDock } from "./components/BottomDock";
@@ -97,6 +98,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <Sovereignty />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/automations"
+          element={
+            <ProtectedRoute>
+              <Automations />
             </ProtectedRoute>
           }
         />

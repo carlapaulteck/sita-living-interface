@@ -37,11 +37,12 @@ import { useCognitiveSignals } from "@/hooks/useCognitiveSignals";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { toast } from "sonner";
 
-type SettingsTab = "profile" | "autonomy" | "cognitive" | "personalization" | "notifications" | "boundaries" | "data" | "appearance";
+type SettingsTab = "profile" | "autonomy" | "cognitive" | "personalization" | "notifications" | "boundaries" | "data" | "appearance" | "automations";
 
 const TABS: { id: SettingsTab; label: string; icon: typeof User }[] = [
   { id: "profile", label: "Profile", icon: User },
   { id: "autonomy", label: "Autonomy", icon: Zap },
+  { id: "automations", label: "Automations", icon: Zap },
   { id: "cognitive", label: "Cognitive", icon: Brain },
   { id: "personalization", label: "Personalization", icon: Fingerprint },
   { id: "notifications", label: "Notifications", icon: Bell },
@@ -615,6 +616,65 @@ export default function Settings() {
 
           {activeTab === "personalization" && (
             <PersonalizationSettingsTab />
+          )}
+
+          {activeTab === "automations" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-xl font-display font-medium text-foreground mb-1">
+                  Automations
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Background intelligence that works while you don't
+                </p>
+              </div>
+
+              <GlassCard className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                      <Zap className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium text-foreground">Manage Automations</h3>
+                      <p className="text-xs text-muted-foreground">
+                        View history, create new automations, and manage existing ones
+                      </p>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => window.location.href = "/automations"}
+                    className="gap-2"
+                  >
+                    Open
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </GlassCard>
+
+              <GlassCard className="p-6">
+                <h3 className="text-sm font-medium text-foreground mb-4">Quick Stats</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-display font-medium text-foreground">0</p>
+                    <p className="text-xs text-muted-foreground">Active</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-display font-medium text-foreground">0</p>
+                    <p className="text-xs text-muted-foreground">Runs Today</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-display font-medium text-foreground">100%</p>
+                    <p className="text-xs text-muted-foreground">Success Rate</p>
+                  </div>
+                </div>
+              </GlassCard>
+            </motion.div>
           )}
         </div>
       </div>
