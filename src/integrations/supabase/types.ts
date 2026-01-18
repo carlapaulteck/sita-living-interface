@@ -47,6 +47,42 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_runs: {
+        Row: {
+          actions_taken: Json | null
+          automation_id: string
+          automation_name: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          status: string | null
+          trigger_event: string
+          user_id: string
+        }
+        Insert: {
+          actions_taken?: Json | null
+          automation_id: string
+          automation_name: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          status?: string | null
+          trigger_event: string
+          user_id: string
+        }
+        Update: {
+          actions_taken?: Json | null
+          automation_id?: string
+          automation_name?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          status?: string | null
+          trigger_event?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       calendar_events: {
         Row: {
           attendees: Json | null
@@ -643,6 +679,54 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           value?: number
+        }
+        Relationships: []
+      }
+      user_automations: {
+        Row: {
+          action_config: Json | null
+          action_type: string
+          cooldown_minutes: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_enabled: boolean | null
+          name: string
+          priority: number | null
+          trigger_config: Json | null
+          trigger_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          action_config?: Json | null
+          action_type: string
+          cooldown_minutes?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          name: string
+          priority?: number | null
+          trigger_config?: Json | null
+          trigger_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          action_config?: Json | null
+          action_type?: string
+          cooldown_minutes?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          name?: string
+          priority?: number | null
+          trigger_config?: Json | null
+          trigger_type?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
