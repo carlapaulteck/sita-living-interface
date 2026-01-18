@@ -47,6 +47,69 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_events: {
+        Row: {
+          attendees: Json | null
+          calendar_source: string | null
+          color: string | null
+          created_at: string
+          description: string | null
+          end_time: string
+          external_id: string | null
+          id: string
+          is_all_day: boolean | null
+          is_focus_block: boolean | null
+          is_meeting: boolean | null
+          location: string | null
+          metadata: Json | null
+          recurrence_rule: string | null
+          start_time: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attendees?: Json | null
+          calendar_source?: string | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          end_time: string
+          external_id?: string | null
+          id?: string
+          is_all_day?: boolean | null
+          is_focus_block?: boolean | null
+          is_meeting?: boolean | null
+          location?: string | null
+          metadata?: Json | null
+          recurrence_rule?: string | null
+          start_time: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attendees?: Json | null
+          calendar_source?: string | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          end_time?: string
+          external_id?: string | null
+          id?: string
+          is_all_day?: boolean | null
+          is_focus_block?: boolean | null
+          is_meeting?: boolean | null
+          location?: string | null
+          metadata?: Json | null
+          recurrence_rule?: string | null
+          start_time?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cognitive_budget_log: {
         Row: {
           activity: string
@@ -253,6 +316,131 @@ export type Database = {
           pattern_data?: Json | null
           pattern_type?: string
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      habit_completions: {
+        Row: {
+          completed_at: string
+          count: number | null
+          created_at: string
+          habit_id: string
+          id: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          count?: number | null
+          created_at?: string
+          habit_id: string
+          id?: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          count?: number | null
+          created_at?: string
+          habit_id?: string
+          id?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habit_completions_habit_id_fkey"
+            columns: ["habit_id"]
+            isOneToOne: false
+            referencedRelation: "habits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      habits: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          domain: string | null
+          frequency: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          reminder_time: string | null
+          target_count: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          domain?: string | null
+          frequency?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          reminder_time?: string | null
+          target_count?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          domain?: string | null
+          frequency?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          reminder_time?: string | null
+          target_count?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notification_batches: {
+        Row: {
+          batch_type: string
+          cognitive_state: string | null
+          created_at: string
+          delivered_at: string | null
+          id: string
+          notification_ids: string[] | null
+          priority: string | null
+          scheduled_for: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          batch_type?: string
+          cognitive_state?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          notification_ids?: string[] | null
+          priority?: string | null
+          scheduled_for?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          batch_type?: string
+          cognitive_state?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          notification_ids?: string[] | null
+          priority?: string | null
+          scheduled_for?: string | null
+          status?: string | null
           user_id?: string
         }
         Relationships: []
