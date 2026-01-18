@@ -226,13 +226,16 @@ class EvolutionEngine {
   ): Promise<void> {
     if (!this.userId) return;
     
-    await supabase.from("evolution_patterns").insert([{
+    // Convert to JSON-compatible format
+    const jsonData = JSON.parse(JSON.stringify(patternData));
+    
+    await supabase.from("evolution_patterns").insert({
       user_id: this.userId,
       pattern_type: type,
-      pattern_data: patternData as Record<string, unknown>,
+      pattern_data: jsonData,
       confidence: 0.5,
       last_observed: new Date().toISOString(),
-    }]);
+    });
   }
   
   // Celebrate progress relative to user's own baseline

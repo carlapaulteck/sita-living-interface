@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { CognitiveProvider } from "@/contexts/CognitiveContext";
+import { AdaptationProvider } from "@/contexts/AdaptationContext";
+import { AdaptationIndicator } from "@/components/TrustSafeguards";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import BusinessGrowth from "./pages/BusinessGrowth";
@@ -101,6 +103,9 @@ function AppRoutes() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       
+      {/* Adaptation state indicator */}
+      {!isAuthPage && <AdaptationIndicator />}
+      
       {/* Luxury Bottom Navigation Dock - hide on auth page */}
       {!isAuthPage && <BottomDock />}
     </>
@@ -111,16 +116,18 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
       <CognitiveProvider>
-        <TooltipProvider>
-          {/* Aurora background effect */}
-          <div className="aurora-bg" aria-hidden="true" />
-          
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
-        </TooltipProvider>
+        <AdaptationProvider>
+          <TooltipProvider>
+            {/* Aurora background effect */}
+            <div className="aurora-bg" aria-hidden="true" />
+            
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </TooltipProvider>
+        </AdaptationProvider>
       </CognitiveProvider>
     </ThemeProvider>
   </QueryClientProvider>

@@ -2,3 +2,12 @@ project_id = "imdcebypejohacjyphuh"
 
 [functions.chat]
 verify_jwt = false
+
+[functions.send-push-notification]
+verify_jwt = false
+
+[functions.morning-briefing]
+verify_jwt = false
+
+[functions.notification-dispatcher]
+verify_jwt = false

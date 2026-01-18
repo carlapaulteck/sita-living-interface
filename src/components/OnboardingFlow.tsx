@@ -24,53 +24,82 @@ import { AvatarIdentityStep } from "./onboarding/steps/AvatarIdentityStep";
 import { NameStep } from "./onboarding/steps/NameStep";
 import { ImprintStep } from "./onboarding/steps/ImprintStep";
 
-// Steps for QUICK mode (90 seconds)
+// Import neurodivergent-safe steps
+import { SafetyIntroStep } from "./onboarding/steps/SafetyIntroStep";
+import { DensityChoiceStep } from "./onboarding/steps/DensityChoiceStep";
+import { TaskStyleStep } from "./onboarding/steps/TaskStyleStep";
+import { ChangeToleranceStep } from "./onboarding/steps/ChangeToleranceStep";
+import { ProgressStyleStep } from "./onboarding/steps/ProgressStyleStep";
+import { EmotionalCalibrationStep } from "./onboarding/steps/EmotionalCalibrationStep";
+import { SelfRecognitionStep } from "./onboarding/steps/SelfRecognitionStep";
+import { AdaptationPreviewStep } from "./onboarding/steps/AdaptationPreviewStep";
+
+// Steps for QUICK mode (90 seconds) - minimal with psychological safety
 const QUICK_STEPS = [
   CinematicEntry,        // 0
-  SetupModeStep,         // 1
-  NameStep,              // 2
-  GoalsStep,             // 3
-  DevicesStep,           // 4
-  ImprintStep,           // 5
+  SafetyIntroStep,       // 1 - Psychological safety first
+  SetupModeStep,         // 2
+  NameStep,              // 3
+  GoalsStep,             // 4
+  DevicesStep,           // 5
+  ImprintStep,           // 6
 ];
 
-// Steps for GUIDED mode (7 minutes)
+// Steps for GUIDED mode (7 minutes) - includes cognitive discovery
 const GUIDED_STEPS = [
   CinematicEntry,        // 0
-  SetupModeStep,         // 1
-  NameStep,              // 2
-  GoalsStep,             // 3
-  WinsStep,              // 4
-  AssistantStyleStep,    // 5
-  TonePreferencesStep,   // 6
-  RhythmStep,            // 7
-  DevicesStep,           // 8
-  AutonomyStep,          // 9
-  AutomationsStep,       // 10
-  AvatarIdentityStep,    // 11
-  ImprintStep,           // 12
+  SafetyIntroStep,       // 1 - Psychological safety first
+  SetupModeStep,         // 2
+  NameStep,              // 3
+  DensityChoiceStep,     // 4 - Cognitive discovery
+  TaskStyleStep,         // 5 - Cognitive discovery
+  EmotionalCalibrationStep, // 6 - Emotional calibration
+  GoalsStep,             // 7
+  WinsStep,              // 8
+  AssistantStyleStep,    // 9
+  TonePreferencesStep,   // 10
+  RhythmStep,            // 11
+  DevicesStep,           // 12
+  AutonomyStep,          // 13
+  AutomationsStep,       // 14
+  AdaptationPreviewStep, // 15 - Show personalization
+  AvatarIdentityStep,    // 16
+  ImprintStep,           // 17
 ];
 
-// Steps for DEEP mode (15-25 minutes)
+// Steps for DEEP mode (15-25 minutes) - full neurodivergent-safe flow
 const DEEP_STEPS = [
   CinematicEntry,             // 0
-  SetupModeStep,              // 1
-  NameStep,                   // 2
-  GoalsStep,                  // 3
-  WinsStep,                   // 4
-  AssistantStyleStep,         // 5
-  TonePreferencesStep,        // 6
-  VoiceSettingsStep,          // 7
-  RhythmStep,                 // 8
-  DevicesStep,                // 9
-  WealthPersonalizationStep,  // 10
-  HealthPersonalizationStep,  // 11
-  FocusPersonalizationStep,   // 12
-  AutonomyStep,               // 13
-  AutomationsStep,            // 14
-  SovereigntyStep,            // 15
-  AvatarIdentityStep,         // 16
-  ImprintStep,                // 17
+  SafetyIntroStep,            // 1 - Psychological safety first
+  SetupModeStep,              // 2
+  NameStep,                   // 3
+  // Phase 1: Cognitive Style Discovery
+  DensityChoiceStep,          // 4
+  TaskStyleStep,              // 5
+  ChangeToleranceStep,        // 6
+  ProgressStyleStep,          // 7
+  // Phase 2: Emotional Calibration
+  EmotionalCalibrationStep,   // 8
+  // Phase 3: Optional Self-Recognition
+  SelfRecognitionStep,        // 9
+  // Core setup
+  GoalsStep,                  // 10
+  WinsStep,                   // 11
+  AssistantStyleStep,         // 12
+  TonePreferencesStep,        // 13
+  VoiceSettingsStep,          // 14
+  RhythmStep,                 // 15
+  DevicesStep,                // 16
+  WealthPersonalizationStep,  // 17
+  HealthPersonalizationStep,  // 18
+  FocusPersonalizationStep,   // 19
+  AutonomyStep,               // 20
+  AutomationsStep,            // 21
+  SovereigntyStep,            // 22
+  // Phase 4: Personalization Preview
+  AdaptationPreviewStep,      // 23
+  AvatarIdentityStep,         // 24
+  ImprintStep,                // 25
 ];
 
 interface OnboardingFlowProps {
