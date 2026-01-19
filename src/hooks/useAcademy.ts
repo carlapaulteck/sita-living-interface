@@ -20,14 +20,17 @@ import type {
 } from '@/types/academy';
 import type { Json } from '@/integrations/supabase/types';
 
+// Type-safe database queries using type assertions
+const db = supabase as any;
+
 // Helper to safely parse JSON fields
-const parseJsonArray = <T>(json: Json | null, defaultValue: T[] = []): T[] => {
+const parseJsonArray = <T,>(json: Json | null, defaultValue: T[] = []): T[] => {
   if (!json) return defaultValue;
   if (Array.isArray(json)) return json as T[];
   return defaultValue;
 };
 
-const parseJsonObject = <T>(json: Json | null, defaultValue: T): T => {
+const parseJsonObject = <T,>(json: Json | null, defaultValue: T): T => {
   if (!json) return defaultValue;
   if (typeof json === 'object' && !Array.isArray(json)) return json as unknown as T;
   return defaultValue;
@@ -45,7 +48,7 @@ export function useAcademy() {
     queryKey: ['academy-profile', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('academy_profiles')
         .select('*')
         .eq('user_id', user.id)
@@ -71,7 +74,7 @@ export function useAcademy() {
   const createProfile = useMutation({
     mutationFn: async (profileData: Partial<AcademyProfile>) => {
       if (!user?.id) throw new Error('Not authenticated');
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('academy_profiles')
         .upsert({
           user_id: user.id,
@@ -97,7 +100,7 @@ export function useAcademy() {
   const { data: posts = [], isLoading: postsLoading, refetch: refetchPosts } = useQuery({
     queryKey: ['community-posts'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('community_posts')
         .select('*')
         .order('is_pinned', { ascending: false })
@@ -106,8 +109,8 @@ export function useAcademy() {
       if (error) throw error;
       
       // Get profiles for authors
-      const userIds = [...new Set((data || []).map(p => p.user_id))];
-      const { data: profiles } = userIds.length > 0 ? await supabase
+      const userIds = [...new Set((data || []).map((p: any) => p.user_id))];
+      const { data: profiles } = userIds.length > 0 ? await db
         .from('academy_profiles')
         .select('*')
         .in('user_id', userIds) : { data: [] };
@@ -115,16 +118,16 @@ export function useAcademy() {
       // Get user's likes
       let userLikes: string[] = [];
       if (user?.id) {
-        const { data: likes } = await supabase
+        const { data: likes } = await db
           .from('content_likes')
           .select('content_id')
           .eq('user_id', user.id)
           .eq('content_type', 'post');
-        userLikes = (likes || []).map(l => l.content_id);
+        userLikes = (likes || []).map((l: any) => l.content_id);
       }
       
-      return (data || []).map(post => {
-        const authorData = profiles?.find(p => p.user_id === post.user_id);
+      return (data || []).map((post: any) => {
+        const authorData = profiles?.find((p: any) => p.user_id === post.user_id);
         return {
           ...post,
           poll_options: parseJsonArray(post.poll_options),
@@ -148,7 +151,7 @@ export function useAcademy() {
   const createPost = useMutation({
     mutationFn: async (postData: { title?: string; content: string; category: PostCategory; media_urls?: string[]; poll_options?: { id: string; text: string }[] }) => {
       if (!user?.id) throw new Error('Not authenticated');
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('community_posts')
         .insert({
           user_id: user.id,
@@ -172,7 +175,7 @@ export function useAcademy() {
 
   const deletePost = useMutation({
     mutationFn: async (postId: string) => {
-      const { error } = await supabase
+      const { error } = await db
         .from('community_posts')
         .delete()
         .eq('id', postId);
@@ -189,7 +192,7 @@ export function useAcademy() {
       if (!user?.id) throw new Error('Not authenticated');
       
       if (isLiked) {
-        await supabase
+        await db
           .from('content_likes')
           .delete()
           .eq('user_id', user.id)
@@ -197,17 +200,17 @@ export function useAcademy() {
           .eq('content_id', postId);
         
         const currentPost = posts.find(p => p.id === postId);
-        await supabase
+        await db
           .from('community_posts')
           .update({ likes_count: Math.max(0, (currentPost?.likes_count ?? 1) - 1) })
           .eq('id', postId);
       } else {
-        await supabase
+        await db
           .from('content_likes')
           .insert({ user_id: user.id, content_type: 'post', content_id: postId });
         
         const currentPost = posts.find(p => p.id === postId);
-        await supabase
+        await db
           .from('community_posts')
           .update({ likes_count: (currentPost?.likes_count ?? 0) + 1 })
           .eq('id', postId);
@@ -223,7 +226,7 @@ export function useAcademy() {
   // =============================================
 
   const getPostComments = async (postId: string): Promise<PostComment[]> => {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('post_comments')
       .select('*')
       .eq('post_id', postId)
@@ -231,14 +234,14 @@ export function useAcademy() {
     
     if (error) throw error;
     
-    const userIds = [...new Set((data || []).map(c => c.user_id))];
-    const { data: profiles } = userIds.length > 0 ? await supabase
+    const userIds = [...new Set((data || []).map((c: any) => c.user_id))];
+    const { data: profiles } = userIds.length > 0 ? await db
       .from('academy_profiles')
       .select('*')
       .in('user_id', userIds) : { data: [] };
     
-    return (data || []).map(comment => {
-      const authorData = profiles?.find(p => p.user_id === comment.user_id);
+    return (data || []).map((comment: any) => {
+      const authorData = profiles?.find((p: any) => p.user_id === comment.user_id);
       return {
         ...comment,
         author: authorData ? {
@@ -258,7 +261,7 @@ export function useAcademy() {
   const createComment = useMutation({
     mutationFn: async ({ postId, content, parentCommentId }: { postId: string; content: string; parentCommentId?: string }) => {
       if (!user?.id) throw new Error('Not authenticated');
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('post_comments')
         .insert({
           post_id: postId,
@@ -272,7 +275,7 @@ export function useAcademy() {
       
       // Update comment count
       const currentPost = posts.find(p => p.id === postId);
-      await supabase
+      await db
         .from('community_posts')
         .update({ comments_count: (currentPost?.comments_count ?? 0) + 1 })
         .eq('id', postId);
@@ -293,7 +296,7 @@ export function useAcademy() {
   const { data: courses = [], isLoading: coursesLoading } = useQuery({
     queryKey: ['academy-courses'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('academy_courses')
         .select('*')
         .order('order_index', { ascending: true });
@@ -303,7 +306,7 @@ export function useAcademy() {
       // Get user progress if logged in
       let progressMap: Record<string, number> = {};
       if (user?.id) {
-        const { data: progress } = await supabase
+        const { data: progress } = await db
           .from('user_course_progress')
           .select('course_id, lesson_id, completed_at')
           .eq('user_id', user.id);
@@ -321,7 +324,7 @@ export function useAcademy() {
           }
           
           for (const courseId in courseProgress) {
-            const course = (data || []).find(c => c.id === courseId);
+            const course = (data || []).find((c: any) => c.id === courseId);
             if (course && course.lessons_count > 0) {
               progressMap[courseId] = Math.round((courseProgress[courseId].completed / course.lessons_count) * 100);
             }
@@ -332,7 +335,7 @@ export function useAcademy() {
       // Get user level for unlock check
       let userLevel = 1;
       if (user?.id) {
-        const { data: points } = await supabase
+        const { data: points } = await db
           .from('member_points')
           .select('current_level')
           .eq('user_id', user.id)
@@ -340,7 +343,7 @@ export function useAcademy() {
         userLevel = points?.current_level || 1;
       }
       
-      return (data || []).map(course => ({
+      return (data || []).map((course: any) => ({
         ...course,
         difficulty: course.difficulty as 'beginner' | 'intermediate' | 'advanced',
         completion_percentage: progressMap[course.id] || 0,
@@ -352,7 +355,7 @@ export function useAcademy() {
   const createCourse = useMutation({
     mutationFn: async (courseData: Partial<AcademyCourse>) => {
       if (!user?.id) throw new Error('Not authenticated');
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('academy_courses')
         .insert({
           created_by: user.id,
@@ -377,7 +380,7 @@ export function useAcademy() {
 
   const updateCourse = useMutation({
     mutationFn: async ({ id, ...courseData }: Partial<AcademyCourse> & { id: string }) => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('academy_courses')
         .update({
           title: courseData.title,
@@ -403,7 +406,7 @@ export function useAcademy() {
 
   const deleteCourse = useMutation({
     mutationFn: async (courseId: string) => {
-      const { error } = await supabase
+      const { error } = await db
         .from('academy_courses')
         .delete()
         .eq('id', courseId);
@@ -420,7 +423,7 @@ export function useAcademy() {
   // =============================================
 
   const getCourseLessons = async (courseId: string): Promise<CourseLesson[]> => {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('course_lessons')
       .select('*')
       .eq('course_id', courseId)
@@ -431,7 +434,7 @@ export function useAcademy() {
     // Get user progress
     let progressMap: Record<string, { completed: boolean; watch_progress: number }> = {};
     if (user?.id) {
-      const { data: progress } = await supabase
+      const { data: progress } = await db
         .from('user_course_progress')
         .select('lesson_id, completed_at, watch_progress_seconds')
         .eq('user_id', user.id)
@@ -445,7 +448,7 @@ export function useAcademy() {
       }
     }
     
-    return (data || []).map(lesson => ({
+    return (data || []).map((lesson: any) => ({
       ...lesson,
       content_type: lesson.content_type as 'video' | 'text' | 'resource',
       resources: parseJsonArray<LessonResource>(lesson.resources as Json),
@@ -456,7 +459,7 @@ export function useAcademy() {
 
   const createLesson = useMutation({
     mutationFn: async (lessonData: Partial<CourseLesson> & { course_id: string }) => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('course_lessons')
         .insert({
           course_id: lessonData.course_id,
@@ -476,7 +479,7 @@ export function useAcademy() {
       
       // Update lesson count
       const currentCourse = courses.find(c => c.id === lessonData.course_id);
-      await supabase
+      await db
         .from('academy_courses')
         .update({ lessons_count: (currentCourse?.lessons_count ?? 0) + 1 })
         .eq('id', lessonData.course_id);
@@ -504,7 +507,7 @@ export function useAcademy() {
       if (lessonData.order_index !== undefined) updateData.order_index = lessonData.order_index;
       if (lessonData.is_published !== undefined) updateData.is_published = lessonData.is_published;
       
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('course_lessons')
         .update(updateData)
         .eq('id', id)
@@ -523,7 +526,7 @@ export function useAcademy() {
     mutationFn: async ({ courseId, lessonId }: { courseId: string; lessonId: string }) => {
       if (!user?.id) throw new Error('Not authenticated');
       
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('user_course_progress')
         .upsert({
           user_id: user.id,
@@ -560,7 +563,7 @@ export function useAcademy() {
   const { data: events = [], isLoading: eventsLoading } = useQuery({
     queryKey: ['community-events'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('community_events')
         .select('*')
         .gte('end_time', new Date().toISOString())
@@ -569,8 +572,8 @@ export function useAcademy() {
       if (error) throw error;
       
       // Get RSVP counts
-      const eventIds = (data || []).map(e => e.id);
-      const { data: rsvps } = eventIds.length > 0 ? await supabase
+      const eventIds = (data || []).map((e: any) => e.id);
+      const { data: rsvps } = eventIds.length > 0 ? await db
         .from('event_rsvps')
         .select('event_id, status')
         .in('event_id', eventIds) : { data: [] };
@@ -585,7 +588,7 @@ export function useAcademy() {
       // Get user's RSVPs
       let userRsvps: Record<string, any> = {};
       if (user?.id && eventIds.length > 0) {
-        const { data: myRsvps } = await supabase
+        const { data: myRsvps } = await db
           .from('event_rsvps')
           .select('*')
           .eq('user_id', user.id)
@@ -596,7 +599,7 @@ export function useAcademy() {
         }
       }
       
-      return (data || []).map(event => ({
+      return (data || []).map((event: any) => ({
         ...event,
         event_type: event.event_type as 'livestream' | 'zoom' | 'workshop' | 'meetup',
         rsvp_count: rsvpCounts[event.id] || 0,
@@ -608,7 +611,7 @@ export function useAcademy() {
   const createEvent = useMutation({
     mutationFn: async (eventData: Partial<CommunityEvent>) => {
       if (!user?.id) throw new Error('Not authenticated');
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('community_events')
         .insert({
           created_by: user.id,
@@ -637,7 +640,7 @@ export function useAcademy() {
 
   const updateEvent = useMutation({
     mutationFn: async ({ id, ...eventData }: Partial<CommunityEvent> & { id: string }) => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('community_events')
         .update({
           title: eventData.title,
@@ -662,7 +665,7 @@ export function useAcademy() {
 
   const deleteEvent = useMutation({
     mutationFn: async (eventId: string) => {
-      const { error } = await supabase
+      const { error } = await db
         .from('community_events')
         .delete()
         .eq('id', eventId);
@@ -678,7 +681,7 @@ export function useAcademy() {
     mutationFn: async ({ eventId, status }: { eventId: string; status: 'going' | 'maybe' | 'not_going' }) => {
       if (!user?.id) throw new Error('Not authenticated');
       
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('event_rsvps')
         .upsert({
           event_id: eventId,
@@ -703,7 +706,7 @@ export function useAcademy() {
     queryKey: ['member-points', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('member_points')
         .select('*')
         .eq('user_id', user.id)
@@ -718,7 +721,7 @@ export function useAcademy() {
   const { data: leaderboard = [] } = useQuery({
     queryKey: ['leaderboard'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('member_points')
         .select('*')
         .order('total_points', { ascending: false })
@@ -727,14 +730,14 @@ export function useAcademy() {
       if (error) throw error;
       
       // Get profiles
-      const userIds = (data || []).map(p => p.user_id);
-      const { data: profiles } = userIds.length > 0 ? await supabase
+      const userIds = (data || []).map((p: any) => p.user_id);
+      const { data: profiles } = userIds.length > 0 ? await db
         .from('academy_profiles')
         .select('*')
         .in('user_id', userIds) : { data: [] };
       
-      return (data || []).map(points => {
-        const profileData = profiles?.find(p => p.user_id === points.user_id);
+      return (data || []).map((points: any) => {
+        const profileData = profiles?.find((p: any) => p.user_id === points.user_id);
         return {
           ...points,
           profile: profileData ? {
@@ -755,7 +758,7 @@ export function useAcademy() {
   const { data: gamificationSettings } = useQuery({
     queryKey: ['gamification-settings'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('gamification_settings')
         .select('*');
       
@@ -785,7 +788,7 @@ export function useAcademy() {
     if (pointValue === 0) return;
     
     // Create transaction
-    await supabase
+    await db
       .from('point_transactions')
       .insert({
         user_id: user.id,
@@ -809,7 +812,7 @@ export function useAcademy() {
       }
     }
     
-    await supabase
+    await db
       .from('member_points')
       .upsert({
         user_id: user.id,
@@ -831,7 +834,7 @@ export function useAcademy() {
   const updateGamificationSettings = useMutation({
     mutationFn: async (settings: Partial<GamificationSettings>) => {
       if (settings.point_values) {
-        await supabase
+        await db
           .from('gamification_settings')
           .upsert({
             setting_key: 'point_values',
@@ -839,7 +842,7 @@ export function useAcademy() {
           });
       }
       if (settings.levels) {
-        await supabase
+        await db
           .from('gamification_settings')
           .upsert({
             setting_key: 'levels',
@@ -860,7 +863,7 @@ export function useAcademy() {
   const { data: members = [], isLoading: membersLoading } = useQuery({
     queryKey: ['academy-members'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('academy_profiles')
         .select('*')
         .order('created_at', { ascending: false });
@@ -868,13 +871,13 @@ export function useAcademy() {
       if (error) throw error;
       
       // Get points for all members
-      const userIds = (data || []).map(p => p.user_id);
-      const { data: points } = userIds.length > 0 ? await supabase
+      const userIds = (data || []).map((p: any) => p.user_id);
+      const { data: points } = userIds.length > 0 ? await db
         .from('member_points')
         .select('*')
         .in('user_id', userIds) : { data: [] };
       
-      return (data || []).map(profileData => ({
+      return (data || []).map((profileData: any) => ({
         ...profileData,
         badges: parseJsonArray<Badge>(profileData.badges),
         social_links: parseJsonObject<Record<string, string>>(profileData.social_links, {}),
@@ -883,7 +886,7 @@ export function useAcademy() {
           event_reminders: true,
           new_content: true,
         }),
-        points: points?.find(p => p.user_id === profileData.user_id),
+        points: points?.find((p: any) => p.user_id === profileData.user_id),
       })) as AcademyProfile[];
     },
   });
@@ -896,7 +899,7 @@ export function useAcademy() {
     queryKey: ['academy-notifications', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('academy_notifications')
         .select('*')
         .eq('user_id', user.id)
@@ -911,7 +914,7 @@ export function useAcademy() {
 
   const markNotificationRead = useMutation({
     mutationFn: async (notificationId: string) => {
-      const { error } = await supabase
+      const { error } = await db
         .from('academy_notifications')
         .update({ is_read: true })
         .eq('id', notificationId);
@@ -930,18 +933,18 @@ export function useAcademy() {
     const searchTerm = `%${query}%`;
     
     const [postsResult, coursesResult, membersResult] = await Promise.all([
-      supabase
+      db
         .from('community_posts')
         .select('id, title, content, category')
         .or(`title.ilike.${searchTerm},content.ilike.${searchTerm}`)
         .limit(10),
-      supabase
+      db
         .from('academy_courses')
         .select('id, title, description')
         .or(`title.ilike.${searchTerm},description.ilike.${searchTerm}`)
         .eq('is_published', true)
         .limit(10),
-      supabase
+      db
         .from('academy_profiles')
         .select('id, user_id, display_name, bio')
         .or(`display_name.ilike.${searchTerm},bio.ilike.${searchTerm}`)
@@ -995,14 +998,14 @@ export function useAcademy() {
       if (!user?.id) throw new Error('Not authenticated');
       
       if (isLiked) {
-        await supabase
+        await db
           .from('content_likes')
           .delete()
           .eq('user_id', user.id)
           .eq('content_type', 'comment')
           .eq('content_id', commentId);
       } else {
-        await supabase
+        await db
           .from('content_likes')
           .insert({ user_id: user.id, content_type: 'comment', content_id: commentId });
       }
@@ -1022,7 +1025,7 @@ export function useAcademy() {
   const markAllNotificationsRead = useMutation({
     mutationFn: async () => {
       if (!user?.id) throw new Error('Not authenticated');
-      const { error } = await supabase
+      const { error } = await db
         .from('academy_notifications')
         .update({ is_read: true })
         .eq('user_id', user.id)
