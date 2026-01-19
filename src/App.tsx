@@ -9,10 +9,13 @@ import { AdaptationProvider } from "@/contexts/AdaptationContext";
 import { AvatarStateProvider } from "@/contexts/AvatarStateContext";
 import { PersonalityProvider } from "@/contexts/PersonalityContext";
 import { WakeWordProvider } from "@/contexts/WakeWordContext";
+import { LoadingProvider } from "@/contexts/LoadingContext";
 import { AdaptationIndicator } from "@/components/TrustSafeguards";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { BottomDock } from "./components/BottomDock";
+import { NetworkStatus } from "./components/NetworkStatus";
+import { SkipToContent, ScreenReaderAnnouncer, KeyboardHints } from "./components/accessibility";
 import { CursorTrail, EnhancedCommandPalette, useCommandPalette, FloatingParticles } from "./components/effects";
 import { useTimeOfDayTheme } from "./hooks/useTimeOfDayTheme";
 import { PageSkeleton } from "./components/ui/page-skeleton";
@@ -86,6 +89,15 @@ function AppRoutes() {
 
   return (
     <>
+      {/* Accessibility: Skip to content link */}
+      <SkipToContent />
+      
+      {/* Network status indicator */}
+      <NetworkStatus />
+      
+      {/* Keyboard hints for power users */}
+      <KeyboardHints />
+      
       {/* Enhanced Command Palette */}
       <EnhancedCommandPalette isOpen={commandPalette.isOpen} onClose={commandPalette.close} />
       
@@ -95,7 +107,9 @@ function AppRoutes() {
       {/* Ambient Floating Particles */}
       {!isAuthPage && !isAdminPage && <FloatingParticles count={25} />}
       
-      <Routes>
+      {/* Main content area with accessibility landmark */}
+      <main id="main-content">
+        <Routes>
         <Route path="/auth" element={<Auth />} />
         
         {/* Admin Routes */}
@@ -289,8 +303,9 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
       
       {/* Adaptation state indicator - hide on auth and admin pages */}
       {!isAuthPage && !isAdminPage && <AdaptationIndicator />}
@@ -304,28 +319,32 @@ function AppRoutes() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-      <CognitiveProvider>
-        <AdaptationProvider>
-          <AvatarStateProvider>
-            <PersonalityProvider>
-              <WakeWordProvider>
-                <TooltipProvider>
-                  <ErrorBoundary>
-                    {/* Aurora background effect */}
-                    <div className="aurora-bg" aria-hidden="true" />
-                    
-                    <Toaster />
-                    <Sonner />
-                    <BrowserRouter>
-                      <AppRoutes />
-                    </BrowserRouter>
-                  </ErrorBoundary>
-                </TooltipProvider>
-              </WakeWordProvider>
-            </PersonalityProvider>
-          </AvatarStateProvider>
-        </AdaptationProvider>
-      </CognitiveProvider>
+      <LoadingProvider>
+        <ScreenReaderAnnouncer>
+          <CognitiveProvider>
+            <AdaptationProvider>
+              <AvatarStateProvider>
+                <PersonalityProvider>
+                  <WakeWordProvider>
+                    <TooltipProvider>
+                      <ErrorBoundary>
+                        {/* Aurora background effect */}
+                        <div className="aurora-bg" aria-hidden="true" />
+                        
+                        <Toaster />
+                        <Sonner />
+                        <BrowserRouter>
+                          <AppRoutes />
+                        </BrowserRouter>
+                      </ErrorBoundary>
+                    </TooltipProvider>
+                  </WakeWordProvider>
+                </PersonalityProvider>
+              </AvatarStateProvider>
+            </AdaptationProvider>
+          </CognitiveProvider>
+        </ScreenReaderAnnouncer>
+      </LoadingProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
