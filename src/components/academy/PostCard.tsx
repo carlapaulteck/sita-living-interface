@@ -23,7 +23,6 @@ import {
 import { GlassCard } from "@/components/GlassCard";
 import { CommentsThread } from "./CommentsThread";
 import { useAcademy } from "@/hooks/useAcademy";
-import { useAuth } from "@/hooks/useAuth";
 import { CommunityPost } from "@/types/academy";
 import { cn } from "@/lib/utils";
 
@@ -38,10 +37,9 @@ interface PostCardProps {
 
 export const PostCard = ({ post, authorProfile }: PostCardProps) => {
   const [showComments, setShowComments] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
+  const [isLiked, setIsLiked] = useState(post.user_liked || false);
   const [localLikeCount, setLocalLikeCount] = useState(post.likes_count || 0);
-  const { user } = useAuth();
-  const { likeContent, deletePost } = useAcademy();
+  const { togglePostLike, deletePost, user } = useAcademy();
   const isAuthor = user?.id === post.user_id;
 
   const handleLike = async () => {
@@ -51,7 +49,7 @@ export const PostCard = ({ post, authorProfile }: PostCardProps) => {
     setLocalLikeCount(prev => prev + 1);
     
     try {
-      await likeContent.mutateAsync({ contentType: 'post', contentId: post.id });
+      await togglePostLike.mutateAsync({ postId: post.id, isLiked: false });
     } catch (error) {
       setIsLiked(false);
       setLocalLikeCount(prev => prev - 1);
@@ -71,8 +69,9 @@ export const PostCard = ({ post, authorProfile }: PostCardProps) => {
     resources: "bg-accent/20 text-accent border-accent/30",
   };
 
-  const authorName = authorProfile?.display_name || 'Anonymous';
+  const authorName = authorProfile?.display_name || post.author?.display_name || 'Anonymous';
   const authorInitials = authorName.split(' ').map(n => n[0]).join('').toUpperCase();
+  const avatarUrl = authorProfile?.avatar_url || post.author?.avatar_url;
 
   return (
     <GlassCard className="overflow-visible" hover={false}>
@@ -81,7 +80,7 @@ export const PostCard = ({ post, authorProfile }: PostCardProps) => {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <Avatar className="w-10 h-10 border-2 border-border">
-              <AvatarImage src={authorProfile?.avatar_url || undefined} />
+              <AvatarImage src={avatarUrl || undefined} />
               <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary/20 text-foreground">
                 {authorInitials}
               </AvatarFallback>
@@ -177,9 +176,9 @@ export const PostCard = ({ post, authorProfile }: PostCardProps) => {
         )}
 
         {/* Poll */}
-        {post.poll_options && (
+        {post.poll_options && post.poll_options.length > 0 && (
           <div className="space-y-2 p-4 rounded-xl bg-muted/30 border border-border/50">
-            {(post.poll_options as { text: string; votes: number }[]).map((option, index) => (
+            {post.poll_options.map((option, index) => (
               <motion.button
                 key={index}
                 whileHover={{ scale: 1.01 }}

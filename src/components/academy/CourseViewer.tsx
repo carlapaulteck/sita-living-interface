@@ -1,12 +1,9 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ArrowLeft,
-  Play,
-  Pause,
   CheckCircle2,
   Clock,
-  BookOpen,
   Download,
   Search,
   ChevronRight,
@@ -16,7 +13,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -34,42 +30,42 @@ export const CourseViewer = ({ course, onBack }: CourseViewerProps) => {
   const [selectedLesson, setSelectedLesson] = useState<CourseLesson | null>(null);
   const [searchTranscript, setSearchTranscript] = useState("");
   const [isPlaying, setIsPlaying] = useState(false);
+  const [courseLessons, setCourseLessons] = useState<CourseLesson[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const { lessons, getCourseProgress, markLessonComplete, awardPoints } = useAcademy();
+  const { getCourseLessons, getCourseProgress, completeLesson, awardPoints } = useAcademy();
   
-  const courseLessons = lessons
-    .filter(l => l.course_id === course.id && l.is_published)
-    .sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
-  
-  const completedLessons = getCourseProgress(course.id);
-  const progress = courseLessons.length > 0 
-    ? (completedLessons.length / courseLessons.length) * 100 
-    : 0;
+  const progress = getCourseProgress(course.id);
 
   useEffect(() => {
-    if (courseLessons.length > 0 && !selectedLesson) {
-      // Find first incomplete lesson or default to first
-      const nextLesson = courseLessons.find(
-        l => !completedLessons.some(c => c.lesson_id === l.id)
-      ) || courseLessons[0];
-      setSelectedLesson(nextLesson);
-    }
-  }, [courseLessons.length]);
+    setIsLoading(true);
+    getCourseLessons(course.id).then((lessons) => {
+      const publishedLessons = lessons.filter(l => l.is_published !== false);
+      setCourseLessons(publishedLessons);
+      if (publishedLessons.length > 0 && !selectedLesson) {
+        const firstIncomplete = publishedLessons.find(l => !l.is_completed);
+        setSelectedLesson(firstIncomplete || publishedLessons[0]);
+      }
+      setIsLoading(false);
+    });
+  }, [course.id, getCourseLessons]);
+
+  const completedLessons = courseLessons.filter(l => l.is_completed);
+  const completionProgress = courseLessons.length > 0 
+    ? (completedLessons.length / courseLessons.length) * 100 
+    : 0;
 
   const handleMarkComplete = async () => {
     if (!selectedLesson) return;
     
-    await markLessonComplete.mutateAsync({
+    await completeLesson.mutateAsync({
       courseId: course.id,
       lessonId: selectedLesson.id,
     });
     
-    // Award points for completing lesson
-    await awardPoints.mutateAsync({
-      actionType: 'lesson_complete',
-      points: 15,
-      referenceId: selectedLesson.id,
-    });
+    // Refresh lessons
+    const updated = await getCourseLessons(course.id);
+    setCourseLessons(updated.filter(l => l.is_published !== false));
 
     // Move to next lesson
     const currentIndex = courseLessons.findIndex(l => l.id === selectedLesson.id);
@@ -79,7 +75,8 @@ export const CourseViewer = ({ course, onBack }: CourseViewerProps) => {
   };
 
   const isLessonComplete = (lessonId: string) => {
-    return completedLessons.some(c => c.lesson_id === lessonId);
+    const lesson = courseLessons.find(l => l.id === lessonId);
+    return lesson?.is_completed || false;
   };
 
   const filteredTranscript = selectedLesson?.transcript
@@ -88,6 +85,29 @@ export const CourseViewer = ({ course, onBack }: CourseViewerProps) => {
       !searchTranscript || 
       line.toLowerCase().includes(searchTranscript.toLowerCase())
     );
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-20">
+        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+        <p className="text-muted-foreground">Loading course...</p>
+      </div>
+    );
+  }
+
+  if (courseLessons.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-foreground mb-2">No lessons yet</h3>
+        <p className="text-muted-foreground mb-4">This course is being prepared</p>
+        <Button variant="outline" onClick={onBack}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Courses
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -106,13 +126,13 @@ export const CourseViewer = ({ course, onBack }: CourseViewerProps) => {
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span>{completedLessons.length}/{courseLessons.length} lessons</span>
             <span>•</span>
-            <span>{Math.round(progress)}% complete</span>
+            <span>{Math.round(completionProgress)}% complete</span>
           </div>
         </div>
       </div>
 
       {/* Progress */}
-      <Progress value={progress} className="h-2" />
+      <Progress value={completionProgress} className="h-2" />
 
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -167,7 +187,7 @@ export const CourseViewer = ({ course, onBack }: CourseViewerProps) => {
                   </div>
                   <Button
                     onClick={handleMarkComplete}
-                    disabled={isLessonComplete(selectedLesson.id)}
+                    disabled={isLessonComplete(selectedLesson.id) || completeLesson.isPending}
                     className={cn(
                       isLessonComplete(selectedLesson.id)
                         ? "bg-green-500/20 text-green-400"
@@ -179,6 +199,8 @@ export const CourseViewer = ({ course, onBack }: CourseViewerProps) => {
                         <CheckCircle2 className="w-4 h-4 mr-2" />
                         Completed
                       </>
+                    ) : completeLesson.isPending ? (
+                      "Saving..."
                     ) : (
                       "Mark Complete"
                     )}
@@ -192,7 +214,7 @@ export const CourseViewer = ({ course, onBack }: CourseViewerProps) => {
                     {selectedLesson.transcript && (
                       <TabsTrigger value="transcript" className="flex-1">Transcript</TabsTrigger>
                     )}
-                    {selectedLesson.resources && (
+                    {selectedLesson.resources && selectedLesson.resources.length > 0 && (
                       <TabsTrigger value="resources" className="flex-1">Resources</TabsTrigger>
                     )}
                   </TabsList>
@@ -240,10 +262,10 @@ export const CourseViewer = ({ course, onBack }: CourseViewerProps) => {
                     </TabsContent>
                   )}
 
-                  {selectedLesson.resources && (
+                  {selectedLesson.resources && selectedLesson.resources.length > 0 && (
                     <TabsContent value="resources" className="mt-4">
                       <div className="space-y-2">
-                        {(selectedLesson.resources as { name: string; url: string; type: string }[]).map((resource, index) => (
+                        {selectedLesson.resources.map((resource, index) => (
                           <motion.a
                             key={index}
                             href={resource.url}
@@ -254,7 +276,7 @@ export const CourseViewer = ({ course, onBack }: CourseViewerProps) => {
                           >
                             {resource.type === 'pdf' ? (
                               <FileText className="w-5 h-5 text-primary" />
-                            ) : resource.type === 'video' ? (
+                            ) : resource.type === 'file' ? (
                               <Video className="w-5 h-5 text-primary" />
                             ) : (
                               <Link2 className="w-5 h-5 text-primary" />
@@ -316,7 +338,7 @@ export const CourseViewer = ({ course, onBack }: CourseViewerProps) => {
                         )}>
                           {lesson.title}
                         </p>
-                        {lesson.video_duration_seconds && (
+                        {lesson.video_duration_seconds && lesson.video_duration_seconds > 0 && (
                           <p className="text-xs text-muted-foreground">
                             {Math.floor(lesson.video_duration_seconds / 60)}:{String(lesson.video_duration_seconds % 60).padStart(2, '0')}
                           </p>

@@ -989,6 +989,57 @@ export function useAcademy() {
     };
   }, [queryClient]);
 
+  // Comments query for specific post
+  const toggleCommentLike = useMutation({
+    mutationFn: async ({ commentId, isLiked }: { commentId: string; isLiked: boolean }) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      
+      if (isLiked) {
+        await supabase
+          .from('content_likes')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('content_type', 'comment')
+          .eq('content_id', commentId);
+      } else {
+        await supabase
+          .from('content_likes')
+          .insert({ user_id: user.id, content_type: 'comment', content_id: commentId });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['post-comments'] });
+    },
+  });
+
+  // Course progress helper
+  const getCourseProgress = useCallback((courseId: string) => {
+    const course = courses.find(c => c.id === courseId);
+    return course?.completion_percentage || 0;
+  }, [courses]);
+
+  // Mark all notifications read
+  const markAllNotificationsRead = useMutation({
+    mutationFn: async () => {
+      if (!user?.id) throw new Error('Not authenticated');
+      const { error } = await supabase
+        .from('academy_notifications')
+        .update({ is_read: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['academy-notifications'] });
+    },
+  });
+
+  // Realtime subscription helper
+  const subscribeToRealtime = useCallback(() => {
+    // Already set up in useEffect above
+    return () => {};
+  }, []);
+
   return {
     // Profile
     profile,
@@ -1007,6 +1058,7 @@ export function useAcademy() {
     // Comments
     getPostComments,
     createComment,
+    toggleCommentLike,
     
     // Courses
     courses,
@@ -1018,6 +1070,7 @@ export function useAcademy() {
     createLesson,
     updateLesson,
     completeLesson,
+    getCourseProgress,
     
     // Events
     events,
@@ -1037,13 +1090,22 @@ export function useAcademy() {
     // Members
     members,
     membersLoading,
+    profiles: members, // Alias for compatibility
     
     // Notifications
     notifications,
     markNotificationRead,
+    markAllNotificationsRead,
     
     // Search
     search,
+    searchContent: search, // Alias for compatibility
+    
+    // Realtime
+    subscribeToRealtime,
+    
+    // Leaderboard helper
+    getLeaderboard: () => leaderboard,
     
     // User
     user,

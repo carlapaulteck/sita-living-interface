@@ -26,6 +26,7 @@ import Healthcare from "./pages/Healthcare";
 import Agents from "./pages/Agents";
 import Intelligence from "./pages/Intelligence";
 import BioOS from "./pages/BioOS";
+import Academy from "./pages/Academy";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { BottomDock } from "./components/BottomDock";
@@ -210,6 +211,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <BioOS />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/academy"
+          element={
+            <ProtectedRoute>
+              <Academy />
             </ProtectedRoute>
           }
         />
