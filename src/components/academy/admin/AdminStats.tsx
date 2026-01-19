@@ -5,23 +5,22 @@ import {
   MessageSquare, 
   Trophy,
   TrendingUp,
-  Eye,
   Clock,
   Target
 } from "lucide-react";
 import { GlassCard } from "@/components/GlassCard";
 import { useAcademy } from "@/hooks/useAcademy";
 import { cn } from "@/lib/utils";
+import type { MemberPoints, AcademyProfile } from "@/types/academy";
 
 export const AdminStats = () => {
-  const { profiles, posts, courses, events, getLeaderboard } = useAcademy();
+  const { members, posts, courses, events, leaderboard } = useAcademy();
   
-  const leaderboard = getLeaderboard();
-  const totalMembers = profiles.length;
+  const totalMembers = members.length;
   const totalPosts = posts.length;
   const publishedCourses = courses.filter(c => c.is_published).length;
   const upcomingEvents = events.filter(e => new Date(e.start_time) >= new Date()).length;
-  const activeMembers = leaderboard.filter(m => (m.total_points || 0) > 0).length;
+  const activeMembers = leaderboard.filter((m: MemberPoints) => (m.total_points || 0) > 0).length;
 
   const stats = [
     {
@@ -31,7 +30,7 @@ export const AdminStats = () => {
       color: "text-blue-400",
       bgColor: "bg-blue-500/20",
       change: "+12%",
-      trend: "up",
+      trend: "up" as const,
     },
     {
       label: "Active Members",
@@ -40,7 +39,7 @@ export const AdminStats = () => {
       color: "text-green-400",
       bgColor: "bg-green-500/20",
       change: "+8%",
-      trend: "up",
+      trend: "up" as const,
     },
     {
       label: "Community Posts",
@@ -49,7 +48,7 @@ export const AdminStats = () => {
       color: "text-purple-400",
       bgColor: "bg-purple-500/20",
       change: "+24%",
-      trend: "up",
+      trend: "up" as const,
     },
     {
       label: "Published Courses",
@@ -58,7 +57,7 @@ export const AdminStats = () => {
       color: "text-primary",
       bgColor: "bg-primary/20",
       change: "+2",
-      trend: "up",
+      trend: "up" as const,
     },
     {
       label: "Upcoming Events",
@@ -67,16 +66,16 @@ export const AdminStats = () => {
       color: "text-orange-400",
       bgColor: "bg-orange-500/20",
       change: "+3",
-      trend: "up",
+      trend: "up" as const,
     },
     {
       label: "Total XP Earned",
-      value: leaderboard.reduce((acc, m) => acc + (m.total_points || 0), 0),
+      value: leaderboard.reduce((acc: number, m: MemberPoints) => acc + (m.total_points || 0), 0),
       icon: Trophy,
       color: "text-yellow-400",
       bgColor: "bg-yellow-500/20",
       change: "+1.2k",
-      trend: "up",
+      trend: "up" as const,
     },
   ];
 
@@ -128,8 +127,8 @@ export const AdminStats = () => {
             Top Contributors
           </h3>
           <div className="space-y-3">
-            {topContributors.map((member, index) => {
-              const profile = profiles.find(p => p.user_id === member.user_id);
+            {topContributors.map((member: MemberPoints, index: number) => {
+              const memberProfile = members.find((p: AcademyProfile) => p.user_id === member.user_id);
               return (
                 <div key={member.user_id} className="flex items-center gap-3">
                   <div className={cn(
@@ -142,11 +141,11 @@ export const AdminStats = () => {
                     {index + 1}
                   </div>
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-foreground font-medium">
-                    {profile?.display_name?.[0] || 'M'}
+                    {memberProfile?.display_name?.[0] || 'M'}
                   </div>
                   <div className="flex-1">
                     <p className="font-medium text-foreground">
-                      {profile?.display_name || 'Member'}
+                      {memberProfile?.display_name || 'Member'}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {member.level_name || 'Newcomer'}

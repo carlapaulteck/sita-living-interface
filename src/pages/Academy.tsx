@@ -8,8 +8,7 @@ import {
   Trophy, 
   Users, 
   Settings,
-  Search,
-  Bell
+  Search
 } from "lucide-react";
 import { CommunityFeed } from "@/components/academy/CommunityFeed";
 import { CourseGrid } from "@/components/academy/CourseGrid";
@@ -19,15 +18,12 @@ import { MemberDirectory } from "@/components/academy/MemberDirectory";
 import { AdminPanel } from "@/components/academy/admin/AdminPanel";
 import { AcademySearch } from "@/components/academy/AcademySearch";
 import { AcademyNotifications } from "@/components/academy/AcademyNotifications";
-import { useAuth } from "@/hooks/useAuth";
 import { useAcademy } from "@/hooks/useAcademy";
 
 const Academy = () => {
   const [activeTab, setActiveTab] = useState("community");
   const [showSearch, setShowSearch] = useState(false);
-  const { user } = useAuth();
-  const { profile } = useAcademy();
-  const isAdmin = profile?.is_admin || false;
+  const { profile, isAdmin } = useAcademy();
 
   const tabs = [
     { id: "community", label: "Community", icon: MessageSquare },
