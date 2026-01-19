@@ -252,6 +252,7 @@ export const OptimizedLeaderboard = () => {
                 itemHeight={72}
                 containerHeight={500}
                 renderItem={renderLeaderboardItem}
+                keyExtractor={(item) => item.user_id}
                 className="space-y-2"
               />
             ) : (

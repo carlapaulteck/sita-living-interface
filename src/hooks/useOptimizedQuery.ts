@@ -88,7 +88,7 @@ export async function leanQuery<T>({
   limit,
   single = false,
 }: LeanQueryOptions): Promise<{ data: T | null; error: any }> {
-  let query = (supabase.from(table) as any).select(select);
+  let query = supabase.from(table as any).select(select);
 
   // Apply filters
   Object.entries(filters).forEach(([key, value]) => {
@@ -137,10 +137,12 @@ export async function leanQuery<T>({
 
   // Execute
   if (single) {
-    return query.single();
+    const result = await query.single();
+    return { data: result.data as T | null, error: result.error };
   }
 
-  return query;
+  const result = await query;
+  return { data: result.data as T | null, error: result.error };
 }
 
 // Optimized query hook with lean selects and caching
