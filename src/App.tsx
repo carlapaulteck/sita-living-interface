@@ -11,46 +11,69 @@ import { PersonalityProvider } from "@/contexts/PersonalityContext";
 import { WakeWordProvider } from "@/contexts/WakeWordContext";
 import { AdaptationIndicator } from "@/components/TrustSafeguards";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import BusinessGrowth from "./pages/BusinessGrowth";
-import LifeHealth from "./pages/LifeHealth";
-import MindGrowth from "./pages/MindGrowth";
-import Settings from "./pages/Settings";
-import Sovereignty from "./pages/Sovereignty";
-import Automations from "./pages/Automations";
-import Family from "./pages/Family";
-import HomeIntelligence from "./pages/HomeIntelligence";
-import Finance from "./pages/Finance";
-import Healthcare from "./pages/Healthcare";
-import Agents from "./pages/Agents";
-import Intelligence from "./pages/Intelligence";
-import BioOS from "./pages/BioOS";
-import Academy from "./pages/Academy";
-import PersonalAssistant from "./pages/PersonalAssistant";
-import HealthFitness from "./pages/HealthFitness";
-import Mindset from "./pages/Mindset";
-import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { BottomDock } from "./components/BottomDock";
-import { CursorTrail, AmbientGlow, EnhancedCommandPalette, useCommandPalette } from "./components/effects";
+import { CursorTrail, EnhancedCommandPalette, useCommandPalette } from "./components/effects";
 import { useTimeOfDayTheme } from "./hooks/useTimeOfDayTheme";
+import { PageSkeleton } from "./components/ui/page-skeleton";
+import { lazy, Suspense } from "react";
 
-// Admin imports
-import AdminLayout from "./components/admin/AdminLayout";
-import {
-  AdminDashboardPage,
-  AdminUsersPage,
-  AdminSubscriptionsPage,
-  AdminTicketsPage,
-  AdminAnnouncementsPage,
-  AdminErrorLogsPage,
-  AdminAuditLogsPage,
-  AdminSettingsPage,
-  AdminFeatureFlagsPage
-} from "./pages/admin";
+// Eager load critical pages
+import Index from "./pages/Index";
+import Auth from "./pages/Auth";
+import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+// Lazy load all other pages for code splitting
+const BusinessGrowth = lazy(() => import("./pages/BusinessGrowth"));
+const LifeHealth = lazy(() => import("./pages/LifeHealth"));
+const MindGrowth = lazy(() => import("./pages/MindGrowth"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Sovereignty = lazy(() => import("./pages/Sovereignty"));
+const Automations = lazy(() => import("./pages/Automations"));
+const Family = lazy(() => import("./pages/Family"));
+const HomeIntelligence = lazy(() => import("./pages/HomeIntelligence"));
+const Finance = lazy(() => import("./pages/Finance"));
+const Healthcare = lazy(() => import("./pages/Healthcare"));
+const Agents = lazy(() => import("./pages/Agents"));
+const Intelligence = lazy(() => import("./pages/Intelligence"));
+const BioOS = lazy(() => import("./pages/BioOS"));
+const Academy = lazy(() => import("./pages/Academy"));
+const PersonalAssistant = lazy(() => import("./pages/PersonalAssistant"));
+const HealthFitness = lazy(() => import("./pages/HealthFitness"));
+const Mindset = lazy(() => import("./pages/Mindset"));
+
+// Lazy load admin pages
+const AdminLayout = lazy(() => import("./components/admin/AdminLayout"));
+const AdminDashboardPage = lazy(() => import("./pages/admin/AdminDashboardPage"));
+const AdminUsersPage = lazy(() => import("./pages/admin/AdminUsersPage"));
+const AdminSubscriptionsPage = lazy(() => import("./pages/admin/AdminSubscriptionsPage"));
+const AdminTicketsPage = lazy(() => import("./pages/admin/AdminTicketsPage"));
+const AdminAnnouncementsPage = lazy(() => import("./pages/admin/AdminAnnouncementsPage"));
+const AdminErrorLogsPage = lazy(() => import("./pages/admin/AdminErrorLogsPage"));
+const AdminAuditLogsPage = lazy(() => import("./pages/admin/AdminAuditLogsPage"));
+const AdminSettingsPage = lazy(() => import("./pages/admin/AdminSettingsPage"));
+const AdminFeatureFlagsPage = lazy(() => import("./pages/admin/AdminFeatureFlagsPage"));
+
+// Optimized query client with stale times
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 30, // 30 minutes (formerly cacheTime)
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+// Lazy route wrapper for consistent loading
+function LazyRoute({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      {children}
+    </Suspense>
+  );
+}
 
 function AppRoutes() {
   const location = useLocation();
@@ -77,19 +100,21 @@ function AppRoutes() {
           path="/admin"
           element={
             <ProtectedRoute adminOnly>
-              <AdminLayout />
+              <LazyRoute>
+                <AdminLayout />
+              </LazyRoute>
             </ProtectedRoute>
           }
         >
-          <Route index element={<AdminDashboardPage />} />
-          <Route path="users" element={<AdminUsersPage />} />
-          <Route path="subscriptions" element={<AdminSubscriptionsPage />} />
-          <Route path="tickets" element={<AdminTicketsPage />} />
-          <Route path="announcements" element={<AdminAnnouncementsPage />} />
-          <Route path="errors" element={<AdminErrorLogsPage />} />
-          <Route path="audit" element={<AdminAuditLogsPage />} />
-          <Route path="settings" element={<AdminSettingsPage />} />
-          <Route path="feature-flags" element={<AdminFeatureFlagsPage />} />
+          <Route index element={<LazyRoute><AdminDashboardPage /></LazyRoute>} />
+          <Route path="users" element={<LazyRoute><AdminUsersPage /></LazyRoute>} />
+          <Route path="subscriptions" element={<LazyRoute><AdminSubscriptionsPage /></LazyRoute>} />
+          <Route path="tickets" element={<LazyRoute><AdminTicketsPage /></LazyRoute>} />
+          <Route path="announcements" element={<LazyRoute><AdminAnnouncementsPage /></LazyRoute>} />
+          <Route path="errors" element={<LazyRoute><AdminErrorLogsPage /></LazyRoute>} />
+          <Route path="audit" element={<LazyRoute><AdminAuditLogsPage /></LazyRoute>} />
+          <Route path="settings" element={<LazyRoute><AdminSettingsPage /></LazyRoute>} />
+          <Route path="feature-flags" element={<LazyRoute><AdminFeatureFlagsPage /></LazyRoute>} />
         </Route>
         
         {/* Client Routes */}
@@ -105,7 +130,7 @@ function AppRoutes() {
           path="/business"
           element={
             <ProtectedRoute>
-              <BusinessGrowth />
+              <LazyRoute><BusinessGrowth /></LazyRoute>
             </ProtectedRoute>
           }
         />
@@ -113,7 +138,7 @@ function AppRoutes() {
           path="/business-growth"
           element={
             <ProtectedRoute>
-              <BusinessGrowth />
+              <LazyRoute><BusinessGrowth /></LazyRoute>
             </ProtectedRoute>
           }
         />
@@ -121,7 +146,7 @@ function AppRoutes() {
           path="/life"
           element={
             <ProtectedRoute>
-              <LifeHealth />
+              <LazyRoute><LifeHealth /></LazyRoute>
             </ProtectedRoute>
           }
         />
@@ -129,7 +154,7 @@ function AppRoutes() {
           path="/life-health"
           element={
             <ProtectedRoute>
-              <LifeHealth />
+              <LazyRoute><LifeHealth /></LazyRoute>
             </ProtectedRoute>
           }
         />
@@ -137,7 +162,7 @@ function AppRoutes() {
           path="/mind"
           element={
             <ProtectedRoute>
-              <MindGrowth />
+              <LazyRoute><MindGrowth /></LazyRoute>
             </ProtectedRoute>
           }
         />
@@ -145,7 +170,7 @@ function AppRoutes() {
           path="/mind-growth"
           element={
             <ProtectedRoute>
-              <MindGrowth />
+              <LazyRoute><MindGrowth /></LazyRoute>
             </ProtectedRoute>
           }
         />
@@ -153,7 +178,7 @@ function AppRoutes() {
           path="/settings"
           element={
             <ProtectedRoute>
-              <Settings />
+              <LazyRoute><Settings /></LazyRoute>
             </ProtectedRoute>
           }
         />
@@ -161,7 +186,7 @@ function AppRoutes() {
           path="/sovereignty"
           element={
             <ProtectedRoute>
-              <Sovereignty />
+              <LazyRoute><Sovereignty /></LazyRoute>
             </ProtectedRoute>
           }
         />
@@ -169,7 +194,7 @@ function AppRoutes() {
           path="/automations"
           element={
             <ProtectedRoute>
-              <Automations />
+              <LazyRoute><Automations /></LazyRoute>
             </ProtectedRoute>
           }
         />
@@ -177,7 +202,7 @@ function AppRoutes() {
           path="/family"
           element={
             <ProtectedRoute>
-              <Family />
+              <LazyRoute><Family /></LazyRoute>
             </ProtectedRoute>
           }
         />
@@ -185,7 +210,7 @@ function AppRoutes() {
           path="/home"
           element={
             <ProtectedRoute>
-              <HomeIntelligence />
+              <LazyRoute><HomeIntelligence /></LazyRoute>
             </ProtectedRoute>
           }
         />
@@ -193,7 +218,7 @@ function AppRoutes() {
           path="/finance"
           element={
             <ProtectedRoute>
-              <Finance />
+              <LazyRoute><Finance /></LazyRoute>
             </ProtectedRoute>
           }
         />
@@ -201,7 +226,7 @@ function AppRoutes() {
           path="/healthcare"
           element={
             <ProtectedRoute>
-              <Healthcare />
+              <LazyRoute><Healthcare /></LazyRoute>
             </ProtectedRoute>
           }
         />
@@ -209,7 +234,7 @@ function AppRoutes() {
           path="/agents"
           element={
             <ProtectedRoute>
-              <Agents />
+              <LazyRoute><Agents /></LazyRoute>
             </ProtectedRoute>
           }
         />
@@ -217,7 +242,7 @@ function AppRoutes() {
           path="/intelligence"
           element={
             <ProtectedRoute>
-              <Intelligence />
+              <LazyRoute><Intelligence /></LazyRoute>
             </ProtectedRoute>
           }
         />
@@ -225,7 +250,7 @@ function AppRoutes() {
           path="/bio-os"
           element={
             <ProtectedRoute>
-              <BioOS />
+              <LazyRoute><BioOS /></LazyRoute>
             </ProtectedRoute>
           }
         />
@@ -233,16 +258,15 @@ function AppRoutes() {
           path="/academy"
           element={
             <ProtectedRoute>
-              <Academy />
+              <LazyRoute><Academy /></LazyRoute>
             </ProtectedRoute>
           }
         />
-        {/* New Canonical Module Routes */}
         <Route
           path="/assistant"
           element={
             <ProtectedRoute>
-              <PersonalAssistant />
+              <LazyRoute><PersonalAssistant /></LazyRoute>
             </ProtectedRoute>
           }
         />
@@ -250,7 +274,7 @@ function AppRoutes() {
           path="/health"
           element={
             <ProtectedRoute>
-              <HealthFitness />
+              <LazyRoute><HealthFitness /></LazyRoute>
             </ProtectedRoute>
           }
         />
@@ -258,7 +282,7 @@ function AppRoutes() {
           path="/mindset"
           element={
             <ProtectedRoute>
-              <Mindset />
+              <LazyRoute><Mindset /></LazyRoute>
             </ProtectedRoute>
           }
         />
