@@ -1,16 +1,17 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface Organization {
   id: string;
   name: string;
   slug: string;
   owner_id: string;
-  settings: Record<string, unknown> | null;
+  settings: Json | null;
   subscription_tier: string | null;
   logo_url: string | null;
   max_members: number | null;
-  is_active: boolean;
-  created_at: string;
+  is_active: boolean | null;
+  created_at: string | null;
   updated_at: string | null;
 }
 
@@ -19,7 +20,7 @@ export interface OrganizationMember {
   organization_id: string;
   user_id: string;
   role: string;
-  permissions: Record<string, unknown> | null;
+  permissions: Json | null;
   invited_by: string | null;
   joined_at: string | null;
   created_at: string | null;
@@ -46,7 +47,7 @@ export const organizationService = {
       .eq("is_active", true);
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as Organization[];
   },
 
   /**
@@ -60,7 +61,7 @@ export const organizationService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as Organization | null;
   },
 
   /**
@@ -74,7 +75,7 @@ export const organizationService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as Organization | null;
   },
 
   /**
@@ -103,7 +104,7 @@ export const organizationService = {
       role: "owner",
     });
 
-    return data;
+    return data as Organization;
   },
 
   /**
@@ -115,13 +116,16 @@ export const organizationService = {
   ): Promise<Organization> {
     const { data, error } = await supabase
       .from("organizations")
-      .update(updates)
+      .update({
+        ...updates,
+        settings: updates.settings as unknown as Json,
+      })
       .eq("id", orgId)
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    return data as Organization;
   },
 
   /**
@@ -134,7 +138,7 @@ export const organizationService = {
       .eq("organization_id", orgId);
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as OrganizationMember[];
   },
 
   /**
@@ -145,8 +149,6 @@ export const organizationService = {
     email: string,
     role: string = "member"
   ): Promise<void> {
-    // In a real implementation, this would send an invite email
-    // For now, we'll just create the membership if the user exists
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Not authenticated");
 

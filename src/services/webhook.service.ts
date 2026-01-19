@@ -1,35 +1,38 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface Webhook {
   id: string;
   organization_id: string | null;
   user_id: string;
+  name: string;
   url: string;
   secret: string;
   events: string[];
-  is_active: boolean;
-  failure_count: number;
+  headers: Json | null;
+  is_active: boolean | null;
+  failure_count: number | null;
   last_triggered_at: string | null;
-  created_at: string;
+  last_response_code: number | null;
+  created_at: string | null;
   updated_at: string | null;
 }
 
 export interface WebhookLog {
   id: string;
   webhook_id: string;
-  event: string;
-  payload: Record<string, unknown>;
-  response_status: number | null;
+  event_type: string;
+  payload: Json;
+  status: string | null;
+  response_code: number | null;
   response_body: string | null;
-  status: "pending" | "success" | "failed";
   error_message: string | null;
-  created_at: string;
+  duration_ms: number | null;
+  retry_count: number | null;
+  created_at: string | null;
 }
 
 export const webhookService = {
-  /**
-   * Get all webhooks for the current user
-   */
   async getWebhooks(): Promise<Webhook[]> {
     const { data, error } = await supabase
       .from("webhooks")
@@ -37,12 +40,9 @@ export const webhookService = {
       .order("created_at", { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as Webhook[];
   },
 
-  /**
-   * Get webhooks for an organization
-   */
   async getOrganizationWebhooks(orgId: string): Promise<Webhook[]> {
     const { data, error } = await supabase
       .from("webhooks")
@@ -51,38 +51,36 @@ export const webhookService = {
       .order("created_at", { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as Webhook[];
   },
 
-  /**
-   * Create a new webhook
-   */
   async createWebhook(
     url: string,
     events: string[],
     organizationId?: string
   ): Promise<Webhook> {
-    // Generate a secure secret
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+    
     const secret = crypto.randomUUID() + crypto.randomUUID();
 
     const { data, error } = await supabase
       .from("webhooks")
       .insert({
+        user_id: user.id,
+        name: "Webhook",
         url,
         events,
         secret,
-        organization_id: organizationId,
+        organization_id: organizationId || null,
       })
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    return data as Webhook;
   },
 
-  /**
-   * Update a webhook
-   */
   async updateWebhook(
     webhookId: string,
     updates: Partial<Pick<Webhook, "url" | "events" | "is_active">>
@@ -95,56 +93,29 @@ export const webhookService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as Webhook;
   },
 
-  /**
-   * Delete a webhook
-   */
   async deleteWebhook(webhookId: string): Promise<void> {
-    const { error } = await supabase
-      .from("webhooks")
-      .delete()
-      .eq("id", webhookId);
-
+    const { error } = await supabase.from("webhooks").delete().eq("id", webhookId);
     if (error) throw error;
   },
 
-  /**
-   * Regenerate webhook secret
-   */
   async regenerateSecret(webhookId: string): Promise<string> {
     const newSecret = crypto.randomUUID() + crypto.randomUUID();
-
-    const { error } = await supabase
-      .from("webhooks")
-      .update({ secret: newSecret })
-      .eq("id", webhookId);
-
+    const { error } = await supabase.from("webhooks").update({ secret: newSecret }).eq("id", webhookId);
     if (error) throw error;
     return newSecret;
   },
 
-  /**
-   * Test a webhook by sending a test payload
-   */
-  async testWebhook(webhookId: string): Promise<{ success: boolean; response?: string; error?: string }> {
+  async testWebhook(webhookId: string) {
     const { data, error } = await supabase.functions.invoke("webhook-dispatcher", {
-      body: {
-        action: "test",
-        webhook_id: webhookId,
-      },
+      body: { action: "test", webhook_id: webhookId },
     });
-
-    if (error) {
-      return { success: false, error: error.message };
-    }
+    if (error) return { success: false, error: error.message };
     return data;
   },
 
-  /**
-   * Get webhook logs
-   */
   async getWebhookLogs(webhookId: string, limit = 50): Promise<WebhookLog[]> {
     const { data, error } = await supabase
       .from("webhook_logs")
@@ -154,7 +125,7 @@ export const webhookService = {
       .limit(limit);
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as WebhookLog[];
   },
 
   /**

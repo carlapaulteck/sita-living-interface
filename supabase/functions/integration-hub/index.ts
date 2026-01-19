@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -50,7 +50,6 @@ serve(async (req) => {
     switch (req.method) {
       case "GET": {
         if (action === "list") {
-          // List all integrations for user
           const { data: integrations } = await supabase
             .from("integrations")
             .select("*")
@@ -63,7 +62,6 @@ serve(async (req) => {
         }
 
         if (action === "available") {
-          // List available integration providers
           const providers = getAvailableProviders();
           return new Response(JSON.stringify({ providers }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -71,7 +69,6 @@ serve(async (req) => {
         }
 
         if (action === "status" && provider) {
-          // Get integration status
           const { data: integration } = await supabase
             .from("integrations")
             .select("*")
@@ -86,7 +83,6 @@ serve(async (req) => {
         }
 
         if (action === "logs" && provider) {
-          // Get sync logs
           const { data: integration } = await supabase
             .from("integrations")
             .select("id")
@@ -117,7 +113,6 @@ serve(async (req) => {
 
       case "POST": {
         if (action === "connect") {
-          // Connect a new integration
           const config: IntegrationConfig = await req.json();
           const result = await connectIntegration(supabase, user.id, config);
           return new Response(JSON.stringify(result), {
@@ -126,7 +121,6 @@ serve(async (req) => {
         }
 
         if (action === "sync" && provider) {
-          // Trigger a sync
           const result = await syncIntegration(supabase, user.id, provider);
           return new Response(JSON.stringify(result), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -134,7 +128,6 @@ serve(async (req) => {
         }
 
         if (action === "oauth-callback") {
-          // Handle OAuth callback
           const { code, state, provider: oauthProvider } = await req.json();
           const result = await handleOAuthCallback(
             supabase,
@@ -153,7 +146,6 @@ serve(async (req) => {
 
       case "DELETE": {
         if (provider) {
-          // Disconnect integration
           const { error } = await supabase
             .from("integrations")
             .delete()
@@ -173,7 +165,6 @@ serve(async (req) => {
 
       case "PATCH": {
         if (provider) {
-          // Update integration config
           const { config } = await req.json();
           const { error } = await supabase
             .from("integrations")
@@ -197,7 +188,8 @@ serve(async (req) => {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (error) {
+  } catch (err: unknown) {
+    const error = err as Error;
     console.error("Integration hub error:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
@@ -284,20 +276,18 @@ function getAvailableProviders() {
 }
 
 async function connectIntegration(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   userId: string,
   config: IntegrationConfig
 ) {
-  // Check if already connected
   const { data: existing } = await supabase
     .from("integrations")
     .select("id")
     .eq("user_id", userId)
     .eq("provider", config.provider)
-    .single();
+    .maybeSingle();
 
   if (existing) {
-    // Update existing integration
     const { error } = await supabase
       .from("integrations")
       .update({
@@ -316,7 +306,6 @@ async function connectIntegration(
     return { success: true, action: "updated", integration_id: existing.id };
   }
 
-  // Create new integration
   const { data: integration, error } = await supabase
     .from("integrations")
     .insert({
@@ -338,11 +327,10 @@ async function connectIntegration(
 }
 
 async function syncIntegration(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   userId: string,
   provider: string
 ) {
-  // Get integration
   const { data: integration, error } = await supabase
     .from("integrations")
     .select("*")
@@ -354,7 +342,6 @@ async function syncIntegration(
     throw new Error("Integration not found");
   }
 
-  // Create sync log
   const { data: syncLog } = await supabase
     .from("integration_sync_logs")
     .insert({
@@ -366,10 +353,8 @@ async function syncIntegration(
     .single();
 
   try {
-    // Perform provider-specific sync
     const result = await performSync(provider, integration);
 
-    // Update sync log
     await supabase
       .from("integration_sync_logs")
       .update({
@@ -381,7 +366,6 @@ async function syncIntegration(
       })
       .eq("id", syncLog?.id);
 
-    // Update integration
     await supabase
       .from("integrations")
       .update({
@@ -391,8 +375,8 @@ async function syncIntegration(
       .eq("id", integration.id);
 
     return { success: true, ...result };
-  } catch (error) {
-    // Update sync log with error
+  } catch (err: unknown) {
+    const error = err as Error;
     await supabase
       .from("integration_sync_logs")
       .update({
@@ -402,7 +386,6 @@ async function syncIntegration(
       })
       .eq("id", syncLog?.id);
 
-    // Update integration
     await supabase
       .from("integrations")
       .update({
@@ -416,10 +399,8 @@ async function syncIntegration(
 
 async function performSync(
   provider: string,
-  integration: Record<string, unknown>
+  _integration: Record<string, unknown>
 ): Promise<{ processed: number; created: number; updated: number }> {
-  // Provider-specific sync logic would go here
-  // For now, return mock results
   switch (provider) {
     case "google":
       return { processed: 50, created: 10, updated: 5 };
@@ -433,14 +414,12 @@ async function performSync(
 }
 
 async function handleOAuthCallback(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   userId: string,
   provider: string,
-  code: string,
+  _code: string,
   state: string
 ): Promise<{ success: boolean; integration_id?: string }> {
-  // In a real implementation, exchange the code for tokens
-  // For now, create a mock integration
   const { data: integration, error } = await supabase
     .from("integrations")
     .upsert({

@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface AgentTask {
   agent_id?: string;
@@ -24,14 +25,14 @@ export interface Agent {
   display_name: string;
   description: string | null;
   module: string;
-  capabilities: string[];
-  config: Record<string, unknown> | null;
-  is_active: boolean;
-  is_system: boolean;
+  capabilities: Json;
+  config: Json | null;
+  is_active: boolean | null;
+  is_system: boolean | null;
   model: string | null;
   temperature: number | null;
   max_tokens: number | null;
-  triggers: Record<string, unknown> | null;
+  triggers: Json | null;
   avatar_url: string | null;
 }
 
@@ -40,15 +41,19 @@ export interface TaskRecord {
   agent_id: string | null;
   user_id: string;
   task_type: string;
-  input_data: Record<string, unknown>;
-  output_data: Record<string, unknown> | null;
-  status: string;
-  priority: number;
+  input_data: Json;
+  output_data: Json | null;
+  status: string | null;
+  priority: number | null;
   scheduled_at: string | null;
   started_at: string | null;
   completed_at: string | null;
   error_message: string | null;
-  ai_agents?: Agent;
+  ai_agents?: {
+    name: string;
+    display_name: string;
+    module: string;
+  } | null;
 }
 
 export const agentService = {
@@ -106,7 +111,7 @@ export const agentService = {
       .order("module", { ascending: true });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as Agent[];
   },
 
   /**
@@ -120,7 +125,7 @@ export const agentService = {
       .eq("is_active", true);
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as Agent[];
   },
 
   /**
@@ -139,7 +144,7 @@ export const agentService = {
 
     const { data, error } = await query;
     if (error) throw error;
-    return data || [];
+    return (data || []) as TaskRecord[];
   },
 
   /**
@@ -153,7 +158,7 @@ export const agentService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as TaskRecord | null;
   },
 
   /**
@@ -191,13 +196,17 @@ export const agentService = {
     description?: string,
     triggerConfig?: Record<string, unknown>
   ) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+
     const { data, error } = await supabase
       .from("agent_workflows")
       .insert({
         name,
         description,
-        steps,
-        trigger_config: triggerConfig,
+        steps: steps as unknown as Json,
+        trigger_config: triggerConfig as unknown as Json,
+        user_id: user.id,
       })
       .select()
       .single();
