@@ -59,6 +59,21 @@ export interface TaskRecord {
   } | null;
 }
 
+export interface WorkflowRecord {
+  id: string;
+  user_id: string;
+  name: string;
+  description: string | null;
+  steps: Json;
+  is_active: boolean | null;
+  run_count: number | null;
+  last_run_at: string | null;
+  trigger_config: Json | null;
+  organization_id: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
 export const agentService = {
   /**
    * Execute an agent task immediately
