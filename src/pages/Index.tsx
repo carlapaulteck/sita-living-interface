@@ -277,18 +277,23 @@ const Index = () => {
 
   const handleModuleClick = (module: string) => {
     switch (module) {
-      case "Wealth":
-      case "Business Growth":
-        navigate("/business-growth");
+      case "Business OS":
+        navigate("/business");
         break;
-      case "Life & Health":
-        navigate("/life-health");
+      case "Personal VA":
+        navigate("/assistant");
         break;
-      case "Mind & Growth":
-        navigate("/mind-growth");
+      case "Finance":
+        navigate("/finance");
         break;
-      case "Sovereignty":
-        navigate("/sovereignty");
+      case "Health & Fitness":
+        navigate("/health");
+        break;
+      case "Mindset":
+        navigate("/mindset");
+        break;
+      case "Community":
+        navigate("/academy");
         break;
     }
   };
@@ -445,35 +450,49 @@ const Index = () => {
                   </div>
                 </GlassCard>
 
-                {/* Module Tiles - Bottom Dock Style */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                {/* Module Tiles - 6 Canonical Modules */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
                   <ModuleTile 
-                    title="Wealth"
+                    title="Business OS"
                     icon={Coins}
                     delay={400}
                     variant="gold"
-                    onClick={() => handleModuleClick("Wealth")}
+                    onClick={() => handleModuleClick("Business OS")}
                   />
                   <ModuleTile 
-                    title="Life & Health"
-                    icon={Heart}
+                    title="Personal VA"
+                    icon={Cpu}
+                    delay={450}
+                    accentColor="cyan"
+                    onClick={() => handleModuleClick("Personal VA")}
+                  />
+                  <ModuleTile 
+                    title="Finance"
+                    icon={Wallet}
                     delay={500}
                     variant="gold"
-                    onClick={() => handleModuleClick("Life & Health")}
+                    onClick={() => handleModuleClick("Finance")}
                   />
                   <ModuleTile 
-                    title="Mind & Growth"
+                    title="Health"
+                    icon={Heart}
+                    delay={550}
+                    variant="purple"
+                    onClick={() => handleModuleClick("Health & Fitness")}
+                  />
+                  <ModuleTile 
+                    title="Mindset"
                     icon={Lightbulb}
                     delay={600}
                     variant="purple"
-                    onClick={() => handleModuleClick("Mind & Growth")}
+                    onClick={() => handleModuleClick("Mindset")}
                   />
                   <ModuleTile 
-                    title="Sovereignty"
+                    title="Community"
                     icon={Shield}
-                    delay={700}
+                    delay={650}
                     accentColor="cyan"
-                    onClick={() => handleModuleClick("Sovereignty")}
+                    onClick={() => handleModuleClick("Community")}
                   />
                 </div>
               </div>

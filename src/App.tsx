@@ -27,6 +27,9 @@ import Agents from "./pages/Agents";
 import Intelligence from "./pages/Intelligence";
 import BioOS from "./pages/BioOS";
 import Academy from "./pages/Academy";
+import PersonalAssistant from "./pages/PersonalAssistant";
+import HealthFitness from "./pages/HealthFitness";
+import Mindset from "./pages/Mindset";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { BottomDock } from "./components/BottomDock";
@@ -219,6 +222,31 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <Academy />
+            </ProtectedRoute>
+          }
+        />
+        {/* New Canonical Module Routes */}
+        <Route
+          path="/assistant"
+          element={
+            <ProtectedRoute>
+              <PersonalAssistant />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/health"
+          element={
+            <ProtectedRoute>
+              <HealthFitness />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mindset"
+          element={
+            <ProtectedRoute>
+              <Mindset />
             </ProtectedRoute>
           }
         />

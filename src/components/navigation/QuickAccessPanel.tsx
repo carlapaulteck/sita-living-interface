@@ -22,28 +22,29 @@ interface QuickLink {
   label: string;
   icon: typeof Wallet;
   path: string;
-  category: "wealth" | "life" | "mind" | "control";
+  category: "business" | "finance" | "health" | "mindset" | "community" | "assistant";
 }
 
 const QUICK_LINKS: QuickLink[] = [
-  { id: "finance", label: "Finance", icon: Wallet, path: "/finance", category: "wealth" },
-  { id: "portfolio", label: "Portfolio", icon: TrendingUp, path: "/business-growth", category: "wealth" },
-  { id: "family", label: "Family", icon: Users, path: "/family", category: "life" },
-  { id: "home", label: "Home", icon: Home, path: "/home", category: "life" },
-  { id: "health", label: "Healthcare", icon: Heart, path: "/healthcare", category: "life" },
-  { id: "wellness", label: "Wellness", icon: Activity, path: "/life-health", category: "life" },
-  { id: "focus", label: "Focus", icon: Brain, path: "/mind-growth", category: "mind" },
-  { id: "goals", label: "Goals", icon: Target, path: "/mind-growth", category: "mind" },
-  { id: "calendar", label: "Calendar", icon: Calendar, path: "/life-health", category: "control" },
-  { id: "agents", label: "AI Agents", icon: Bot, path: "/agents", category: "control" },
-  { id: "sovereignty", label: "Privacy", icon: Shield, path: "/sovereignty", category: "control" },
+  { id: "business", label: "Business OS", icon: TrendingUp, path: "/business", category: "business" },
+  { id: "assistant", label: "Personal VA", icon: Bot, path: "/assistant", category: "assistant" },
+  { id: "finance", label: "Finance", icon: Wallet, path: "/finance", category: "finance" },
+  { id: "health", label: "Health", icon: Heart, path: "/health", category: "health" },
+  { id: "mindset", label: "Mindset", icon: Brain, path: "/mindset", category: "mindset" },
+  { id: "community", label: "Community", icon: Users, path: "/academy", category: "community" },
+  { id: "family", label: "Family", icon: Home, path: "/family", category: "health" },
+  { id: "calendar", label: "Calendar", icon: Calendar, path: "/health", category: "health" },
+  { id: "goals", label: "Goals", icon: Target, path: "/mindset", category: "mindset" },
+  { id: "sovereignty", label: "Privacy", icon: Shield, path: "/sovereignty", category: "assistant" },
 ];
 
 const CATEGORY_COLORS = {
-  wealth: "from-primary/20 to-primary/5 border-primary/30 text-primary",
-  life: "from-rose-500/20 to-rose-500/5 border-rose-500/30 text-rose-400",
-  mind: "from-violet-500/20 to-violet-500/5 border-violet-500/30 text-violet-400",
-  control: "from-accent/20 to-accent/5 border-accent/30 text-accent",
+  business: "from-primary/20 to-primary/5 border-primary/30 text-primary",
+  finance: "from-emerald-500/20 to-emerald-500/5 border-emerald-500/30 text-emerald-400",
+  health: "from-rose-500/20 to-rose-500/5 border-rose-500/30 text-rose-400",
+  mindset: "from-violet-500/20 to-violet-500/5 border-violet-500/30 text-violet-400",
+  community: "from-blue-500/20 to-blue-500/5 border-blue-500/30 text-blue-400",
+  assistant: "from-accent/20 to-accent/5 border-accent/30 text-accent",
 };
 
 export function QuickAccessPanel() {
