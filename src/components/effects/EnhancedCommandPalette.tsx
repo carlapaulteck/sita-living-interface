@@ -16,8 +16,17 @@ import {
   Activity,
   Bot,
   Keyboard,
+  Plus,
+  Moon,
+  Sun,
+  RefreshCw,
+  LogOut,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from 'next-themes';
+import { useAuth } from '@/hooks/useAuth';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 interface CommandItem {
   id: string;
@@ -26,22 +35,58 @@ interface CommandItem {
   icon: React.ReactNode;
   action: () => void;
   keywords: string[];
-  category: 'navigation' | 'action' | 'search' | 'recent';
+  category: 'navigation' | 'action' | 'quick' | 'system';
 }
 
 interface EnhancedCommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenTaskModal?: () => void;
+  onOpenActivityLogger?: () => void;
 }
 
-export function EnhancedCommandPalette({ isOpen, onClose }: EnhancedCommandPaletteProps) {
+export function EnhancedCommandPalette({ 
+  isOpen, 
+  onClose,
+  onOpenTaskModal,
+  onOpenActivityLogger,
+}: EnhancedCommandPaletteProps) {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
+  const { signOut } = useAuth();
+  const queryClient = useQueryClient();
 
   // Define all available commands
   const commands: CommandItem[] = useMemo(() => [
+    // Quick Actions (most used)
+    { 
+      id: 'new-task', 
+      title: 'Create New Task', 
+      description: 'Add a new task to your list',
+      icon: <Plus className="w-4 h-4" />, 
+      action: () => {
+        onOpenTaskModal?.();
+        onClose();
+      }, 
+      keywords: ['new', 'task', 'create', 'add', 'todo'], 
+      category: 'quick' 
+    },
+    { 
+      id: 'log-activity', 
+      title: 'Log Activity', 
+      description: 'Track your activities',
+      icon: <Activity className="w-4 h-4" />, 
+      action: () => {
+        onOpenActivityLogger?.();
+        onClose();
+      }, 
+      keywords: ['log', 'activity', 'track', 'workout', 'exercise'], 
+      category: 'quick' 
+    },
+    
     // Navigation
     { id: 'home', title: 'Go to Dashboard', icon: <Home className="w-4 h-4" />, action: () => navigate('/'), keywords: ['home', 'dashboard', 'main'], category: 'navigation' },
     { id: 'business', title: 'Business OS', description: 'Manage your business operations', icon: <Briefcase className="w-4 h-4" />, action: () => navigate('/business'), keywords: ['business', 'work', 'company'], category: 'navigation' },
@@ -52,10 +97,44 @@ export function EnhancedCommandPalette({ isOpen, onClose }: EnhancedCommandPalet
     { id: 'academy', title: 'Community & Education', description: 'Courses & community', icon: <Users className="w-4 h-4" />, action: () => navigate('/academy'), keywords: ['academy', 'learn', 'courses', 'community'], category: 'navigation' },
     { id: 'settings', title: 'Settings', icon: <Settings className="w-4 h-4" />, action: () => navigate('/settings'), keywords: ['settings', 'preferences', 'config'], category: 'navigation' },
     
-    // Actions
-    { id: 'new-task', title: 'Create New Task', icon: <Sparkles className="w-4 h-4" />, action: () => { /* TODO */ }, keywords: ['new', 'task', 'create', 'add'], category: 'action' },
-    { id: 'log-activity', title: 'Log Activity', icon: <Activity className="w-4 h-4" />, action: () => { /* TODO */ }, keywords: ['log', 'activity', 'track'], category: 'action' },
-  ], [navigate]);
+    // System Actions
+    { 
+      id: 'toggle-theme', 
+      title: theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+      description: 'Toggle between light and dark theme',
+      icon: theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />, 
+      action: () => {
+        setTheme(theme === 'dark' ? 'light' : 'dark');
+        toast.success(`Switched to ${theme === 'dark' ? 'light' : 'dark'} mode`);
+      }, 
+      keywords: ['theme', 'dark', 'light', 'mode', 'toggle'], 
+      category: 'system' 
+    },
+    { 
+      id: 'refresh-data', 
+      title: 'Refresh All Data', 
+      description: 'Reload all cached data',
+      icon: <RefreshCw className="w-4 h-4" />, 
+      action: () => {
+        queryClient.invalidateQueries();
+        toast.success('Data refreshed');
+      }, 
+      keywords: ['refresh', 'reload', 'sync', 'update'], 
+      category: 'system' 
+    },
+    { 
+      id: 'sign-out', 
+      title: 'Sign Out', 
+      description: 'Log out of your account',
+      icon: <LogOut className="w-4 h-4" />, 
+      action: async () => {
+        await signOut();
+        navigate('/auth');
+      }, 
+      keywords: ['sign out', 'logout', 'exit'], 
+      category: 'system' 
+    },
+  ], [navigate, theme, setTheme, signOut, queryClient, onOpenTaskModal, onOpenActivityLogger, onClose]);
 
   // Fuzzy search with highlighting
   const fuzzySearch = useCallback((items: CommandItem[], searchQuery: string) => {
