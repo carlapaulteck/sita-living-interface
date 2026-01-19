@@ -16,19 +16,17 @@ interface DockItem {
 }
 
 const PRIMARY_DOCK_ITEMS: DockItem[] = [
-  { id: "wealth", path: "/business", icon: Globe, label: "Wealth", sublabel: "Portfolio & Growth" },
-  { id: "life", path: "/life", icon: Heart, label: "Life & Health", sublabel: "Wellness & Balance" },
-  { id: "mind", path: "/mind", icon: Flower2, label: "Mind & Growth", sublabel: "Focus & Learning" },
+  { id: "business", path: "/business", icon: Globe, label: "Business OS", sublabel: "Your Empire" },
+  { id: "assistant", path: "/assistant", icon: Bot, label: "Personal VA", sublabel: "AI Assistant" },
+  { id: "finance", path: "/finance", icon: Wallet, label: "Finance", sublabel: "Wealth Engine" },
   { id: "more", path: "", icon: MoreHorizontal, label: "More", sublabel: "All Modules" },
 ];
 
 const EXPANDED_ITEMS: DockItem[] = [
-  { id: "bioos", path: "/bio-os", icon: Heart, label: "BIO-OS", sublabel: "Health & Fitness" },
-  { id: "family", path: "/family", icon: Users, label: "Family", sublabel: "Household" },
-  { id: "home", path: "/home", icon: Home, label: "Home", sublabel: "Property" },
-  { id: "finance", path: "/finance", icon: Wallet, label: "Finance", sublabel: "Budget" },
-  { id: "healthcare", path: "/healthcare", icon: Stethoscope, label: "Healthcare", sublabel: "Medical" },
-  { id: "agents", path: "/agents", icon: Bot, label: "Agents", sublabel: "AI Control" },
+  { id: "health", path: "/health", icon: Heart, label: "Health & Fitness", sublabel: "BIO-OS" },
+  { id: "mindset", path: "/mindset", icon: Flower2, label: "Mindset", sublabel: "Mental Growth" },
+  { id: "community", path: "/academy", icon: Users, label: "Community", sublabel: "Education" },
+  { id: "family", path: "/family", icon: Home, label: "Family", sublabel: "Household" },
   { id: "intelligence", path: "/intelligence", icon: Brain, label: "Intel", sublabel: "Insights" },
   { id: "sovereignty", path: "/sovereignty", icon: ArrowUp, label: "Sovereignty", sublabel: "Autonomy" },
 ];
@@ -53,7 +51,16 @@ export function BottomDock() {
 
   const isActive = (path: string) => {
     if (path === "/business") {
-      return location.pathname === "/business" || location.pathname === "/";
+      return location.pathname === "/business" || location.pathname === "/" || location.pathname === "/business-growth";
+    }
+    if (path === "/health") {
+      return location.pathname === "/health" || location.pathname === "/bio-os" || location.pathname === "/life" || location.pathname === "/healthcare";
+    }
+    if (path === "/mindset") {
+      return location.pathname === "/mindset" || location.pathname === "/mind" || location.pathname === "/mind-growth";
+    }
+    if (path === "/assistant") {
+      return location.pathname === "/assistant" || location.pathname === "/agents" || location.pathname === "/automations";
     }
     return location.pathname === path;
   };
