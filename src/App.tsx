@@ -13,7 +13,7 @@ import { AdaptationIndicator } from "@/components/TrustSafeguards";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { BottomDock } from "./components/BottomDock";
-import { CursorTrail, EnhancedCommandPalette, useCommandPalette } from "./components/effects";
+import { CursorTrail, EnhancedCommandPalette, useCommandPalette, FloatingParticles } from "./components/effects";
 import { useTimeOfDayTheme } from "./hooks/useTimeOfDayTheme";
 import { PageSkeleton } from "./components/ui/page-skeleton";
 import { lazy, Suspense } from "react";
@@ -91,6 +91,9 @@ function AppRoutes() {
       
       {/* Cursor Trail Effect */}
       {!isAuthPage && <CursorTrail />}
+      
+      {/* Ambient Floating Particles */}
+      {!isAuthPage && !isAdminPage && <FloatingParticles count={25} />}
       
       <Routes>
         <Route path="/auth" element={<Auth />} />

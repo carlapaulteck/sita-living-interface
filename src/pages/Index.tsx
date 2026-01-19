@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Header } from "@/components/Header";
 import { GlassCard } from "@/components/GlassCard";
@@ -37,6 +37,15 @@ import { DashboardTour } from "@/components/DashboardTour";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { SupportTicketForm } from "@/components/SupportTicketForm";
 import { ProactiveAIContainer } from "@/components/ProactiveAIContainer";
+import { 
+  RadialMenu, 
+  PictureInPictureAvatar, 
+  FocusProvider, 
+  Focusable,
+  BreathingProvider,
+  BreathingElement,
+  SmartTooltip,
+} from "@/components/effects";
 import { useNavigate } from "react-router-dom";
 import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
 import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
@@ -303,16 +312,22 @@ const Index = () => {
   }
 
   return (
-    <div 
-      className="min-h-screen relative overflow-hidden pb-28 md:pb-8"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      style={{ background: 'linear-gradient(180deg, #050505 0%, #0a0a1a 50%, #050505 100%)' }}
-    >
-      {/* Animated glow orbs - Luxury version */}
-      <div className="fixed top-1/4 left-1/3 w-[500px] h-[500px] bg-[#9370DB]/8 rounded-full blur-[120px] animate-pulse pointer-events-none" />
-      <div className="fixed bottom-1/3 right-1/4 w-[400px] h-[400px] bg-[#FFD700]/6 rounded-full blur-[100px] animate-pulse pointer-events-none" style={{ animationDelay: "1s" }} />
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#00FFFF]/3 rounded-full blur-[150px] pointer-events-none" />
+    <FocusProvider>
+      <BreathingProvider>
+        <div 
+          className="min-h-screen relative overflow-hidden pb-28 md:pb-8"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          style={{ background: 'linear-gradient(180deg, #050505 0%, #0a0a1a 50%, #050505 100%)' }}
+        >
+          {/* Animated glow orbs - Luxury version */}
+          <BreathingElement scaleRange={[1, 1.05]}>
+            <div className="fixed top-1/4 left-1/3 w-[500px] h-[500px] bg-[#9370DB]/8 rounded-full blur-[120px] pointer-events-none" />
+          </BreathingElement>
+          <BreathingElement scaleRange={[1, 1.03]}>
+            <div className="fixed bottom-1/3 right-1/4 w-[400px] h-[400px] bg-[#FFD700]/6 rounded-full blur-[100px] pointer-events-none" />
+          </BreathingElement>
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#00FFFF]/3 rounded-full blur-[150px] pointer-events-none" />
       
       {/* Content */}
       <div className="relative z-10 min-h-screen px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
@@ -728,7 +743,16 @@ const Index = () => {
         isAwake={isWokenByVoice}
         onToggle={() => wakeWordListening ? stopWakeWord() : startWakeWord()}
       />
+      
+      {/* Picture-in-Picture Avatar */}
+      <PictureInPictureAvatar
+        onOpenChat={() => setShowConsole(true)}
+        isSpeaking={avatarState.state === 'speaking'}
+        isListening={avatarState.state === 'listening'}
+      />
     </div>
+      </BreathingProvider>
+    </FocusProvider>
   );
 };
 
