@@ -206,3 +206,98 @@ export function useBatchedUpdates<T>(initialValue: T, batchWindow = 16) {
 
   return [value, batchUpdate] as const;
 }
+
+// Request deduplication
+const inflightRequests = new Map<string, Promise<any>>();
+
+export function createRequestBatcher<TInput, TOutput>(
+  batchFn: (inputs: TInput[]) => Promise<Map<TInput, TOutput>>,
+  options: { maxBatchSize?: number; delayMs?: number } = {}
+) {
+  const { maxBatchSize = 25, delayMs = 10 } = options;
+  let batch: { input: TInput; resolve: (v: TOutput | undefined) => void; reject: (e: any) => void }[] = [];
+  let timeoutId: NodeJS.Timeout | null = null;
+
+  const processBatch = async () => {
+    const currentBatch = batch.slice(0, maxBatchSize);
+    batch = batch.slice(maxBatchSize);
+
+    if (currentBatch.length === 0) return;
+
+    try {
+      const inputs = currentBatch.map((b) => b.input);
+      const results = await batchFn(inputs);
+      currentBatch.forEach(({ input, resolve }) => {
+        resolve(results.get(input));
+      });
+    } catch (error) {
+      currentBatch.forEach(({ reject }) => reject(error));
+    }
+
+    if (batch.length > 0) {
+      timeoutId = setTimeout(processBatch, delayMs);
+    } else {
+      timeoutId = null;
+    }
+  };
+
+  return (input: TInput): Promise<TOutput | undefined> => {
+    return new Promise((resolve, reject) => {
+      batch.push({ input, resolve, reject });
+
+      if (!timeoutId) {
+        timeoutId = setTimeout(processBatch, delayMs);
+      }
+    });
+  };
+}
+
+export function deduplicateRequest<T>(
+  key: string,
+  request: () => Promise<T>
+): Promise<T> {
+  const existing = inflightRequests.get(key);
+  if (existing) return existing;
+
+  const promise = request().finally(() => {
+    inflightRequests.delete(key);
+  });
+
+  inflightRequests.set(key, promise);
+  return promise;
+}
+
+// Performance monitoring hook
+export function usePerformanceMonitor(componentName: string) {
+  const renderCountRef = useRef(0);
+  const lastRenderTimeRef = useRef(performance.now());
+
+  useEffect(() => {
+    renderCountRef.current++;
+    const now = performance.now();
+    const timeSinceLastRender = now - lastRenderTimeRef.current;
+    lastRenderTimeRef.current = now;
+
+    if (process.env.NODE_ENV !== 'production' && renderCountRef.current > 10) {
+      console.warn(`⚠️ ${componentName} has rendered ${renderCountRef.current} times. Last render: ${timeSinceLastRender.toFixed(2)}ms ago`);
+    }
+  });
+
+  return {
+    renderCount: renderCountRef.current,
+  };
+}
+
+// Measure component mount time
+export function useMountTimer(componentName: string) {
+  useEffect(() => {
+    const startTime = performance.now();
+    
+    return () => {
+      const mountDuration = performance.now() - startTime;
+      if (process.env.NODE_ENV !== 'production' && mountDuration > 100) {
+        console.log(`📊 ${componentName} was mounted for ${mountDuration.toFixed(2)}ms`);
+      }
+    };
+  }, [componentName]);
+}
