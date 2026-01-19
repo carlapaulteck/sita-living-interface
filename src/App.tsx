@@ -33,6 +33,8 @@ import Mindset from "./pages/Mindset";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { BottomDock } from "./components/BottomDock";
+import { CursorTrail, AmbientGlow, EnhancedCommandPalette, useCommandPalette } from "./components/effects";
+import { useTimeOfDayTheme } from "./hooks/useTimeOfDayTheme";
 
 // Admin imports
 import AdminLayout from "./components/admin/AdminLayout";
@@ -54,9 +56,19 @@ function AppRoutes() {
   const location = useLocation();
   const isAuthPage = location.pathname === "/auth";
   const isAdminPage = location.pathname.startsWith("/admin");
+  const commandPalette = useCommandPalette();
+  
+  // Initialize time-of-day theming
+  useTimeOfDayTheme();
 
   return (
     <>
+      {/* Enhanced Command Palette */}
+      <EnhancedCommandPalette isOpen={commandPalette.isOpen} onClose={commandPalette.close} />
+      
+      {/* Cursor Trail Effect */}
+      {!isAuthPage && <CursorTrail />}
+      
       <Routes>
         <Route path="/auth" element={<Auth />} />
         
