@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, forwardRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Header } from "@/components/Header";
 import { GlassCard } from "@/components/GlassCard";
@@ -76,8 +76,8 @@ import {
 } from "lucide-react";
 
 // Decorative graphics for stat cards
-const GoldStarburst = () => (
-  <svg viewBox="0 0 64 64" className="w-full h-full">
+const GoldStarburst = forwardRef<SVGSVGElement>((_, ref) => (
+  <svg ref={ref} viewBox="0 0 64 64" className="w-full h-full">
     <defs>
       <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#FFD700" />
@@ -92,10 +92,11 @@ const GoldStarburst = () => (
       <path d="M56 32 L36 34 L32 32 L36 30 Z" />
     </g>
   </svg>
-);
+));
+GoldStarburst.displayName = 'GoldStarburst';
 
-const CyanOrb = () => (
-  <svg viewBox="0 0 64 64" className="w-full h-full">
+const CyanOrb = forwardRef<SVGSVGElement>((_, ref) => (
+  <svg ref={ref} viewBox="0 0 64 64" className="w-full h-full">
     <defs>
       <radialGradient id="cyanGrad" cx="30%" cy="30%">
         <stop offset="0%" stopColor="#00FFFF" />
@@ -105,7 +106,8 @@ const CyanOrb = () => (
     <circle cx="32" cy="32" r="20" fill="url(#cyanGrad)" opacity="0.7" />
     <circle cx="32" cy="32" r="24" stroke="#00FFFF" strokeWidth="1" fill="none" opacity="0.3" />
   </svg>
-);
+));
+CyanOrb.displayName = 'CyanOrb';
 
 const Index = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -329,8 +331,8 @@ const Index = () => {
           </BreathingElement>
           <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#00FFFF]/3 rounded-full blur-[150px] pointer-events-none" />
       
-      {/* Content */}
-      <div className="relative z-10 min-h-screen px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          {/* Content */}
+          <div className="relative z-10 min-h-screen px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <Header />
@@ -750,7 +752,7 @@ const Index = () => {
         isSpeaking={avatarState.state === 'speaking'}
         isListening={avatarState.state === 'listening'}
       />
-    </div>
+        </div>
       </BreathingProvider>
     </FocusProvider>
   );
