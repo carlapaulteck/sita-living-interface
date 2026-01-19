@@ -49,6 +49,9 @@ export interface TaskRecord {
   started_at: string | null;
   completed_at: string | null;
   error_message: string | null;
+  created_at: string | null;
+  retry_count: number | null;
+  max_retries: number | null;
   ai_agents?: {
     name: string;
     display_name: string;
