@@ -263,6 +263,283 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_tasks: {
+        Row: {
+          agent_id: string | null
+          completed_at: string | null
+          context: Json | null
+          created_at: string | null
+          error_message: string | null
+          expires_at: string | null
+          id: string
+          input_data: Json
+          max_retries: number | null
+          metadata: Json | null
+          organization_id: string | null
+          output_data: Json | null
+          parent_task_id: string | null
+          priority: number | null
+          retry_count: number | null
+          scheduled_at: string | null
+          started_at: string | null
+          status: string | null
+          task_type: string
+          user_id: string
+          workflow_id: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          completed_at?: string | null
+          context?: Json | null
+          created_at?: string | null
+          error_message?: string | null
+          expires_at?: string | null
+          id?: string
+          input_data: Json
+          max_retries?: number | null
+          metadata?: Json | null
+          organization_id?: string | null
+          output_data?: Json | null
+          parent_task_id?: string | null
+          priority?: number | null
+          retry_count?: number | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: string | null
+          task_type: string
+          user_id: string
+          workflow_id?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          completed_at?: string | null
+          context?: Json | null
+          created_at?: string | null
+          error_message?: string | null
+          expires_at?: string | null
+          id?: string
+          input_data?: Json
+          max_retries?: number | null
+          metadata?: Json | null
+          organization_id?: string | null
+          output_data?: Json | null
+          parent_task_id?: string | null
+          priority?: number | null
+          retry_count?: number | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: string | null
+          task_type?: string
+          user_id?: string
+          workflow_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_tasks_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_tasks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_tasks_parent_task_id_fkey"
+            columns: ["parent_task_id"]
+            isOneToOne: false
+            referencedRelation: "agent_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_workflow_steps: {
+        Row: {
+          agent_id: string | null
+          completed_at: string | null
+          created_at: string | null
+          depends_on: string[] | null
+          error_message: string | null
+          id: string
+          input_mapping: Json | null
+          output_mapping: Json | null
+          started_at: string | null
+          status: string | null
+          step_number: number
+          task_id: string | null
+          workflow_id: string
+          workflow_run_id: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          depends_on?: string[] | null
+          error_message?: string | null
+          id?: string
+          input_mapping?: Json | null
+          output_mapping?: Json | null
+          started_at?: string | null
+          status?: string | null
+          step_number: number
+          task_id?: string | null
+          workflow_id: string
+          workflow_run_id?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          depends_on?: string[] | null
+          error_message?: string | null
+          id?: string
+          input_mapping?: Json | null
+          output_mapping?: Json | null
+          started_at?: string | null
+          status?: string | null
+          step_number?: number
+          task_id?: string | null
+          workflow_id?: string
+          workflow_run_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_workflow_steps_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_workflow_steps_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "agent_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_workflow_steps_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "agent_workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_workflows: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          last_run_at: string | null
+          name: string
+          organization_id: string | null
+          run_count: number | null
+          steps: Json
+          trigger_config: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_run_at?: string | null
+          name: string
+          organization_id?: string | null
+          run_count?: number | null
+          steps?: Json
+          trigger_config?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_run_at?: string | null
+          name?: string
+          organization_id?: string | null
+          run_count?: number | null
+          steps?: Json
+          trigger_config?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_workflows_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_agents: {
+        Row: {
+          avatar_url: string | null
+          capabilities: Json
+          config: Json | null
+          created_at: string | null
+          description: string | null
+          display_name: string
+          id: string
+          is_active: boolean | null
+          is_system: boolean | null
+          max_tokens: number | null
+          model: string | null
+          module: string
+          name: string
+          temperature: number | null
+          triggers: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          capabilities?: Json
+          config?: Json | null
+          created_at?: string | null
+          description?: string | null
+          display_name: string
+          id?: string
+          is_active?: boolean | null
+          is_system?: boolean | null
+          max_tokens?: number | null
+          model?: string | null
+          module: string
+          name: string
+          temperature?: number | null
+          triggers?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          capabilities?: Json
+          config?: Json | null
+          created_at?: string | null
+          description?: string | null
+          display_name?: string
+          id?: string
+          is_active?: boolean | null
+          is_system?: boolean | null
+          max_tokens?: number | null
+          model?: string | null
+          module?: string
+          name?: string
+          temperature?: number | null
+          triggers?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -1514,6 +1791,118 @@ export type Database = {
         }
         Relationships: []
       }
+      integration_sync_logs: {
+        Row: {
+          completed_at: string | null
+          error_message: string | null
+          id: string
+          integration_id: string
+          metadata: Json | null
+          records_created: number | null
+          records_failed: number | null
+          records_processed: number | null
+          records_updated: number | null
+          started_at: string | null
+          status: string | null
+          sync_type: string
+        }
+        Insert: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          integration_id: string
+          metadata?: Json | null
+          records_created?: number | null
+          records_failed?: number | null
+          records_processed?: number | null
+          records_updated?: number | null
+          started_at?: string | null
+          status?: string | null
+          sync_type: string
+        }
+        Update: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          integration_id?: string
+          metadata?: Json | null
+          records_created?: number | null
+          records_failed?: number | null
+          records_processed?: number | null
+          records_updated?: number | null
+          started_at?: string | null
+          status?: string | null
+          sync_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_sync_logs_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integrations: {
+        Row: {
+          config: Json | null
+          created_at: string | null
+          credentials_encrypted: string | null
+          expires_at: string | null
+          id: string
+          last_sync_at: string | null
+          name: string
+          organization_id: string | null
+          provider: string
+          scopes: string[] | null
+          status: string | null
+          sync_error: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string | null
+          credentials_encrypted?: string | null
+          expires_at?: string | null
+          id?: string
+          last_sync_at?: string | null
+          name: string
+          organization_id?: string | null
+          provider: string
+          scopes?: string[] | null
+          status?: string | null
+          sync_error?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string | null
+          credentials_encrypted?: string | null
+          expires_at?: string | null
+          id?: string
+          last_sync_at?: string | null
+          name?: string
+          organization_id?: string | null
+          provider?: string
+          scopes?: string[] | null
+          status?: string | null
+          sync_error?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integrations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meal_plans: {
         Row: {
           allergies: string[] | null
@@ -1607,6 +1996,60 @@ export type Database = {
         }
         Relationships: []
       }
+      module_manifests: {
+        Row: {
+          capabilities: Json
+          config_schema: Json | null
+          created_at: string | null
+          dependencies: Json
+          description: string | null
+          display_name: string
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          is_core: boolean | null
+          module_name: string
+          routes: Json
+          tables: Json
+          updated_at: string | null
+          version: string
+        }
+        Insert: {
+          capabilities?: Json
+          config_schema?: Json | null
+          created_at?: string | null
+          dependencies?: Json
+          description?: string | null
+          display_name: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_core?: boolean | null
+          module_name: string
+          routes?: Json
+          tables?: Json
+          updated_at?: string | null
+          version: string
+        }
+        Update: {
+          capabilities?: Json
+          config_schema?: Json | null
+          created_at?: string | null
+          dependencies?: Json
+          description?: string | null
+          display_name?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_core?: boolean | null
+          module_name?: string
+          routes?: Json
+          tables?: Json
+          updated_at?: string | null
+          version?: string
+        }
+        Relationships: []
+      }
       notification_batches: {
         Row: {
           batch_type: string
@@ -1691,6 +2134,89 @@ export type Database = {
           title?: string
           type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      organization_members: {
+        Row: {
+          created_at: string | null
+          id: string
+          invited_by: string | null
+          joined_at: string | null
+          organization_id: string
+          permissions: Json | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          invited_by?: string | null
+          joined_at?: string | null
+          organization_id: string
+          permissions?: Json | null
+          role?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          invited_by?: string | null
+          joined_at?: string | null
+          organization_id?: string
+          permissions?: Json | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          max_members: number | null
+          name: string
+          owner_id: string
+          settings: Json | null
+          slug: string
+          subscription_tier: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          max_members?: number | null
+          name: string
+          owner_id: string
+          settings?: Json | null
+          slug: string
+          subscription_tier?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          max_members?: number | null
+          name?: string
+          owner_id?: string
+          settings?: Json | null
+          slug?: string
+          subscription_tier?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -1886,6 +2412,33 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          created_at: string | null
+          endpoint: string
+          id: string
+          request_count: number | null
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          created_at?: string | null
+          endpoint: string
+          id?: string
+          request_count?: number | null
+          user_id: string
+          window_start: string
+        }
+        Update: {
+          created_at?: string | null
+          endpoint?: string
+          id?: string
+          request_count?: number | null
+          user_id?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       realtime_metrics: {
         Row: {
           created_at: string | null
@@ -1972,6 +2525,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      roles: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_system: boolean | null
+          name: string
+          organization_id: string | null
+          permissions: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean | null
+          name: string
+          organization_id?: string | null
+          permissions?: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean | null
+          name?: string
+          organization_id?: string | null
+          permissions?: Json
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saving_rules: {
         Row: {
@@ -2238,6 +2832,30 @@ export type Database = {
         }
         Relationships: []
       }
+      system_metrics: {
+        Row: {
+          dimensions: Json | null
+          id: string
+          metric_name: string
+          metric_value: number
+          recorded_at: string | null
+        }
+        Insert: {
+          dimensions?: Json | null
+          id?: string
+          metric_name: string
+          metric_value: number
+          recorded_at?: string | null
+        }
+        Update: {
+          dimensions?: Json | null
+          id?: string
+          metric_name?: string
+          metric_value?: number
+          recorded_at?: string | null
+        }
+        Relationships: []
+      }
       user_agents: {
         Row: {
           agent_name: string
@@ -2487,6 +3105,115 @@ export type Database = {
         }
         Relationships: []
       }
+      webhook_logs: {
+        Row: {
+          created_at: string | null
+          duration_ms: number | null
+          error_message: string | null
+          event_type: string
+          id: string
+          payload: Json
+          response_body: string | null
+          response_code: number | null
+          retry_count: number | null
+          status: string | null
+          webhook_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          duration_ms?: number | null
+          error_message?: string | null
+          event_type: string
+          id?: string
+          payload: Json
+          response_body?: string | null
+          response_code?: number | null
+          retry_count?: number | null
+          status?: string | null
+          webhook_id: string
+        }
+        Update: {
+          created_at?: string | null
+          duration_ms?: number | null
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          payload?: Json
+          response_body?: string | null
+          response_code?: number | null
+          retry_count?: number | null
+          status?: string | null
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_logs_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhooks: {
+        Row: {
+          created_at: string | null
+          events: string[]
+          failure_count: number | null
+          headers: Json | null
+          id: string
+          is_active: boolean | null
+          last_response_code: number | null
+          last_triggered_at: string | null
+          name: string
+          organization_id: string | null
+          secret: string
+          updated_at: string | null
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          events: string[]
+          failure_count?: number | null
+          headers?: Json | null
+          id?: string
+          is_active?: boolean | null
+          last_response_code?: number | null
+          last_triggered_at?: string | null
+          name: string
+          organization_id?: string | null
+          secret: string
+          updated_at?: string | null
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          events?: string[]
+          failure_count?: number | null
+          headers?: Json | null
+          id?: string
+          is_active?: boolean | null
+          last_response_code?: number | null
+          last_triggered_at?: string | null
+          name?: string
+          organization_id?: string | null
+          secret?: string
+          updated_at?: string | null
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhooks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workout_logs: {
         Row: {
           calories_burned: number | null
@@ -2543,6 +3270,18 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_org_admin: {
+        Args: { check_user_id: string; org_id: string }
+        Returns: boolean
+      }
+      is_org_member: {
+        Args: { check_user_id: string; org_id: string }
+        Returns: boolean
+      }
+      is_org_owner: {
+        Args: { check_user_id: string; org_id: string }
         Returns: boolean
       }
     }
