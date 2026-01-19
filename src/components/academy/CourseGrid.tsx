@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Filter, BookOpen, Grid3X3, List } from "lucide-react";
+import { Search, BookOpen, Grid3X3, List } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +29,7 @@ export const CourseGrid = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedCourse, setSelectedCourse] = useState<AcademyCourse | null>(null);
   
-  const { courses, courseProgress, memberPoints, getCourseProgress } = useAcademy();
+  const { courses, getCourseProgress, memberPoints } = useAcademy();
   const currentLevel = memberPoints?.current_level || 1;
 
   // Filter courses
@@ -54,10 +54,7 @@ export const CourseGrid = () => {
   });
 
   const getProgress = (courseId: string) => {
-    const progress = getCourseProgress(courseId);
-    const course = courses.find(c => c.id === courseId);
-    if (!progress || !course?.lessons_count) return 0;
-    return (progress.length / course.lessons_count) * 100;
+    return getCourseProgress(courseId);
   };
 
   if (selectedCourse) {

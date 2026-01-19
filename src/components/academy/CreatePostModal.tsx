@@ -14,22 +14,22 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { 
   Image, 
-  Video, 
-  BarChart3, 
   X, 
   Plus,
   Pin,
-  Sparkles
+  Sparkles,
+  BarChart3
 } from "lucide-react";
 import { useAcademy } from "@/hooks/useAcademy";
 import { cn } from "@/lib/utils";
+import type { PostCategory } from "@/types/academy";
 
 interface CreatePostModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-const categories = [
+const categories: { id: PostCategory; label: string; color: string }[] = [
   { id: "general", label: "General", color: "bg-muted" },
   { id: "wins", label: "Wins 🎉", color: "bg-primary/20 border-primary/30" },
   { id: "questions", label: "Questions", color: "bg-secondary/20 border-secondary/30" },
@@ -39,8 +39,7 @@ const categories = [
 export const CreatePostModal = ({ open, onOpenChange }: CreatePostModalProps) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState("general");
-  const [isPinned, setIsPinned] = useState(false);
+  const [category, setCategory] = useState<PostCategory>("general");
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const [pollOptions, setPollOptions] = useState<string[]>([]);
   const [showPoll, setShowPoll] = useState(false);
@@ -52,22 +51,22 @@ export const CreatePostModal = ({ open, onOpenChange }: CreatePostModalProps) =>
   const handleSubmit = async () => {
     if (!content.trim()) return;
 
+    const pollData = showPoll && pollOptions.filter(o => o.trim()).length >= 2
+      ? pollOptions.filter(o => o.trim()).map((text, i) => ({ id: `option-${i}`, text }))
+      : undefined;
+
     await createPost.mutateAsync({
       title: title || undefined,
       content,
       category,
-      is_pinned: isAdmin ? isPinned : false,
       media_urls: mediaUrls.length > 0 ? mediaUrls : undefined,
-      poll_options: pollOptions.length >= 2 
-        ? pollOptions.map(opt => ({ text: opt, votes: 0 }))
-        : undefined,
+      poll_options: pollData,
     });
 
     // Reset form
     setTitle("");
     setContent("");
     setCategory("general");
-    setIsPinned(false);
     setMediaUrls([]);
     setPollOptions([]);
     setShowPoll(false);
@@ -260,17 +259,6 @@ export const CreatePostModal = ({ open, onOpenChange }: CreatePostModalProps) =>
               )}
             </AnimatePresence>
           </div>
-
-          {/* Admin: Pin Post */}
-          {isAdmin && (
-            <div className="flex items-center justify-between p-4 rounded-xl bg-primary/10 border border-primary/20">
-              <div className="flex items-center gap-2">
-                <Pin className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">Pin this post</span>
-              </div>
-              <Switch checked={isPinned} onCheckedChange={setIsPinned} />
-            </div>
-          )}
 
           {/* Submit */}
           <div className="flex gap-3 pt-4">

@@ -1,19 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { 
-  Search, 
-  Users, 
-  MessageCircle, 
-  Star,
-  Trophy,
-  MapPin,
-  Globe,
-  Filter
-} from "lucide-react";
+import { Search, Users, Star, Trophy, MapPin, Globe } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/GlassCard";
 import { useAcademy } from "@/hooks/useAcademy";
 import { cn } from "@/lib/utils";
@@ -30,11 +20,8 @@ const levelColors: Record<number, string> = {
 export const MemberDirectory = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
-  const { profiles, getLeaderboard } = useAcademy();
-  
-  const leaderboard = getLeaderboard();
+  const { profiles, leaderboard, membersLoading } = useAcademy();
 
-  // Combine profiles with points data
   const membersWithPoints = profiles.map(profile => {
     const points = leaderboard.find(l => l.user_id === profile.user_id);
     return {
@@ -45,7 +32,6 @@ export const MemberDirectory = () => {
     };
   });
 
-  // Filter members
   const filteredMembers = membersWithPoints
     .filter(member => {
       const matchesSearch = 
@@ -66,30 +52,24 @@ export const MemberDirectory = () => {
     { level: 6, label: "Master" },
   ];
 
+  if (membersLoading) {
+    return <div className="text-center py-8 text-muted-foreground">Loading members...</div>;
+  }
+
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Members</h2>
-          <p className="text-sm text-muted-foreground">
-            {profiles.length} community members
-          </p>
+          <p className="text-sm text-muted-foreground">{profiles.length} community members</p>
         </div>
       </div>
 
-      {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-        <Input
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search members..."
-          className="pl-10 bg-card/50 border-border/50"
-        />
+        <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search members..." className="pl-10 bg-card/50 border-border/50" />
       </div>
 
-      {/* Level Filters */}
       <div className="flex gap-2 overflow-x-auto pb-2">
         {levelFilters.map((filter) => (
           <motion.button
@@ -99,9 +79,7 @@ export const MemberDirectory = () => {
             onClick={() => setSelectedLevel(filter.level)}
             className={cn(
               "px-4 py-2 rounded-xl whitespace-nowrap transition-all text-sm",
-              selectedLevel === filter.level
-                ? "bg-primary/20 text-primary border border-primary/30"
-                : "bg-card/50 text-muted-foreground border border-border/50 hover:text-foreground"
+              selectedLevel === filter.level ? "bg-primary/20 text-primary border border-primary/30" : "bg-card/50 text-muted-foreground border border-border/50 hover:text-foreground"
             )}
           >
             {filter.label}
@@ -109,16 +87,10 @@ export const MemberDirectory = () => {
         ))}
       </div>
 
-      {/* Members Grid */}
       {filteredMembers.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredMembers.map((member, index) => (
-            <motion.div
-              key={member.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.03 }}
-            >
+            <motion.div key={member.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.03 }}>
               <GlassCard className="h-full">
                 <div className="flex items-start gap-4">
                   <Avatar className="w-14 h-14 border-2 border-border">
@@ -129,30 +101,17 @@ export const MemberDirectory = () => {
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h4 className="font-semibold text-foreground truncate">
-                        {member.display_name || 'Member'}
-                      </h4>
-                      {member.is_admin && (
-                        <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">
-                          Admin
-                        </Badge>
-                      )}
+                      <h4 className="font-semibold text-foreground truncate">{member.display_name || 'Member'}</h4>
+                      {member.is_admin && <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">Admin</Badge>}
                     </div>
-                    <Badge 
-                      variant="outline" 
-                      className={cn("text-xs mt-1", levelColors[member.current_level || 1])}
-                    >
+                    <Badge variant="outline" className={cn("text-xs mt-1", levelColors[member.current_level || 1])}>
                       <Star className="w-3 h-3 mr-1" />
                       {member.level_name}
                     </Badge>
                   </div>
                 </div>
 
-                {member.bio && (
-                  <p className="text-sm text-muted-foreground mt-3 line-clamp-2">
-                    {member.bio}
-                  </p>
-                )}
+                {member.bio && <p className="text-sm text-muted-foreground mt-3 line-clamp-2">{member.bio}</p>}
 
                 <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
                   {member.location && (
@@ -167,30 +126,17 @@ export const MemberDirectory = () => {
                   </div>
                 </div>
 
-                {/* Badges */}
-                {member.badges && (member.badges as string[]).length > 0 && (
+                {member.badges && member.badges.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-3">
-                    {(member.badges as string[]).slice(0, 3).map((badge, i) => (
-                      <Badge key={i} variant="outline" className="text-xs">
-                        {badge}
-                      </Badge>
+                    {member.badges.slice(0, 3).map((badge, i) => (
+                      <Badge key={i} variant="outline" className="text-xs">{badge.name}</Badge>
                     ))}
-                    {(member.badges as string[]).length > 3 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{(member.badges as string[]).length - 3}
-                      </Badge>
-                    )}
+                    {member.badges.length > 3 && <Badge variant="outline" className="text-xs">+{member.badges.length - 3}</Badge>}
                   </div>
                 )}
 
-                {/* Social Links */}
                 {member.website && (
-                  <a 
-                    href={member.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-sm text-primary hover:underline mt-3"
-                  >
+                  <a href={member.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm text-primary hover:underline mt-3">
                     <Globe className="w-4 h-4" />
                     Website
                   </a>
@@ -200,18 +146,12 @@ export const MemberDirectory = () => {
           ))}
         </div>
       ) : (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-16"
-        >
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
             <Users className="w-8 h-8 text-primary" />
           </div>
           <h3 className="text-lg font-semibold text-foreground mb-2">No members found</h3>
-          <p className="text-muted-foreground">
-            Try adjusting your search or filters
-          </p>
+          <p className="text-muted-foreground">Try adjusting your search or filters</p>
         </motion.div>
       )}
     </div>

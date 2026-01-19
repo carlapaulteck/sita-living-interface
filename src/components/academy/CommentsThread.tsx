@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
-import { Heart, Reply, MoreHorizontal, Send } from "lucide-react";
+import { Heart, Reply, Send } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAcademy } from "@/hooks/useAcademy";
-import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import type { PostComment } from "@/types/academy";
 
 interface CommentsThreadProps {
   postId: string;
@@ -16,20 +16,32 @@ interface CommentsThreadProps {
 export const CommentsThread = ({ postId }: CommentsThreadProps) => {
   const [newComment, setNewComment] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
-  const { user } = useAuth();
-  const { comments, addComment, likeContent } = useAcademy();
+  const [postComments, setPostComments] = useState<PostComment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { getPostComments, createComment, toggleCommentLike, profile, user } = useAcademy();
 
-  const postComments = comments.filter(c => c.post_id === postId);
+  useEffect(() => {
+    setIsLoading(true);
+    getPostComments(postId).then((comments) => {
+      setPostComments(comments);
+      setIsLoading(false);
+    });
+  }, [postId, getPostComments]);
+
   const topLevelComments = postComments.filter(c => !c.parent_comment_id);
 
   const handleSubmitComment = async () => {
     if (!newComment.trim()) return;
     
-    await addComment.mutateAsync({
+    await createComment.mutateAsync({
       postId,
       content: newComment,
       parentCommentId: replyingTo || undefined,
     });
+    
+    // Refresh comments
+    const updated = await getPostComments(postId);
+    setPostComments(updated);
     
     setNewComment("");
     setReplyingTo(null);
@@ -43,10 +55,10 @@ export const CommentsThread = ({ postId }: CommentsThreadProps) => {
     comment, 
     depth = 0 
   }: { 
-    comment: typeof postComments[0]; 
+    comment: PostComment; 
     depth?: number;
   }) => {
-    const [isLiked, setIsLiked] = useState(false);
+    const [isLiked, setIsLiked] = useState(comment.user_liked || false);
     const [localLikeCount, setLocalLikeCount] = useState(comment.likes_count || 0);
     const replies = getReplies(comment.id);
 
@@ -55,12 +67,15 @@ export const CommentsThread = ({ postId }: CommentsThreadProps) => {
       setIsLiked(true);
       setLocalLikeCount(prev => prev + 1);
       try {
-        await likeContent.mutateAsync({ contentType: 'comment', contentId: comment.id });
+        await toggleCommentLike.mutateAsync({ commentId: comment.id, isLiked: false });
       } catch {
         setIsLiked(false);
         setLocalLikeCount(prev => prev - 1);
       }
     };
+
+    const authorName = comment.author?.display_name || 'User';
+    const authorInitials = authorName[0]?.toUpperCase() || 'U';
 
     return (
       <motion.div
@@ -70,13 +85,14 @@ export const CommentsThread = ({ postId }: CommentsThreadProps) => {
       >
         <div className="flex gap-3">
           <Avatar className="w-8 h-8 border border-border">
+            <AvatarImage src={comment.author?.avatar_url || undefined} />
             <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary/20 text-xs">
-              U
+              {authorInitials}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-foreground">User</span>
+              <span className="text-sm font-medium text-foreground">{authorName}</span>
               <span className="text-xs text-muted-foreground">
                 {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
               </span>
@@ -132,7 +148,7 @@ export const CommentsThread = ({ postId }: CommentsThreadProps) => {
               <Button
                 size="icon"
                 onClick={handleSubmitComment}
-                disabled={!newComment.trim() || addComment.isPending}
+                disabled={!newComment.trim() || createComment.isPending}
                 className="shrink-0"
               >
                 <Send className="w-4 h-4" />
@@ -144,12 +160,21 @@ export const CommentsThread = ({ postId }: CommentsThreadProps) => {
     );
   };
 
+  if (isLoading) {
+    return (
+      <div className="py-4 text-center text-sm text-muted-foreground">
+        Loading comments...
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 pt-4 border-t border-border/30">
       {/* New comment input */}
       {!replyingTo && (
         <div className="flex gap-3">
           <Avatar className="w-8 h-8 border border-border">
+            <AvatarImage src={profile?.avatar_url || undefined} />
             <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary/20 text-xs">
               {user?.email?.[0].toUpperCase() || 'U'}
             </AvatarFallback>
@@ -164,7 +189,7 @@ export const CommentsThread = ({ postId }: CommentsThreadProps) => {
             <Button
               size="icon"
               onClick={handleSubmitComment}
-              disabled={!newComment.trim() || addComment.isPending}
+              disabled={!newComment.trim() || createComment.isPending}
               className="shrink-0 self-end"
             >
               <Send className="w-4 h-4" />

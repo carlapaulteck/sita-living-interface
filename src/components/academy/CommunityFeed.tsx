@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Plus, Filter, TrendingUp, Clock, Flame } from "lucide-react";
+import { Plus, Clock, TrendingUp, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { PostCard } from "./PostCard";
 import { CreatePostModal } from "./CreatePostModal";
 import { useAcademy } from "@/hooks/useAcademy";
@@ -30,7 +29,7 @@ export const CommunityFeed = () => {
   useEffect(() => {
     const unsubscribe = subscribeToRealtime();
     return () => unsubscribe();
-  }, []);
+  }, [subscribeToRealtime]);
 
   // Filter and sort posts
   const filteredPosts = posts
