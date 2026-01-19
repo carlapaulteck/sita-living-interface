@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createHmac } from "https://deno.land/std@0.168.0/node/crypto.ts";
 
 const corsHeaders = {
@@ -28,7 +28,6 @@ serve(async (req) => {
     const path = url.pathname.split("/").pop();
 
     if (req.method === "POST" && path === "dispatch") {
-      // Dispatch webhook events
       const event: WebhookEvent = await req.json();
       const result = await dispatchWebhook(supabase, event);
       return new Response(JSON.stringify(result), {
@@ -37,7 +36,6 @@ serve(async (req) => {
     }
 
     if (req.method === "POST" && path === "test") {
-      // Test a specific webhook
       const { webhook_id, test_payload } = await req.json();
       const result = await testWebhook(supabase, webhook_id, test_payload);
       return new Response(JSON.stringify(result), {
@@ -46,7 +44,6 @@ serve(async (req) => {
     }
 
     if (req.method === "POST" && path === "retry") {
-      // Retry failed webhook logs
       const { log_id } = await req.json();
       const result = await retryWebhook(supabase, log_id);
       return new Response(JSON.stringify(result), {
@@ -58,7 +55,8 @@ serve(async (req) => {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (error) {
+  } catch (err: unknown) {
+    const error = err as Error;
     console.error("Webhook dispatcher error:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
@@ -68,17 +66,15 @@ serve(async (req) => {
 });
 
 async function dispatchWebhook(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   event: WebhookEvent
 ) {
-  // Find all webhooks subscribed to this event
   let query = supabase
     .from("webhooks")
     .select("*")
     .eq("is_active", true)
     .contains("events", [event.event_type]);
 
-  // Filter by user/org if provided
   if (event.user_id) {
     query = query.eq("user_id", event.user_id);
   }
@@ -112,14 +108,13 @@ async function dispatchWebhook(
 }
 
 async function sendWebhook(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   webhook: Record<string, unknown>,
   event: WebhookEvent
 ) {
   const startTime = Date.now();
   const timestamp = new Date().toISOString();
 
-  // Prepare payload
   const payload = {
     event: event.event_type,
     timestamp,
@@ -127,10 +122,8 @@ async function sendWebhook(
     webhook_id: webhook.id,
   };
 
-  // Generate HMAC signature
   const signature = generateSignature(JSON.stringify(payload), webhook.secret as string);
 
-  // Create log entry
   const { data: logEntry } = await supabase
     .from("webhook_logs")
     .insert({
@@ -143,7 +136,6 @@ async function sendWebhook(
     .single();
 
   try {
-    // Send the webhook
     const response = await fetch(webhook.url as string, {
       method: "POST",
       headers: {
@@ -159,7 +151,6 @@ async function sendWebhook(
     const duration = Date.now() - startTime;
     const responseBody = await response.text();
 
-    // Update log entry
     await supabase
       .from("webhook_logs")
       .update({
@@ -170,7 +161,6 @@ async function sendWebhook(
       })
       .eq("id", logEntry?.id);
 
-    // Update webhook metadata
     await supabase
       .from("webhooks")
       .update({
@@ -180,7 +170,6 @@ async function sendWebhook(
       })
       .eq("id", webhook.id);
 
-    // Disable webhook if too many failures
     if (!response.ok && (webhook.failure_count as number) >= 4) {
       await supabase
         .from("webhooks")
@@ -194,10 +183,10 @@ async function sendWebhook(
       status_code: response.status,
       duration_ms: duration,
     };
-  } catch (error) {
+  } catch (err: unknown) {
+    const error = err as Error;
     const duration = Date.now() - startTime;
 
-    // Update log entry with error
     await supabase
       .from("webhook_logs")
       .update({
@@ -207,7 +196,6 @@ async function sendWebhook(
       })
       .eq("id", logEntry?.id);
 
-    // Update failure count
     await supabase
       .from("webhooks")
       .update({
@@ -225,7 +213,7 @@ async function sendWebhook(
 }
 
 async function testWebhook(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   webhookId: string,
   testPayload: Record<string, unknown>
 ) {
@@ -248,10 +236,9 @@ async function testWebhook(
 }
 
 async function retryWebhook(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   logId: string
 ) {
-  // Get the original log entry
   const { data: log, error } = await supabase
     .from("webhook_logs")
     .select("*, webhooks(*)")
@@ -266,13 +253,11 @@ async function retryWebhook(
     throw new Error("Maximum retry attempts exceeded");
   }
 
-  // Increment retry count
   await supabase
     .from("webhook_logs")
     .update({ retry_count: log.retry_count + 1, status: "retrying" })
     .eq("id", logId);
 
-  // Resend the webhook
   const result = await sendWebhook(
     supabase,
     log.webhooks,

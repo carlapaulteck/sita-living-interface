@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface Integration {
   id: string;
@@ -6,8 +7,8 @@ export interface Integration {
   organization_id: string | null;
   provider: string;
   name: string;
-  status: "active" | "inactive" | "error" | "pending";
-  config: Record<string, unknown> | null;
+  status: string | null;
+  config: Json | null;
   scopes: string[] | null;
   last_sync_at: string | null;
   sync_error: string | null;
@@ -20,7 +21,7 @@ export interface SyncLog {
   id: string;
   integration_id: string;
   sync_type: string;
-  status: string;
+  status: string | null;
   records_processed: number | null;
   records_created: number | null;
   records_updated: number | null;
@@ -28,7 +29,7 @@ export interface SyncLog {
   error_message: string | null;
   started_at: string | null;
   completed_at: string | null;
-  metadata: Record<string, unknown> | null;
+  metadata: Json | null;
 }
 
 export type IntegrationProvider = 
@@ -64,7 +65,7 @@ export const integrationService = {
       .order("created_at", { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as Integration[];
   },
 
   /**
@@ -78,7 +79,7 @@ export const integrationService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as Integration | null;
   },
 
   /**
@@ -91,7 +92,7 @@ export const integrationService = {
       .eq("provider", provider);
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as Integration[];
   },
 
   /**
@@ -102,19 +103,23 @@ export const integrationService = {
     name: string,
     config?: Record<string, unknown>
   ): Promise<Integration> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+
     const { data, error } = await supabase
       .from("integrations")
       .insert({
+        user_id: user.id,
         provider,
         name,
-        config,
+        config: config as unknown as Json,
         status: "pending",
       })
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    return data as Integration;
   },
 
   /**
@@ -126,13 +131,16 @@ export const integrationService = {
   ): Promise<Integration> {
     const { data, error } = await supabase
       .from("integrations")
-      .update(updates)
+      .update({
+        ...updates,
+        config: updates.config as unknown as Json,
+      })
       .eq("id", integrationId)
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    return data as Integration;
   },
 
   /**
@@ -174,7 +182,7 @@ export const integrationService = {
       .limit(limit);
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as SyncLog[];
   },
 
   /**
