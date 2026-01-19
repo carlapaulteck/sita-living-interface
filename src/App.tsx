@@ -59,6 +59,7 @@ const AdminErrorLogsPage = lazy(() => import("./pages/admin/AdminErrorLogsPage")
 const AdminAuditLogsPage = lazy(() => import("./pages/admin/AdminAuditLogsPage"));
 const AdminSettingsPage = lazy(() => import("./pages/admin/AdminSettingsPage"));
 const AdminFeatureFlagsPage = lazy(() => import("./pages/admin/AdminFeatureFlagsPage"));
+const AdminPlatformPage = lazy(() => import("./pages/admin/AdminPlatformPage"));
 
 // Optimized query client with stale times
 const queryClient = new QueryClient({
@@ -151,6 +152,7 @@ function AppRoutes() {
           <Route path="audit" element={<LazyRoute><AdminAuditLogsPage /></LazyRoute>} />
           <Route path="settings" element={<LazyRoute><AdminSettingsPage /></LazyRoute>} />
           <Route path="feature-flags" element={<LazyRoute><AdminFeatureFlagsPage /></LazyRoute>} />
+          <Route path="platform" element={<LazyRoute><AdminPlatformPage /></LazyRoute>} />
         </Route>
         
         {/* Client Routes */}

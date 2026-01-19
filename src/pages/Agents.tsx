@@ -4,9 +4,11 @@ import { AgentDashboard } from "@/components/agents/AgentDashboard";
 import { OrchestrationView } from "@/components/agents/OrchestrationView";
 import { AgentTimeline } from "@/components/agents/AgentTimeline";
 import { AgentSettings } from "@/components/agents/AgentSettings";
+import { AgentWorkflowBuilder } from "@/components/agents/AgentWorkflowBuilder";
 
 const TABS = [
   { id: "dashboard", label: "Active Agents" },
+  { id: "workflows", label: "Workflows" },
   { id: "orchestration", label: "Orchestration" },
   { id: "timeline", label: "Activity" },
   { id: "settings", label: "Settings" },
@@ -19,6 +21,8 @@ export default function Agents() {
     switch (activeTab) {
       case "dashboard":
         return <AgentDashboard />;
+      case "workflows":
+        return <AgentWorkflowBuilder />;
       case "orchestration":
         return <OrchestrationView />;
       case "timeline":

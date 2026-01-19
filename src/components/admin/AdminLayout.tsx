@@ -17,7 +17,10 @@ import {
   X,
   Shield,
   Activity,
-  Flag
+  Flag,
+  Webhook,
+  Building2,
+  Bot
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -112,7 +115,8 @@ const AdminLayout = () => {
       'errors': 'Error Logs',
       'audit': 'Audit Logs',
       'settings': 'Platform Settings',
-      'feature-flags': 'Feature Flags'
+      'feature-flags': 'Feature Flags',
+      'platform': 'Platform Management'
     };
     return titles[path] || 'Admin Panel';
   };
@@ -206,6 +210,15 @@ const AdminLayout = () => {
             to="/admin/feature-flags"
             icon={<Flag className="w-5 h-5" />}
             label="Feature Flags"
+            collapsed={collapsed}
+          />
+        </NavSection>
+
+        <NavSection title="Platform" collapsed={collapsed}>
+          <NavItem
+            to="/admin/platform"
+            icon={<Webhook className="w-5 h-5" />}
+            label="Webhooks & Orgs"
             collapsed={collapsed}
           />
         </NavSection>
