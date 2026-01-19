@@ -10,11 +10,14 @@ import { AvatarStateProvider } from "@/contexts/AvatarStateContext";
 import { PersonalityProvider } from "@/contexts/PersonalityContext";
 import { WakeWordProvider } from "@/contexts/WakeWordContext";
 import { LoadingProvider } from "@/contexts/LoadingContext";
+import { QuickActionsProvider, useQuickActions } from "@/contexts/QuickActionsContext";
 import { AdaptationIndicator } from "@/components/TrustSafeguards";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { BottomDock } from "./components/BottomDock";
 import { NetworkStatus } from "./components/NetworkStatus";
+import { QuickTaskModal } from "./components/QuickTaskModal";
+import { QuickActivityLogger } from "./components/QuickActivityLogger";
 import { SkipToContent, ScreenReaderAnnouncer, KeyboardHints } from "./components/accessibility";
 import { CursorTrail, EnhancedCommandPalette, useCommandPalette, FloatingParticles } from "./components/effects";
 import { useTimeOfDayTheme } from "./hooks/useTimeOfDayTheme";
@@ -83,6 +86,7 @@ function AppRoutes() {
   const isAuthPage = location.pathname === "/auth";
   const isAdminPage = location.pathname.startsWith("/admin");
   const commandPalette = useCommandPalette();
+  const quickActions = useQuickActions();
   
   // Initialize time-of-day theming
   useTimeOfDayTheme();
@@ -98,8 +102,23 @@ function AppRoutes() {
       {/* Keyboard hints for power users */}
       <KeyboardHints />
       
-      {/* Enhanced Command Palette */}
-      <EnhancedCommandPalette isOpen={commandPalette.isOpen} onClose={commandPalette.close} />
+      {/* Enhanced Command Palette with quick action handlers */}
+      <EnhancedCommandPalette 
+        isOpen={commandPalette.isOpen} 
+        onClose={commandPalette.close}
+        onOpenTaskModal={quickActions.openTaskModal}
+        onOpenActivityLogger={quickActions.openActivityLogger}
+      />
+      
+      {/* Quick Action Modals */}
+      <QuickTaskModal 
+        isOpen={quickActions.showTaskModal} 
+        onClose={quickActions.closeTaskModal} 
+      />
+      <QuickActivityLogger 
+        isOpen={quickActions.showActivityLogger} 
+        onClose={quickActions.closeActivityLogger} 
+      />
       
       {/* Cursor Trail Effect */}
       {!isAuthPage && <CursorTrail />}
@@ -320,30 +339,32 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
       <LoadingProvider>
-        <ScreenReaderAnnouncer>
-          <CognitiveProvider>
-            <AdaptationProvider>
-              <AvatarStateProvider>
-                <PersonalityProvider>
-                  <WakeWordProvider>
-                    <TooltipProvider>
-                      <ErrorBoundary>
-                        {/* Aurora background effect */}
-                        <div className="aurora-bg" aria-hidden="true" />
-                        
-                        <Toaster />
-                        <Sonner />
-                        <BrowserRouter>
-                          <AppRoutes />
-                        </BrowserRouter>
-                      </ErrorBoundary>
-                    </TooltipProvider>
-                  </WakeWordProvider>
-                </PersonalityProvider>
-              </AvatarStateProvider>
-            </AdaptationProvider>
-          </CognitiveProvider>
-        </ScreenReaderAnnouncer>
+        <QuickActionsProvider>
+          <ScreenReaderAnnouncer>
+            <CognitiveProvider>
+              <AdaptationProvider>
+                <AvatarStateProvider>
+                  <PersonalityProvider>
+                    <WakeWordProvider>
+                      <TooltipProvider>
+                        <ErrorBoundary>
+                          {/* Aurora background effect */}
+                          <div className="aurora-bg" aria-hidden="true" />
+                          
+                          <Toaster />
+                          <Sonner />
+                          <BrowserRouter>
+                            <AppRoutes />
+                          </BrowserRouter>
+                        </ErrorBoundary>
+                      </TooltipProvider>
+                    </WakeWordProvider>
+                  </PersonalityProvider>
+                </AvatarStateProvider>
+              </AdaptationProvider>
+            </CognitiveProvider>
+          </ScreenReaderAnnouncer>
+        </QuickActionsProvider>
       </LoadingProvider>
     </ThemeProvider>
   </QueryClientProvider>
